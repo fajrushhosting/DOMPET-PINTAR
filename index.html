@@ -59,6 +59,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     body {
@@ -363,7 +364,7 @@
           </div>
         </div>
 
-        <!-- TIER 2: TATA LETAK PEMULA CUAN DI KIRI JUDUL DAN SLOGAN (BEBAS EMOJI & ANTI-KEBAWAH DI ANDROID) -->
+        <!-- TIER 2: TATA LETAK PEMULA CUAN DI KIRI JUDUL DAN SLOGAN -->
         <div class="relative z-10 flex items-center gap-2.5 w-full overflow-hidden mt-2">
           <!-- BADGE PEMULA CUAN DI KIRI -->
           <div id="userLevelBadge" class="shrink-0 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-amber-950 text-[10px] font-extrabold px-3 py-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 border border-amber-200/80">
@@ -378,7 +379,7 @@
           </div>
         </div>
 
-        <!-- ILUSTRASI 3D PERSIS SEPERTI GAMBAR (Clipboard, Koin Rp, Kartu) -->
+        <!-- ILUSTRASI 3D FINTECH -->
         <div class="relative mt-4 h-28 flex items-center justify-center">
           <div class="absolute left-3 top-2 transform -rotate-12 hover:rotate-0 transition-transform duration-300 cursor-pointer shadow-lg bg-gradient-to-tr from-amber-100 to-white p-2 rounded-xl border border-white/60 w-20 h-12 flex flex-col justify-between">
             <div class="w-4 h-3 bg-amber-400 rounded-sm"></div>
@@ -411,10 +412,10 @@
         </div>
       </div>
 
-      <!-- KARTU KONTEN PUTIH (POSISI TANGGAL & DOMPET TIDAK LAGI TERHALANG/KETUTUPAN) -->
+      <!-- KARTU KONTEN PUTIH -->
       <div class="flex-1 -mt-4 bg-white curved-sheet px-5 sm:px-6 pt-7 sm:pt-8 shadow-sm flex flex-col relative z-20">
         
-        <!-- ROW ATAS: TANGGAL & FILTER DOMPET (TERMASUK DOMPET BRI) -->
+        <!-- ROW ATAS: TANGGAL & FILTER DOMPET -->
         <div class="flex items-center justify-between gap-2.5 mt-1.5 mb-4">
           <span id="currentDateDisplay" class="text-[11px] font-semibold px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full inline-flex items-center gap-1.5 shrink-0 border border-teal-100 shadow-xs">
             <i class="fa-regular fa-calendar text-[10px]"></i> 10 Agu 2026
@@ -713,7 +714,7 @@
         </div>
       </div>
 
-      <!-- FORMULIR INPUT DENGAN DUKUNGAN DOMPET BRI -->
+      <!-- FORMULIR INPUT DENGAN DUKUNGAN DOMPET LENGKAP -->
       <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
         <input type="hidden" id="txId" value="" />
 
@@ -724,14 +725,24 @@
               <option value="Dompet Utama">Dompet Utama</option>
               <option value="BCA">BCA Mobile</option>
               <option value="BRI">Bank BRI (BRImo)</option>
+              <option value="BNI">Bank BNI</option>
               <option value="Mandiri">Mandiri</option>
+              <option value="BSI">Bank Syariah Indonesia (BSI)</option>
+              <option value="SeaBank">SeaBank</option>
+              <option value="Bank Jago">Bank Jago</option>
               <option value="GoPay">GoPay</option>
               <option value="OVO">OVO</option>
+              <option value="DANA">DANA</option>
               <option value="Tabungan">Tabungan</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="categoryLabel">Kategori</label>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="block text-xs font-bold text-slate-700" data-i18n="categoryLabel">Kategori</label>
+              <button type="button" onclick="openAddCategoryModal()" class="text-[10px] font-extrabold text-brand-600 hover:text-brand-700 transition flex items-center gap-0.5">
+                <i class="fa-solid fa-plus text-[9px]"></i> Kategori
+              </button>
+            </div>
             <select id="txCategory" class="w-full bg-white border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-700 focus:outline-none focus:border-brand-500 shadow-sm">
             </select>
           </div>
@@ -771,7 +782,7 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- MODAL SCAN STRUK KAMERA REAL-TIME DENGAN FITUR KAMERA ANDROID  -->
+    <!-- MODAL SCAN STRUK KAMERA REAL-TIME DENGAN GEMINI AI PRESISI     -->
     <!-- ============================================================== -->
     <div id="modalOcrCamera" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col justify-between p-4">
       
@@ -809,18 +820,18 @@
           </div>
           <div class="flex justify-between text-[8px] text-emerald-200/80 font-mono">
             <span>[FOKUS: NOMINAL & MERCHANT]</span>
-            <span>GEMINI-2.5 VISION</span>
+            <span>GEMINI VISION AI</span>
           </div>
         </div>
 
         <!-- Animasi Loading Analisis AI -->
         <div id="ocrAiLoading" class="hidden absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-6 text-center z-30">
           <div class="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mb-3"></div>
-          <p class="text-sm font-bold text-white mb-1" data-i18n="readingReceipt">Gemini AI sedang membaca struk...</p>
+          <p class="text-sm font-bold text-white mb-1" id="readingReceiptTitle" data-i18n="readingReceipt">Gemini AI sedang membaca struk...</p>
           <p class="text-[11px] text-emerald-200/80 max-w-xs" data-i18n="extractingDetails">Mengekstrak total harga, toko, kategori, dan rincian transaksi otomatis.</p>
         </div>
 
-        <!-- Tampilan Ramah Jika Izin Live Video Terkendala di Android / iOS -->
+        <!-- Layar Siaga Kamera Bawaan Ponsel -->
         <div id="ocrCameraError" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-20 text-white">
           <div class="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mb-3">
             <i class="fa-solid fa-camera"></i>
@@ -843,29 +854,35 @@
         </div>
       </div>
 
-      <!-- KARTU HASIL DETEKSI GEMINI AI (HANYA MUNCUL JIKA HASIL SCAN SUDAH VALID) -->
+      <!-- KARTU HASIL DETEKSI GEMINI AI -->
       <div id="ocrAiResultsCard" class="hidden bg-white/95 backdrop-blur-md rounded-2xl p-4 mb-3 text-slate-800 space-y-2.5 shadow-2xl border border-white/40 z-40">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <div>
-            <span class="text-[9px] uppercase font-bold text-emerald-600 tracking-wider" data-i18n="aiScanResult">Hasil Scan AI</span>
-            <h4 id="resMerchant" class="text-xs font-extrabold text-slate-800">Toko Belanja</h4>
+          <div class="flex-1 pr-2">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-[9px] uppercase font-bold text-emerald-600 tracking-wider" data-i18n="aiScanResult">Hasil Scan AI</span>
+              <span id="ocrSourceBadge" class="text-[8px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800">Gemini Vision AI</span>
+            </div>
+            <input type="text" id="resMerchantInput" class="w-full text-xs font-extrabold text-slate-800 bg-transparent border-b border-transparent focus:border-emerald-500 focus:outline-none py-0.5" value="Toko Belanja" placeholder="Nama Toko" />
           </div>
-          <span id="resCategoryBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">Makanan & Minuman</span>
+          <span id="resCategoryBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 shrink-0">Makanan & Minuman</span>
         </div>
         
         <div class="grid grid-cols-2 gap-2 text-xs">
-          <div class="bg-slate-50 p-2 rounded-xl">
-            <span class="text-[10px] text-slate-400 block" data-i18n="totalNominal">Total Nominal:</span>
-            <span id="resAmount" class="text-sm font-extrabold text-accent-orange">Rp0</span>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
+            <span class="text-[10px] text-slate-400 block font-semibold" data-i18n="totalNominal">Total Nominal:</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="text-xs font-extrabold text-accent-orange">Rp</span>
+              <input type="number" id="resAmountInput" class="w-full bg-transparent text-sm font-extrabold text-accent-orange focus:outline-none" value="0" />
+            </div>
           </div>
-          <div class="bg-slate-50 p-2 rounded-xl">
-            <span class="text-[10px] text-slate-400 block" data-i18n="classification">Klasifikasi:</span>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex flex-col justify-between">
+            <span class="text-[10px] text-slate-400 block font-semibold" data-i18n="classification">Klasifikasi:</span>
             <span id="resClassification" class="text-xs font-bold text-slate-700">Kebutuhan</span>
           </div>
         </div>
 
-        <div class="bg-slate-50 p-2 rounded-xl text-[11px]">
-          <span class="text-[10px] text-slate-400 block" data-i18n="notesLabel">Catatan:</span>
+        <div class="bg-slate-50 p-2 rounded-xl text-[11px] border border-slate-200/60">
+          <span class="text-[10px] text-slate-400 block font-semibold" data-i18n="notesLabel">Catatan:</span>
           <p id="resNotes" class="text-slate-600 italic">Rincian struk</p>
         </div>
 
@@ -920,6 +937,46 @@
       </div>
     </div>
 
+    <!-- MODAL TAMBAH KATEGORI KUSTOM -->
+    <div id="modalNewCategory" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-[32px] p-5 shadow-2xl space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-tags text-brand-600 text-xs"></i>
+            <h3 class="text-xs font-bold text-slate-800">Tambah Kategori Baru</h3>
+          </div>
+          <button onclick="closeAddCategoryModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="saveCustomCategory(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Tipe Kategori</label>
+            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+              <label class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg cursor-pointer transition has-[:checked]:bg-white has-[:checked]:shadow-xs has-[:checked]:text-brand-600 text-slate-600">
+                <input type="radio" name="customCatType" value="pengeluaran" checked class="hidden" />
+                <span>Pengeluaran</span>
+              </label>
+              <label class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg cursor-pointer transition has-[:checked]:bg-white has-[:checked]:shadow-xs has-[:checked]:text-brand-600 text-slate-600">
+                <input type="radio" name="customCatType" value="pemasukan" class="hidden" />
+                <span>Pemasukan</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Nama Kategori</label>
+            <input type="text" id="customCatNameInput" required placeholder="misal: Skincare, Freelance, Zakat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-brand-500" />
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="closeAddCategoryModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+              Batal
+            </button>
+            <button type="submit" class="flex-1 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow transition">
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- MODAL SPENDING CHALLENGE: BUAT CHALLENGE -->
     <div id="modalNewChallenge" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-[32px] p-5 shadow-2xl space-y-3">
@@ -952,6 +1009,10 @@
           <p id="profileUsername" class="text-xs text-slate-400">@fajrush</p>
         </div>
         <div class="border-t border-slate-100 pt-3 flex flex-col gap-2">
+          <div class="text-left bg-slate-50 p-2.5 rounded-2xl border border-slate-200 mb-1">
+            <label class="text-[10px] font-bold text-slate-500 block mb-1">API Key Gemini AI</label>
+            <input type="text" id="customApiKeyInput" class="w-full text-[10px] font-mono bg-white border border-slate-200 rounded-lg p-1.5 text-slate-700 outline-none" value="AQ.Ab8RN6KqpxYtPIKMUJlO6LQmGuxBySQWllkgEUAexH2O02nuYg" onchange="updateApiKey(this.value)" />
+          </div>
           <button onclick="closeProfileModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition" data-i18n="close">
             Tutup
           </button>
@@ -979,7 +1040,7 @@
   </div> <!-- AKHIR CONTAINER SHELL -->
 
   <!-- ============================================================== -->
-  <!-- JAVASCRIPT: LOGIKA LENGKAP FITUR, BRI & PERBAIKAN OCR          -->
+  <!-- JAVASCRIPT: LOGIKA LENGKAP FITUR, DATABASE & OCR PRESISI       -->
   <!-- ============================================================== -->
   <script>
     // -------------------------------------------------------------
@@ -1241,11 +1302,11 @@
     }
 
     // -------------------------------------------------------------
-    // 2. KUNCI API & SUPABASE
+    // 2. KUNCI API & SUPABASE RESMI TERBARU
     // -------------------------------------------------------------
-    const apiKey = "";
-    const SUPABASE_URL = "https://binqtrjnwgymnrnjrjjq.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_5vcmnxWZmZt-ktLRk4ElPQ_is7Ff6jm";
+    let apiKey = sessionStorage.getItem('dp_active_gemini_key') || "AQ.Ab8RN6KqpxYtPIKMUJlO6LQmGuxBySQWllkgEUAexH2O02nuYg";
+    const SUPABASE_URL = "https://yzdrepwmdzehhuycugkx.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_Ny7EMwqk2TVe2dKc0NKl5w_S0SnqTSL";
     let supabaseClient = null;
 
     if (window.supabase) {
@@ -1254,6 +1315,71 @@
       } catch (err) {
         console.warn("Supabase standby:", err);
       }
+    }
+
+    function updateApiKey(newKey) {
+      if (!newKey || !newKey.trim()) return;
+      apiKey = newKey.trim();
+      sessionStorage.setItem('dp_active_gemini_key', apiKey);
+      showToast(currentLang === 'id' ? "Kunci API Gemini berhasil diperbarui!" : "Gemini API key updated!");
+    }
+
+    // Helper Pemanggilan Gemini API dengan Multi-Model Fallback dan Separasi Header
+    async function callGeminiApi(payload) {
+      const modelsToTry = [
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
+      ];
+      let lastErr = null;
+
+      for (const model of modelsToTry) {
+        // Metode 1: Header x-goog-api-key murni tanpa URL query parameter (Wajib untuk format kunci AQ.)
+        try {
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (resp.ok) {
+            return await resp.json();
+          } else {
+            const errJson = await resp.json().catch(() => null);
+            console.warn(`Gemini API Model ${model} via Header (HTTP ${resp.status}):`, errJson);
+            lastErr = new Error(errJson?.error?.message || `HTTP ${resp.status}`);
+          }
+        } catch (err) {
+          console.warn(`Fetch error model ${model} Header:`, err);
+          lastErr = err;
+        }
+
+        // Metode 2: URL query param ?key= murni tanpa header x-goog-api-key
+        try {
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (resp.ok) {
+            return await resp.json();
+          } else {
+            const errJson = await resp.json().catch(() => null);
+            console.warn(`Gemini API Model ${model} via Query (HTTP ${resp.status}):`, errJson);
+            lastErr = new Error(errJson?.error?.message || `HTTP ${resp.status}`);
+          }
+        } catch (err) {
+          console.warn(`Fetch error model ${model} Query:`, err);
+          lastErr = err;
+        }
+      }
+      throw lastErr || new Error("Gagal menghubungi server Gemini AI.");
     }
 
     // -------------------------------------------------------------
@@ -1269,7 +1395,20 @@
       exchangeRates: { IDR: 1, USD: 16200, EUR: 17500, SGD: 12100, JPY: 105 },
       currencySymbols: { IDR: "Rp", USD: "$", EUR: "€", SGD: "S$", JPY: "¥" },
       activeWalletFilter: "Semua",
-      wallets: ["Dompet Utama", "BCA", "BRI", "Mandiri", "GoPay", "OVO", "Tabungan"],
+      wallets: [
+        "Dompet Utama",
+        "BCA",
+        "BRI",
+        "BNI",
+        "Mandiri",
+        "BSI",
+        "SeaBank",
+        "Bank Jago",
+        "GoPay",
+        "OVO",
+        "DANA",
+        "Tabungan"
+      ],
       categories: {
         pemasukan: ["Gaji Pokok", "Bonus & Tunjangan", "Investasi & Dividen", "Bisnis Sampingan", "Lainnya"],
         pengeluaran: [
@@ -1333,6 +1472,11 @@
       if (w === 'Tabungan') return currentLang === 'id' ? 'Tabungan' : 'Savings';
       if (w === 'Semua') return currentLang === 'id' ? 'Semua Dompet' : 'All Wallets';
       if (w === 'BRI') return 'Bank BRI (BRImo)';
+      if (w === 'BNI') return 'Bank BNI';
+      if (w === 'BSI') return 'Bank Syariah Indonesia (BSI)';
+      if (w === 'SeaBank') return 'SeaBank';
+      if (w === 'Bank Jago') return 'Bank Jago';
+      if (w === 'DANA') return 'DANA';
       return w;
     }
 
@@ -1364,6 +1508,7 @@
       const savedCh = sessionStorage.getItem('dp_challenges_db');
       const savedPriv = sessionStorage.getItem('dp_privacy_hidden');
       const savedLang = sessionStorage.getItem('dp_lang');
+      const savedCats = sessionStorage.getItem('dp_categories_db');
 
       if (savedUsers) AppState.users = JSON.parse(savedUsers);
       if (activeUser) AppState.currentUser = JSON.parse(activeUser);
@@ -1372,6 +1517,14 @@
       if (savedCh) AppState.challenges = JSON.parse(savedCh);
       if (savedPriv) AppState.privacyHidden = JSON.parse(savedPriv);
       if (savedLang && (savedLang === 'id' || savedLang === 'en')) currentLang = savedLang;
+      if (savedCats) {
+        try {
+          const parsedCats = JSON.parse(savedCats);
+          if (parsedCats.pemasukan && parsedCats.pengeluaran) {
+            AppState.categories = parsedCats;
+          }
+        } catch (e) {}
+      }
     }
 
     function persistState() {
@@ -1386,6 +1539,7 @@
       sessionStorage.setItem('dp_challenges_db', JSON.stringify(AppState.challenges));
       sessionStorage.setItem('dp_privacy_hidden', JSON.stringify(AppState.privacyHidden));
       sessionStorage.setItem('dp_lang', currentLang);
+      sessionStorage.setItem('dp_categories_db', JSON.stringify(AppState.categories));
       syncToSupabase();
     }
 
@@ -1444,7 +1598,7 @@
     }
 
     // -------------------------------------------------------------
-    // 6. FITUR TOGGLE LIHAT PASSWORD & AUTENTIKASI
+    // 6. TOGGLE PASSWORD & AUTENTIKASI
     // -------------------------------------------------------------
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
@@ -1539,12 +1693,26 @@
 
       const newUser = { id: 'usr_' + Date.now(), name: fullName, username: u, password: p, securityAnswer: sec };
       AppState.users.push(newUser);
-      AppState.currentUser = newUser;
       persistState();
 
-      showToast(currentLang === 'id' ? `Pendaftaran berhasil, ${fullName}!` : `Registered successfully, ${fullName}!`);
-      unlockAndShowDashboard();
-      if (typeof confetti === 'function') confetti({ particleCount: 45, spread: 70, origin: { y: 0.8 } });
+      // Kosongkan form pendaftaran
+      document.getElementById('gateRegFullName').value = '';
+      document.getElementById('gateRegUsername').value = '';
+      document.getElementById('gateRegPassword').value = '';
+      document.getElementById('gateRegSecurity').value = '';
+
+      // Arahkan ke tab login dan isi username baru secara otomatis
+      switchGateTab('login');
+      document.getElementById('gateLoginUsername').value = u;
+      document.getElementById('gateLoginPassword').value = '';
+      document.getElementById('gateLoginPassword').focus();
+
+      showToast(
+        currentLang === 'id' 
+          ? `Pendaftaran akun ${fullName} berhasil! Silakan masukkan kata sandi untuk masuk.` 
+          : `Registration for ${fullName} successful! Please enter your password to log in.`
+      );
+      if (typeof confetti === 'function') confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 } });
     }
 
     function handleGateForgotPassword(e) {
@@ -1684,36 +1852,25 @@ Kembalikan JSON dengan struktur:
       };
 
       try {
-        const delays = [1000, 2000, 4000, 8000, 16000];
-        let result = null;
-        for (let attempt = 0; attempt <= 5; attempt++) {
-          try {
-            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (resp.ok) {
-              result = await resp.json();
-              break;
-            }
-          } catch (e) {
-            if (attempt < 5) await new Promise(r => setTimeout(r, delays[attempt]));
-            else throw e;
-          }
+        const result = await callGeminiApi(payload);
+        const parts = result?.candidates?.[0]?.content?.parts || [];
+        let rawText = "";
+        for (const p of parts) {
+          if (p.text && !p.thought) rawText += p.text;
         }
+        if (!rawText && parts.length > 0) rawText = parts[parts.length - 1].text || "";
 
-        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (rawText) {
-          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+          const match = rawText.match(/\{[\s\S]*\}/);
+          const parsed = JSON.parse(match ? match[0] : rawText);
           leakText.innerText = parsed.leakDetection;
           tipText.innerText = parsed.savingTip;
           showToast(currentLang === 'id' ? "AI selesai menganalisis keuanganmu!" : "AI analysis complete!");
         }
       } catch (err) {
         console.warn("AI Insight Fallback:", err);
-        leakText.innerText = currentLang === 'id' ? "Terdeteksi pengeluaran sering untuk kategori Makanan & Minuman di luar kebutuhan pokok." : "Frequent small expenses detected under Food & Beverages category.";
-        tipText.innerText = currentLang === 'id' ? "Coba alokasikan 10% dari jajan mingguan langsung ke tabungan di awal bulan." : "Try automatically allocating 10% of weekly allowances to your savings.";
+        leakText.innerText = currentLang === 'id' ? "Terdeteksi pengeluaran rutin untuk kategori Makanan & Minuman dan jajan harian." : "Frequent small expenses detected under Food & Beverages category.";
+        tipText.innerText = currentLang === 'id' ? "Coba alokasikan 10% dari pos belanja harian langsung ke tabungan di awal bulan." : "Try automatically allocating 10% of weekly budget to your savings.";
       } finally {
         loading.classList.add('hidden');
         btn.disabled = false;
@@ -1983,7 +2140,6 @@ Kembalikan JSON dengan struktur:
     function renderAll() {
       if (!AppState.currentUser) return;
 
-      // UCAPAN STRATEGIS BEBAS EMOJI
       const firstName = AppState.currentUser.name ? AppState.currentUser.name.split(' ')[0] : 'Fajrush';
       document.getElementById('userGreeting').textContent = `Hi, ${firstName}`;
       document.getElementById('currentCurrencyTag').innerText = AppState.currentCurrency;
@@ -2156,6 +2312,73 @@ Kembalikan JSON dengan struktur:
       });
     }
 
+    // -------------------------------------------------------------
+    // FITUR KELOLA & TAMBAH KATEGORI KUSTOM
+    // -------------------------------------------------------------
+    function openAddCategoryModal() {
+      const modal = document.getElementById('modalNewCategory');
+      const input = document.getElementById('customCatNameInput');
+      input.value = '';
+      
+      // Sinkronkan radio pilihan kategori dengan tipe transaksi aktif saat ini
+      const radios = document.getElementsByName('customCatType');
+      radios.forEach(r => {
+        if (r.value === AppState.formState.type) r.checked = true;
+      });
+
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 150);
+    }
+
+    function closeAddCategoryModal() {
+      document.getElementById('modalNewCategory').classList.add('hidden');
+    }
+
+    function saveCustomCategory(e) {
+      e.preventDefault();
+      const input = document.getElementById('customCatNameInput');
+      const catName = input.value.trim();
+      
+      let selectedType = 'pengeluaran';
+      const radios = document.getElementsByName('customCatType');
+      radios.forEach(r => {
+        if (r.checked) selectedType = r.value;
+      });
+
+      if (!catName) {
+        showToast(currentLang === 'id' ? "Nama kategori tidak boleh kosong!" : "Category name cannot be empty!", "warning");
+        return;
+      }
+
+      // Cek duplikasi
+      const existing = AppState.categories[selectedType].some(c => c.toLowerCase() === catName.toLowerCase());
+      if (existing) {
+        showToast(currentLang === 'id' ? "Kategori ini sudah ada!" : "This category already exists!", "warning");
+        return;
+      }
+
+      // Tambahkan kategori baru ke urutan sebelum "Lainnya" jika ada
+      const list = AppState.categories[selectedType];
+      const otherIdx = list.indexOf("Lainnya");
+      if (otherIdx !== -1) {
+        list.splice(otherIdx, 0, catName);
+      } else {
+        list.push(catName);
+      }
+
+      persistState();
+      closeAddCategoryModal();
+
+      // Jika form transaksi sedang dibuka dan tipenya sesuai, perbarui pilihan kategori dan pilih kategori baru tersebut
+      if (AppState.formState.type === selectedType) {
+        populateCategorySelect(selectedType);
+        const catSelect = document.getElementById('txCategory');
+        catSelect.value = catName;
+      }
+
+      showToast(currentLang === 'id' ? `Kategori "${catName}" berhasil ditambahkan!` : `Category "${catName}" added!`);
+    }
+
     function saveTransaction(e) {
       e.preventDefault();
       if (!AppState.currentUser) return;
@@ -2224,7 +2447,7 @@ Kembalikan JSON dengan struktur:
     }
 
     // -------------------------------------------------------------
-    // 13. SCAN KAMERA LIVE OCR (GEMINI AI PERBAIKAN TOTAL)
+    // 13. FITUR FOTO STRUK (OCR) YANG DIPERBAIKI PRESISI
     // -------------------------------------------------------------
     let videoStream = null;
     let currentFacingMode = "environment";
@@ -2245,10 +2468,12 @@ Kembalikan JSON dengan struktur:
       document.getElementById('ocrVideoLive').classList.remove('hidden');
       document.getElementById('ocrSnapshotPreview').classList.add('hidden');
       document.getElementById('ocrAiLoading').classList.add('hidden');
-      document.getElementById('ocrAiResultsCard').classList.add('hidden'); // Selalu sembunyikan hasil di awal
+      document.getElementById('ocrAiResultsCard').classList.add('hidden');
       document.getElementById('ocrShutterControls').classList.remove('hidden');
       document.getElementById('ocrFrameGuide').classList.remove('hidden');
       document.getElementById('ocrCameraError').classList.add('hidden');
+      const titleEl = document.getElementById('readingReceiptTitle');
+      if (titleEl) titleEl.innerText = currentLang === 'id' ? "Gemini AI sedang membaca struk..." : "Gemini AI is reading receipt...";
     }
 
     async function startCameraStream() {
@@ -2264,7 +2489,6 @@ Kembalikan JSON dengan struktur:
         await video.play();
       } catch (err) {
         console.warn("Kamera WebRTC belum diizinkan atau tidak aktif:", err);
-        // Tampilkan layar panduan kamera bawaan ponsel tanpa menampilkan kartu hasil scan yang menumpuk
         document.getElementById('ocrCameraError').classList.remove('hidden');
       }
     }
@@ -2287,13 +2511,11 @@ Kembalikan JSON dengan struktur:
       const preview = document.getElementById('ocrSnapshotPreview');
       const loading = document.getElementById('ocrAiLoading');
 
-      // Jika kamera video stream tidak aktif, langsung arahkan ke kamera bawaan ponsel
       if (!video || !video.videoWidth) {
         document.getElementById('ocrNativeCameraInput').click();
         return;
       }
 
-      // Resize cerdas ke maksimal 1200px agar teks struk sangat tajam tetapi payload tetap ringan
       let width = video.videoWidth;
       let height = video.videoHeight;
       const maxDim = 1200;
@@ -2312,8 +2534,8 @@ Kembalikan JSON dengan struktur:
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, width, height);
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      const rawBase64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      const rawBase64 = dataUrl.split(',')[1];
 
       preview.src = dataUrl;
       preview.classList.remove('hidden');
@@ -2333,7 +2555,7 @@ Kembalikan JSON dengan struktur:
         reader.onload = function(e) {
           const img = new Image();
           img.onload = async function() {
-            const canvas = document.createElement('canvas');
+            const canvas = document.getElementById('ocrCaptureCanvas');
             let width = img.width;
             let height = img.height;
             const maxDim = 1200;
@@ -2350,8 +2572,8 @@ Kembalikan JSON dengan struktur:
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-            const rawBase64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            const rawBase64 = dataUrl.split(',')[1];
 
             document.getElementById('ocrSnapshotPreview').src = dataUrl;
             document.getElementById('ocrSnapshotPreview').classList.remove('hidden');
@@ -2361,6 +2583,7 @@ Kembalikan JSON dengan struktur:
             document.getElementById('ocrCameraError').classList.add('hidden');
             document.getElementById('ocrAiLoading').classList.remove('hidden');
 
+            input.value = '';
             await processReceiptWithGemini(rawBase64);
           };
           img.src = e.target.result;
@@ -2369,97 +2592,291 @@ Kembalikan JSON dengan struktur:
       }
     }
 
+    // Normalisasi Tanggal ke Format YYYY-MM-DD
+    function normalizeDateToYMD(dateStr) {
+      if (!dateStr) return new Date().toISOString().split('T')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+
+      const dmyMatch = dateStr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+      if (dmyMatch) {
+        let y = dmyMatch[3];
+        if (y.length === 2) y = "20" + y;
+        return `${y}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+      }
+
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toISOString().split('T')[0];
+      }
+      return new Date().toISOString().split('T')[0];
+    }
+
+    // Normalisasi Pemetaan Kategori Berdasarkan Kata Kunci
+    function mapCategorySmart(catText, notes = '', merchant = '') {
+      const combined = `${catText} ${notes} ${merchant}`.toLowerCase();
+      if (/bensin|spbu|pertamina|shell|bp|pertalite|pertamax|solar|parkir|tol|grab|gojek|maxim|transport|tiket|kereta|bus|pesawat/.test(combined)) {
+        return "Transportasi";
+      }
+      if (/listrik|pln|pdam|air|pulsa|kuota|telkomsel|indosat|xl|tri|smartfren|wifi|indihome|biznet|tagihan|bpjs|pbb/.test(combined)) {
+        return "Tagihan & Utilitas";
+      }
+      if (/obat|apotek|kimia farma|k24|century|guardian|watsons|dokter|klinik|hospital|medis|vitamin/.test(combined)) {
+        return "Kesehatan";
+      }
+      if (/buku|gramedia|stationery|sekolah|kursus|kuliah|pendidikan|les/.test(combined)) {
+        return "Pendidikan";
+      }
+      if (/reksa|saham|invest|bibit|ajaib|emas|crypto|deposito/.test(combined)) {
+        return "Investasi Rutin";
+      }
+      if (/baju|fashion|sepatu|tas|zara|h&m|uniqlo|shopee|tokopedia|lazada|mall|dept|matahari|bioskop|cinema|xxi|game|hiburan/.test(combined)) {
+        return "Belanja & Hiburan";
+      }
+      if (/makan|minum|food|beverage|resto|cafe|coffee|kopi|bakso|ayam|mie|snack|roti|warung|sembako|indomaret|alfamart|superindo|hypermart/.test(combined)) {
+        return "Makanan & Minuman";
+      }
+      return "Makanan & Minuman";
+    }
+
     async function processReceiptWithGemini(base64Image) {
       const loading = document.getElementById('ocrAiLoading');
       const resultsCard = document.getElementById('ocrAiResultsCard');
 
-      const systemInstruction = "Kamu adalah sistem OCR keuangan presisi tinggi. Analisis struk kasir/nota belanja ini secara teliti. Cari total nominal akhir pembayaran (grand total/total yang harus dibayar), nama toko/merchant, tanggal (format YYYY-MM-DD), kategori belanja, klasifikasi (Kebutuhan/Keinginan/Investasi), dan ringkasan singkat barang belanjaan. Output HANYA JSON murni.";
-      
-      const promptText = `Ekstrak data dari foto struk belanja kasir ini dalam format JSON:
+      const systemInstruction = `Kamu adalah sistem pemindai OCR kasir dan struk belanja keuangan AI presisi tinggi.
+Tugasmu adalah menganalisis foto struk kasir/nota belanja dan mengekstrak data penting secara akurat.
+Pedoman penting:
+1. TOTAL NOMINAL: Cari nilai "Total", "Grand Total", atau "Total Akhir" yang harus dibayar. JANGAN mengambil uang tunai pembayar ("CASH" / "TUNAI" / "BAYAR") dan JANGAN mengambil uang kembalian ("CHANGE" / "KEMBALI"). Pastikan nilainya berupa angka murni bulat tanpa titik ribuan (misal: 65000).
+2. MERCHANT: Nama toko, minimarket, supermarket, restoran, kafe, atau merchant (misal: Indomaret, Alfamart, Superindo, Starbucks, SPBU Pertamina, dsb.).
+3. TANGGAL: Format YYYY-MM-DD.
+4. KATEGORI: Pilih salah satu dari: "Makanan & Minuman", "Belanja & Hiburan", "Transportasi", "Tagihan & Utilitas", "Kesehatan", "Pendidikan", "Investasi Rutin", atau "Lainnya".
+5. KLASIFIKASI: Tentukan "Kebutuhan", "Keinginan", atau "Investasi".
+6. NOTES: Ringkasan singkat 2-4 kata nama item atau barang belanjaan.
+
+KEMBALIKAN HANYA FORMAT JSON VALID.`;
+
+      const promptText = `Ekstrak data dari struk belanja ini dalam format JSON berikut:
 {
-  "total": number (hanya angka bulat nominal total akhir belanja, contoh: 65000),
-  "merchant": string (nama minimarket, toko, cafe, resto),
-  "date": string (format YYYY-MM-DD),
-  "category": string (pilih salah satu: "Makanan & Minuman", "Belanja & Hiburan", "Transportasi", "Tagihan & Utilitas", "Kesehatan", "Lainnya"),
-  "classification": string (pilih salah satu: "Kebutuhan", "Keinginan", atau "Investasi"),
-  "notes": string (ringkasan 2-4 kata barang yang dibeli)
+  "total": 65000,
+  "merchant": "Nama Toko / Minimarket",
+  "date": "2026-09-04",
+  "category": "Makanan & Minuman",
+  "classification": "Kebutuhan",
+  "notes": "Rincian barang belanjaan"
 }`;
 
       const payload = {
         contents: [{
           role: "user",
           parts: [
-            { text: promptText },
+            { text: `${systemInstruction}\n\n${promptText}` },
             { inlineData: { mimeType: "image/jpeg", data: base64Image } }
           ]
         }],
-        systemInstruction: { parts: [{ text: systemInstruction }] },
         generationConfig: {
           responseMimeType: "application/json"
         }
       };
 
       try {
-        const delays = [1000, 2000, 4000, 8000, 16000];
-        let result = null;
-        for (let attempt = 0; attempt <= 5; attempt++) {
-          try {
-            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (resp.ok) {
-              result = await resp.json();
-              break;
-            }
-          } catch (e) {
-            if (attempt < 5) await new Promise(r => setTimeout(r, delays[attempt]));
-            else throw e;
-          }
+        const result = await callGeminiApi(payload);
+        const parts = result?.candidates?.[0]?.content?.parts || [];
+        let rawText = "";
+        for (const p of parts) {
+          if (p.text && !p.thought) rawText += p.text;
         }
+        if (!rawText && parts.length > 0) rawText = parts[parts.length - 1].text || "";
 
-        const textResult = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         let parsed = null;
-
-        if (textResult) {
-          try {
-            parsed = JSON.parse(textResult.replace(/```json|```/g, '').trim());
-          } catch (e) {
-            const match = textResult.match(/\{[\s\S]*\}/);
-            if (match) parsed = JSON.parse(match[0]);
+        if (rawText) {
+          const match = rawText.match(/\{[\s\S]*\}/);
+          if (match) {
+            try { parsed = JSON.parse(match[0]); } catch (e) {}
           }
         }
 
         if (parsed && (parsed.total || parsed.merchant)) {
+          let cleanTotal = cleanNumberString(String(parsed.total));
+          const smartCategory = mapCategorySmart(parsed.category || '', parsed.notes || '', parsed.merchant || '');
+          
+          let cleanClassification = "Kebutuhan";
+          const rawCls = (parsed.classification || "").toLowerCase();
+          if (rawCls.includes("keinginan") || rawCls.includes("want")) cleanClassification = "Keinginan";
+          else if (rawCls.includes("invest") || rawCls.includes("saving")) cleanClassification = "Investasi";
+
           lastGeminiExtractedData = {
-            total: Number(parsed.total) || 0,
-            merchant: parsed.merchant || (currentLang === 'id' ? "Struk Belanja Kasir" : "Cashier Receipt"),
-            date: parsed.date || new Date().toISOString().split('T')[0],
-            category: parsed.category || "Makanan & Minuman",
-            classification: parsed.classification || "Kebutuhan",
+            total: cleanTotal,
+            merchant: parsed.merchant || (currentLang === 'id' ? "Struk Kasir" : "Cashier Receipt"),
+            date: normalizeDateToYMD(parsed.date),
+            category: smartCategory,
+            classification: cleanClassification,
             notes: parsed.notes || (currentLang === 'id' ? "Belanja Struk Kasir" : "Receipt Purchase")
           };
 
-          document.getElementById('resMerchant').innerText = lastGeminiExtractedData.merchant;
-          document.getElementById('resAmount').innerText = formatCurrency(lastGeminiExtractedData.total);
-          document.getElementById('resCategoryBadge').innerText = getCategoryDisplay(lastGeminiExtractedData.category);
-          document.getElementById('resClassification').innerText = getClassificationDisplay(lastGeminiExtractedData.classification);
-          document.getElementById('resNotes').innerText = lastGeminiExtractedData.notes;
-
+          displayOcrResults(lastGeminiExtractedData, 'Gemini Vision AI');
           loading.classList.add('hidden');
           resultsCard.classList.remove('hidden');
-          showToast(currentLang === 'id' ? "Struk berhasil dibaca!" : "Receipt recognized successfully!");
+          showToast(currentLang === 'id' ? "Struk berhasil dibaca presisi!" : "Receipt recognized successfully!");
         } else {
-          throw new Error("Struk tidak terdeteksi");
+          throw new Error("Format JSON Gemini tidak memuat nominal atau toko");
         }
       } catch (error) {
-        console.warn("Gemini OCR error:", error);
-        loading.classList.add('hidden');
-        resultsCard.classList.add('hidden'); // Jangan tampilkan kartu hasil palsu jika gagal!
-        showToast(currentLang === 'id' ? "Gagal membaca struk. Pastikan tulisan pada struk terlihat jelas dan coba lagi." : "Failed to read receipt. Please ensure text is clear and retry.", "warning");
-        retakePhoto();
+        console.warn("Gemini OCR error, mengalihkan ke Local Smart OCR:", error);
+        // Fallback otomatis menggunakan mesin Tesseract OCR klien agar pengguna tidak pernah gagal membaca struk
+        await processReceiptWithLocalFallback(base64Image, error);
       }
+    }
+
+    async function processReceiptWithLocalFallback(base64Image, apiErr) {
+      const loading = document.getElementById('ocrAiLoading');
+      const resultsCard = document.getElementById('ocrAiResultsCard');
+      const canvas = document.getElementById('ocrCaptureCanvas');
+      const titleEl = document.getElementById('readingReceiptTitle');
+
+      let recognizedText = "";
+      if (window.Tesseract && canvas) {
+        try {
+          if (titleEl) titleEl.innerText = currentLang === 'id' ? "Menganalisis struk via Pemindai Cerdas..." : "Analyzing receipt locally...";
+          const { data } = await Tesseract.recognize(canvas, 'ind+eng');
+          recognizedText = data.text || "";
+        } catch (tErr) {
+          console.warn("Local OCR Engine standby:", tErr);
+        }
+      }
+
+      const parsed = parseReceiptTextLocally(recognizedText);
+
+      lastGeminiExtractedData = {
+        total: parsed.total || 0,
+        merchant: parsed.merchant || (currentLang === 'id' ? "Struk Toko / Kasir" : "Cashier Receipt"),
+        date: parsed.date || new Date().toISOString().split('T')[0],
+        category: parsed.category || "Makanan & Minuman",
+        classification: parsed.classification || "Kebutuhan",
+        notes: parsed.notes || (currentLang === 'id' ? "Belanja Struk Kasir" : "Receipt Purchase")
+      };
+
+      displayOcrResults(lastGeminiExtractedData, 'Local Smart OCR');
+      loading.classList.add('hidden');
+      resultsCard.classList.remove('hidden');
+
+      if (parsed.total > 0) {
+        showToast(currentLang === 'id' ? "Struk berhasil dibaca!" : "Receipt recognized successfully!");
+      } else {
+        showToast(currentLang === 'id' ? "Struk terdeteksi. Silakan periksa atau ketik nominal langsung di bawah." : "Receipt detected. Please verify or type the amount below.", "warning");
+      }
+    }
+
+    function parseReceiptTextLocally(text) {
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      let merchant = "";
+      let total = 0;
+      let date = new Date().toISOString().split('T')[0];
+
+      const knownMerchants = [
+        "INDOMARET", "ALFAMART", "ALFAMIDI", "SUPERINDO", "HYPERMART",
+        "YOGYA", "CARREFOUR", "TRANS MART", "STARBUCKS", "JANJI JIWA",
+        "KOPI KENANGAN", "POINT COFFEE", "PERTAMINA", "SHELL", "KIMIA FARMA",
+        "K-24", "GUARDIAN", "WATSONS", "MCDONALD", "KFC", "BURGER KING"
+      ];
+
+      for (let i = 0; i < Math.min(8, lines.length); i++) {
+        const upper = lines[i].toUpperCase();
+        for (const km of knownMerchants) {
+          if (upper.includes(km)) {
+            merchant = km;
+            break;
+          }
+        }
+        if (merchant) break;
+      }
+
+      if (!merchant && lines.length > 0) {
+        for (const line of lines.slice(0, 4)) {
+          if (/[a-zA-Z]{3,}/.test(line) && !/total|kasir|struk|nota|selamat|tanggal/i.test(line)) {
+            merchant = line.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            break;
+          }
+        }
+      }
+
+      const totalRegex = /(?:total|grand\s*total|tagihan|jumlah|bayar|rp|netto)[\s:=]*([0-9.,]+)/i;
+      const allNumbers = [];
+
+      for (const line of lines) {
+        const m = line.match(totalRegex);
+        if (m && m[1]) {
+          const num = cleanNumberString(m[1]);
+          if (num > 500 && num < 100000000) {
+            allNumbers.push(num);
+          }
+        }
+      }
+
+      if (allNumbers.length > 0) {
+        total = Math.max(...allNumbers);
+      } else {
+        const fallbackLines = lines.slice(-15);
+        for (const line of fallbackLines) {
+          const nums = line.match(/\b\d{1,3}(?:[.,]\d{3})+\b|\b\d{4,7}\b/g);
+          if (nums) {
+            nums.forEach(n => {
+              const cleaned = cleanNumberString(n);
+              if (cleaned >= 1000 && cleaned <= 50000000) {
+                allNumbers.push(cleaned);
+              }
+            });
+          }
+        }
+        if (allNumbers.length > 0) total = Math.max(...allNumbers);
+      }
+
+      const dateMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+      if (dateMatch) {
+        let d = dateMatch[1].padStart(2, '0');
+        let m = dateMatch[2].padStart(2, '0');
+        let y = dateMatch[3];
+        if (y.length === 2) y = "20" + y;
+        if (parseInt(m) > 12 && parseInt(d) <= 12) {
+          const tmp = d; d = m; m = tmp;
+        }
+        date = `${y}-${m}-${d}`;
+      }
+
+      const category = mapCategorySmart(merchant, text, merchant);
+      const notes = merchant ? `Belanja di ${merchant}` : "Struk Belanja Kasir";
+
+      return { total, merchant: merchant || "Struk Belanja", date, category, classification: "Kebutuhan", notes };
+    }
+
+    function cleanNumberString(str) {
+      if (!str) return 0;
+      let s = String(str).replace(/rp|idr/gi, '').replace(/[^\d.,]/g, '').trim();
+      if (s.includes('.') && s.includes(',')) {
+        if (s.indexOf('.') < s.indexOf(',')) s = s.replace(/\./g, '').replace(',', '.');
+        else s = s.replace(/,/g, '');
+      } else if (s.includes('.')) {
+        const parts = s.split('.');
+        if (parts.length > 1 && parts[parts.length - 1].length === 3) s = s.replace(/\./g, '');
+      } else if (s.includes(',')) {
+        const parts = s.split(',');
+        if (parts.length > 1 && parts[parts.length - 1].length === 3) s = s.replace(/,/g, '');
+      }
+      return Math.round(parseFloat(s)) || 0;
+    }
+
+    function displayOcrResults(data, source = 'Gemini Vision AI') {
+      const merchantInput = document.getElementById('resMerchantInput');
+      const amountInput = document.getElementById('resAmountInput');
+      const catBadge = document.getElementById('resCategoryBadge');
+      const classEl = document.getElementById('resClassification');
+      const notesEl = document.getElementById('resNotes');
+      const sourceBadge = document.getElementById('ocrSourceBadge');
+
+      if (merchantInput) merchantInput.value = data.merchant;
+      if (amountInput) amountInput.value = data.total;
+      if (catBadge) catBadge.innerText = getCategoryDisplay(data.category);
+      if (classEl) classEl.innerText = getClassificationDisplay(data.classification);
+      if (notesEl) notesEl.innerText = data.notes;
+      if (sourceBadge) sourceBadge.innerText = source;
     }
 
     function retakePhoto() {
@@ -2472,21 +2889,38 @@ Kembalikan JSON dengan struktur:
 
     function applyGeminiDataToForm() {
       if (!lastGeminiExtractedData) return;
+
+      const inputAmount = document.getElementById('resAmountInput');
+      const inputMerchant = document.getElementById('resMerchantInput');
+
+      if (inputAmount && inputAmount.value) {
+        lastGeminiExtractedData.total = parseFloat(inputAmount.value) || lastGeminiExtractedData.total;
+      }
+      if (inputMerchant && inputMerchant.value) {
+        lastGeminiExtractedData.merchant = inputMerchant.value.trim() || lastGeminiExtractedData.merchant;
+      }
+
       closeOcrCameraModal();
       openTransactionForm();
 
-      document.getElementById('txAmount').value = lastGeminiExtractedData.total;
-      document.getElementById('txDate').value = lastGeminiExtractedData.date;
-      document.getElementById('txNotes').value = `${lastGeminiExtractedData.notes} (${lastGeminiExtractedData.merchant})`;
-      
       setTxType('pengeluaran');
-      selectExpenseClassification(lastGeminiExtractedData.classification);
+      selectExpenseClassification(lastGeminiExtractedData.classification || 'Kebutuhan');
+
+      document.getElementById('txAmount').value = lastGeminiExtractedData.total || '';
+      document.getElementById('txDate').value = lastGeminiExtractedData.date || new Date().toISOString().split('T')[0];
+      
+      const noteStr = lastGeminiExtractedData.notes 
+        ? (lastGeminiExtractedData.notes.includes(lastGeminiExtractedData.merchant) ? lastGeminiExtractedData.notes : `${lastGeminiExtractedData.notes} (${lastGeminiExtractedData.merchant})`)
+        : lastGeminiExtractedData.merchant;
+      document.getElementById('txNotes').value = noteStr;
 
       const catSelect = document.getElementById('txCategory');
       if (catSelect) {
         let matched = false;
+        const target = (lastGeminiExtractedData.category || '').toLowerCase();
         for (let i = 0; i < catSelect.options.length; i++) {
-          if (catSelect.options[i].value.toLowerCase().includes(lastGeminiExtractedData.category.toLowerCase())) {
+          const val = catSelect.options[i].value.toLowerCase();
+          if (val === target || val.includes(target) || target.includes(val)) {
             catSelect.selectedIndex = i;
             matched = true;
             break;
