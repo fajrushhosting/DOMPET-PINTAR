@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dompet Pintar - Catatan Keuangan Modern</title>
+  
+  <!-- Hybrid App & PWA Meta Tags -->
+  <meta name="theme-color" content="#18a879" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DompetPintar" />
+  <meta name="application-name" content="Dompet Pintar" />
+  <meta name="description" content="Aplikasi hybrid pencatatan keuangan pribadi modern Dompet Pintar" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf8',
+              100: '#dcfceb',
+              400: '#34d399',
+              500: '#18a879',
+              600: '#149168',
+              700: '#107554',
+            },
+            accent: {
+              orange: '#ff781f',
+              orangeHover: '#f06b12',
+              peach: '#ffeeda',
+              mintSoft: '#e1f8ef',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'soft': '0 8px 30px rgba(0,0,0,0.06)',
+            'float': '0 12px 35px rgba(24,168,121,0.22)',
+            'btn-orange': '0 8px 20px rgba(255,120,31,0.35)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+  <!-- External Libraries (Chart.js, Supabase, Confetti) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      background-color: #d8f1e7;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .fade-enter {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero-gradient {
+      background: linear-gradient(145deg, #1cb383 0%, #17a075 55%, #108560 100%);
+    }
+    
+    .curved-sheet {
+      border-top-left-radius: 36px;
+      border-top-right-radius: 36px;
+    }
+
+    @keyframes laserScan {
+      0% { top: 8%; opacity: 0.8; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 8%; opacity: 0.8; }
+    }
+    .scan-laser-line {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #34d399, #10b981, #34d399, transparent);
+      box-shadow: 0 0 12px #34d399;
+      animation: laserScan 2.4s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 sm:p-4 text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- FRAME UTAMA (Mobile-first Shell) -->
+  <div class="w-full max-w-md bg-[#f6f9f8] min-h-screen sm:min-h-[844px] sm:max-h-[920px] sm:rounded-[44px] shadow-2xl relative flex flex-col overflow-hidden sm:border-[9px] sm:border-slate-800">
+    
+    <!-- NOTIFIKASI TOAST CUSTOM -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] max-w-[90%] w-auto px-5 py-3 rounded-2xl bg-slate-900/95 text-white text-sm font-medium shadow-2xl backdrop-blur-md transition-all duration-300 pointer-events-none opacity-0 translate-y-[-20px] flex items-center gap-3 border border-white/10">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+      <span id="toastMessage">Pesan sistem</span>
+    </div>
+
+    <!-- PWA / HYBRID APP QUICK INSTALL BANNER -->
+    <div id="pwaBanner" class="hidden absolute top-3 left-4 right-4 z-50 bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-float border border-brand-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center shadow-sm">
+          <i class="fa-solid fa-mobile-screen-button text-lg"></i>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-slate-800" data-i18n="pwaTitle">Unduh Aplikasi Hybrid</h4>
+          <p class="text-[10px] text-slate-500" data-i18n="pwaSub">Pasang ke Layar Utama HP Anda</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="dismissPwa()" class="px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-600" data-i18n="later">Nanti</button>
+        <button onclick="triggerAppInstall()" class="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow" data-i18n="install">Pasang</button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 0: GERBANG AUTENTIKASI (WAJIB DAFTAR / MASUK TERLEBIH DULU) -->
+    <!-- ============================================================== -->
+    <section id="viewAuthGate" class="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50 relative z-30">
+      
+      <!-- HERO HEADER AUTH DENGAN LOGO FINTECH VECTOR -->
+      <div class="hero-gradient pt-10 pb-12 px-6 text-white text-center relative overflow-hidden rounded-b-[40px] shadow-sm">
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
+        <div class="absolute -left-6 bottom-0 w-28 h-28 rounded-full bg-white/10 blur-md"></div>
+
+        <!-- Tombol Pemilih Bahasa Eksplisit di Layar Auth -->
+        <div class="absolute top-4 right-5 z-20">
+          <div class="inline-flex items-center bg-black/20 backdrop-blur-md rounded-full p-0.5 border border-white/30 text-[10px] shadow-sm">
+            <button type="button" onclick="setLanguage('id')" id="authLangBtnId" class="px-2.5 py-1 rounded-full transition-all bg-white text-emerald-800 shadow-xs font-extrabold">ID</button>
+            <button type="button" onclick="setLanguage('en')" id="authLangBtnEn" class="px-2.5 py-1 rounded-full transition-all text-white/80 hover:text-white font-medium">EN</button>
+          </div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center">
+          <div class="w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-float mb-3.5 transform hover:scale-105 transition-transform duration-300">
+            <svg class="w-14 h-14" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="logoBgGrad" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#34d399"/>
+                  <stop offset="1" stop-color="#059669"/>
+                </linearGradient>
+                <linearGradient id="logoWalletGrad" x1="16" y1="22" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#ffffff"/>
+                  <stop offset="1" stop-color="#e6f7f0"/>
+                </linearGradient>
+                <linearGradient id="logoCoinGrad" x1="45" y1="8" x2="68" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#fde047"/>
+                  <stop offset="1" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <rect width="80" height="80" rx="22" fill="url(#logoBgGrad)"/>
+              <path d="M18 28C18 25.2386 20.2386 23 23 23H55C57.2091 23 59 24.7909 59 27V31H22C19.7909 31 18 32.7909 18 35V28Z" fill="#ffffff" fill-opacity="0.8"/>
+              <rect x="18" y="30" width="44" height="28" rx="8" fill="url(#logoWalletGrad)"/>
+              <path d="M44 39H62V49H44C41.7909 49 40 47.2091 40 45V43C40 40.7909 41.7909 39 44 39Z" fill="#10b981"/>
+              <circle cx="51" cy="44" r="3" fill="#fef08a"/>
+              <circle cx="50" cy="20" r="8" fill="url(#logoCoinGrad)" stroke="#ffffff" stroke-width="1.8"/>
+              <path d="M50 16V24M47 18H53M47 22H53" stroke="#92400e" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-extrabold tracking-tight">DOMPET PINTAR</h1>
+          <p class="text-xs text-emerald-100/90 font-medium mt-1" data-i18n="tagline">Kelola keuangan pribadi dengan cerdas & presisi</p>
+        </div>
+      </div>
+
+      <!-- KARTU FORM AUTH -->
+      <div class="flex-1 -mt-6 bg-white curved-sheet px-6 pt-6 pb-8 shadow-sm flex flex-col">
+        
+        <!-- Tab Masuk / Daftar -->
+        <div id="gateTabs" class="flex bg-slate-100 p-1 rounded-2xl text-xs font-bold mb-6">
+          <button type="button" onclick="switchGateTab('login')" id="btnGateTabLogin" class="flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slate-800 transition" data-i18n="login">
+            Masuk
+          </button>
+          <button type="button" onclick="switchGateTab('register')" id="btnGateTabRegister" class="flex-1 py-2.5 rounded-xl text-slate-500 hover:text-slate-700 transition" data-i18n="register">
+            Daftar Baru
+          </button>
+        </div>
+
+        <!-- 1. FORM LOGIN -->
+        <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="usernameLabel">Username</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-3.5 text-slate-400 text-xs"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="gateLoginUsername" required data-i18n-placeholder="placeholderUsername" class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-4 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500 transition" placeholder="Masukkan username Anda" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="passwordLabel">Password</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-3.5 text-slate-400 text-xs"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="gateLoginPassword" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-10 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500 transition" placeholder="******" />
+              <button type="button" onclick="togglePasswordVisibility('gateLoginPassword', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-xs">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-[11px] pt-1">
+            <span class="text-slate-400"><span data-i18n="noAccount">Belum punya akun?</span> <button type="button" onclick="switchGateTab('register')" class="text-brand-600 font-bold hover:underline" data-i18n="register">Daftar</button></span>
+            <button type="button" onclick="switchGateTab('forgot')" class="text-brand-600 font-bold hover:underline" data-i18n="forgotPass">Lupa Password?</button>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-xs rounded-2xl shadow-float transition mt-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginBtn">Masuk ke Dompet Pintar</span>
+          </button>
+        </form>
+
+        <!-- 2. FORM REGISTER -->
+        <form id="gateRegisterForm" onsubmit="handleGateRegister(event)" class="hidden space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="fullNameLabel">Nama Lengkap</label>
+            <input type="text" id="gateRegFullName" required data-i18n-placeholder="placeholderFullName" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="contoh: Budi Setiawan" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="usernameLabel">Username Unik</label>
+            <input type="text" id="gateRegUsername" required data-i18n-placeholder="placeholderRegUsername" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="contoh: budi_santoso" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="passwordLabel">Password</label>
+            <input type="password" id="gateRegPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="secQuestionLabel">Kota Kelahiran (Pemulihan Sandi)</label>
+            <input type="text" id="gateRegSecurity" required data-i18n-placeholder="placeholderSecurity" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="contoh: Jakarta" />
+            <p class="text-[9px] text-slate-400 mt-1" data-i18n="secQuestionHint">Digunakan untuk mereset kata sandi jika suatu saat lupa.</p>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-xs rounded-2xl shadow-float transition mt-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-user-plus"></i> <span data-i18n="registerBtn">Buat Akun & Mulai</span>
+          </button>
+        </form>
+
+        <!-- 3. FORM LUPA PASSWORD -->
+        <form id="gateForgotForm" onsubmit="handleGateForgotPassword(event)" class="hidden space-y-3.5">
+          <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+            <i class="fa-solid fa-circle-question text-amber-600 mt-0.5"></i>
+            <div>
+              <p class="font-bold" data-i18n="resetPassTitle">Reset Kata Sandi</p>
+              <p class="text-[10px] text-amber-700" data-i18n="resetPassSub">Masukkan username Anda dan konfirmasi kota kelahiran untuk membuat sandi baru.</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="usernameLabel">Username Anda</label>
+            <input type="text" id="gateForgotUsername" required data-i18n-placeholder="placeholderUsername" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Username terdaftar" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="birthCityLabel">Jawaban: Kota Kelahiran</label>
+            <input type="text" id="gateForgotSecurity" required data-i18n-placeholder="placeholderSecurity" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Kota saat mendaftar" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="newPasswordLabel">Kata Sandi Baru</label>
+            <input type="password" id="gateForgotNewPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+          </div>
+
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="switchGateTab('login')" class="flex-1 py-3 bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition" data-i18n="cancel">
+              Batal
+            </button>
+            <button type="submit" class="flex-1 py-3 bg-accent-orange text-white font-bold text-xs rounded-2xl shadow-btn-orange transition" data-i18n="savePass">
+              Simpan Sandi Baru
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: DASHBOARD UTAMA                                        -->
+    <!-- ============================================================== -->
+    <section id="viewDashboard" class="hidden flex-1 flex flex-col overflow-y-auto no-scrollbar pb-24">
+      
+      <!-- HERO HEADER DENGAN ILUSTRASI 3D SESUAI GAMBAR ASLI -->
+      <div class="hero-gradient relative pt-6 pb-14 px-6 text-white overflow-hidden rounded-b-[40px] shadow-sm">
+        
+        <div class="absolute -right-6 -top-6 w-36 h-36 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+        <div class="absolute left-8 bottom-4 w-16 h-16 rounded-full bg-white/10 blur-sm pointer-events-none"></div>
+
+        <!-- Baris Pengguna & Tombol Cepat -->
+        <div class="relative z-10 flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold tracking-tight" id="userGreeting">Hi, User</h1>
+              <span class="inline-block animate-pulse text-xl">👋</span>
+            </div>
+            <!-- CUAN TRACKER LEVEL BADGE -->
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span id="userLevelBadge" class="bg-amber-400 text-slate-900 text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                <i class="fa-solid fa-crown text-[8px]"></i> Pemula Cuan
+              </span>
+              <span class="text-[10px] text-emerald-100/90 font-medium" data-i18n="welcomeSub">Selamat datang di Dompet Pintar</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-1.5">
+            <!-- PEMILIH BAHASA EKSPLISIT (ID | EN) -->
+            <div class="inline-flex items-center bg-black/20 backdrop-blur-md rounded-full p-0.5 border border-white/30 text-[10px] shadow-sm">
+              <button type="button" onclick="setLanguage('id')" id="dashLangBtnId" class="px-2 py-0.5 rounded-full transition-all bg-white text-emerald-800 shadow-xs font-extrabold">ID</button>
+              <button type="button" onclick="setLanguage('en')" id="dashLangBtnEn" class="px-2 py-0.5 rounded-full transition-all text-white/80 hover:text-white font-medium">EN</button>
+            </div>
+
+            <!-- PRIVACY EYE (HIDE / SHOW SALDO) -->
+            <button onclick="togglePrivacyMode()" id="btnPrivacyToggle" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center text-white border border-white/20 transition" title="Sembunyikan Saldo">
+              <i class="fa-solid fa-eye text-xs" id="privacyIcon"></i>
+            </button>
+
+            <!-- Pilihan Mata Uang -->
+            <button onclick="openCurrencyModal()" class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 text-white border border-white/20 transition">
+              <span id="currentCurrencyTag">IDR (Rp)</span>
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
+            </button>
+            
+            <!-- Tombol Profil & Pengaturan Privasi / GDPR -->
+            <button onclick="openProfileModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center border border-white/25 transition" title="Profil Akun">
+              <i class="fa-solid fa-user-check text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ILUSTRASI 3D PERSIS SEPERTI GAMBAR (Clipboard, Koin Rp, Kartu) -->
+        <div class="relative mt-5 h-28 flex items-center justify-center">
+          <div class="absolute left-3 top-2 transform -rotate-12 hover:rotate-0 transition-transform duration-300 cursor-pointer shadow-lg bg-gradient-to-tr from-amber-100 to-white p-2 rounded-xl border border-white/60 w-20 h-12 flex flex-col justify-between">
+            <div class="w-4 h-3 bg-amber-400 rounded-sm"></div>
+            <div class="flex justify-between items-center text-[7px] font-bold text-slate-600">
+              <span>**** 8821</span>
+              <i class="fa-brands fa-cc-mastercard text-amber-500"></i>
+            </div>
+          </div>
+
+          <div class="relative z-10 w-24 h-28 bg-white rounded-2xl shadow-2xl p-2.5 flex flex-col items-center border border-emerald-50 transform hover:scale-105 transition-transform duration-300">
+            <div class="absolute -top-3 w-10 h-4 bg-teal-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+              <div class="w-4 h-1 bg-white/80 rounded-full"></div>
+            </div>
+            <div class="w-full mt-3 space-y-1.5">
+              <div class="h-1.5 bg-amber-400 rounded-full w-4/5"></div>
+              <div class="h-1.5 bg-slate-200 rounded-full w-full"></div>
+              <div class="h-1.5 bg-slate-200 rounded-full w-3/4"></div>
+              <div class="h-1.5 bg-amber-400 rounded-full w-2/3 mt-2"></div>
+            </div>
+            <div class="mt-auto self-end">
+              <i class="fa-solid fa-pen-nib text-[10px] text-teal-600"></i>
+            </div>
+          </div>
+
+          <div class="absolute right-6 bottom-1 w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-100 p-1 shadow-float flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+            <div class="w-full h-full rounded-full border border-amber-500/50 flex items-center justify-center font-extrabold text-amber-800 text-sm tracking-tighter drop-shadow-sm">
+              Rp
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KARTU KONTEN PUTIH (FLOATING SHEET) -->
+      <div class="flex-1 -mt-6 bg-white curved-sheet px-6 pt-6 shadow-sm flex flex-col">
+        
+        <!-- Tanggal & Filter Dompet -->
+        <div class="flex justify-between items-center mb-1">
+          <span id="currentDateDisplay" class="text-xs font-semibold px-3 py-1 bg-teal-50 text-teal-700 rounded-full inline-flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-[10px]"></i> 10 Agu 2026
+          </span>
+          <button onclick="changeWalletQuick()" class="text-[11px] text-teal-700 font-semibold hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-wallet text-teal-600"></i> <span id="activeWalletLabel">Semua Dompet</span>
+          </button>
+        </div>
+
+        <!-- Total Saldo & Savings Rate Realtime -->
+        <div class="flex justify-between items-baseline mt-2 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-semibold text-slate-500" data-i18n="savings">Tabungan</span>
+              <span id="savingsRateBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">0% Rasio Simpan</span>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-0.5" data-i18n="liquidBalance">Total saldo likuid</div>
+          </div>
+          <div class="text-right">
+            <span id="totalBalanceDisplay" class="text-2xl font-extrabold text-slate-800 tracking-tight">Rp0</span>
+          </div>
+        </div>
+
+        <!-- STATISTIK PEMASUKAN & PENGELUARAN -->
+        <div class="grid grid-cols-2 gap-3 py-3">
+          <div class="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shadow-sm">
+              <i class="fa-solid fa-arrow-down"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-700" data-i18n="income">Masuk</span>
+              <p id="statIncomeDisplay" class="text-xs font-bold text-slate-800">Rp0</p>
+            </div>
+          </div>
+          <div class="bg-orange-50/70 p-3 rounded-2xl border border-orange-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-accent-orange text-white flex items-center justify-center text-sm shadow-sm">
+              <i class="fa-solid fa-arrow-up"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-orange-700" data-i18n="expense">Keluar</span>
+              <p id="statExpenseDisplay" class="text-xs font-bold text-slate-800">Rp0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMART NOTIFICATION REMINDER BANNER -->
+        <div id="smartReminderCard" class="mb-3 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 p-2.5 rounded-2xl flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-xl bg-teal-500 text-white flex items-center justify-center text-xs">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div>
+              <p class="font-bold text-slate-700 text-[11px]" id="smartReminderTitle">Pengingat Catat Belanja</p>
+              <p class="text-[9px] text-slate-500" id="smartReminderText">Sudah catat jajan hari ini? Biar ga ada kebocoran halus.</p>
+            </div>
+          </div>
+          <button onclick="requestBrowserNotification()" class="px-2 py-1 bg-white border border-teal-200 text-teal-700 rounded-lg text-[10px] font-bold shadow-xs hover:bg-teal-100" data-i18n="activate">
+            Aktifkan
+          </button>
+        </div>
+
+        <!-- TABS NAVIGASI FITUR BARU & LENGKAP -->
+        <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar py-1 mb-3 text-[11px] font-semibold text-slate-500 border-b border-slate-100 pb-2.5">
+          <button onclick="switchTab('transaksi')" id="tabBtnTransaksi" class="px-2.5 py-1.5 rounded-xl bg-brand-500 text-white shadow-sm whitespace-nowrap transition" data-i18n="tabTx">
+            Transaksi
+          </button>
+          <button onclick="switchTab('analisis')" id="tabBtnAnalisis" class="px-2.5 py-1.5 rounded-xl hover:bg-slate-100 whitespace-nowrap transition" data-i18n="tabReport">
+            📈 Laporan
+          </button>
+          <button onclick="switchTab('ai')" id="tabBtnAi" class="px-2.5 py-1.5 rounded-xl hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1">
+            <span>🤖 AI Insights</span>
+          </button>
+          <button onclick="switchTab('dream')" id="tabBtnDream" class="px-2.5 py-1.5 rounded-xl hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1">
+            <span>🎯 Goals</span>
+          </button>
+          <button onclick="switchTab('challenge')" id="tabBtnChallenge" class="px-2.5 py-1.5 rounded-xl hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1">
+            <span>🎮 Challenge</span>
+          </button>
+          <button onclick="openOcrCameraModal()" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 flex items-center gap-1 font-bold whitespace-nowrap transition active:scale-95">
+            <i class="fa-solid fa-camera text-xs animate-pulse"></i>
+            <span data-i18n="scan">Scan</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: TRANSAKSI TERBARU -->
+        <div id="tabContentTransaksi" class="space-y-3 pb-6 flex-1">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="recentActivity">Aktivitas Terkini</h3>
+            <span id="txCountBadge" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">0 Catatan</span>
+          </div>
+
+          <div id="transactionList" class="space-y-2.5"></div>
+
+          <div id="emptyState" class="hidden py-10 flex-col items-center justify-center text-center">
+            <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xl mb-2">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <p class="text-xs font-semibold text-slate-600" data-i18n="emptyTx">Belum ada transaksi</p>
+            <p class="text-[11px] text-slate-400 max-w-[220px] mt-1" data-i18n="emptyTxSub">Scan struk belanja dengan kamera atau klik tombol oranye di bawah.</p>
+          </div>
+        </div>
+
+        <!-- TAB 2: LAPORAN & ANALISIS KEUANGAN MENDALAM -->
+        <div id="tabContentAnalisis" class="hidden space-y-4 pb-6">
+          <div class="flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold">
+            <button onclick="setAnalysisPeriod('monthly')" id="btnPeriodMonthly" class="flex-1 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs" data-i18n="monthly">Bulanan</button>
+            <button onclick="setAnalysisPeriod('yearly')" id="btnPeriodYearly" class="flex-1 py-1.5 rounded-lg text-slate-500" data-i18n="yearly">Tahunan</button>
+          </div>
+
+          <!-- Grafik Income vs Expense -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-center mb-1">
+              <h4 class="text-xs font-bold text-slate-700" data-i18n="chartIncomeVsExpense">Pemasukan vs Pengeluaran</h4>
+              <span id="analysisPeriodLabel" class="text-[9px] font-bold text-slate-400">Bulan Ini</span>
+            </div>
+            <div class="h-44">
+              <canvas id="incomeVsExpenseChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Breakdown Kategori -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <h4 class="text-xs font-bold text-slate-700 mb-1" data-i18n="categoryBreakdown">Breakdown Pengeluaran</h4>
+            <div class="h-44 relative flex items-center justify-center">
+              <canvas id="categoryBreakdownChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Tracking Savings Rate Card -->
+          <div class="bg-brand-50 border border-brand-100 p-3.5 rounded-2xl">
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="text-xs font-bold text-brand-700" data-i18n="savingsRateTitle">Tingkat Tabungan (Savings Rate)</span>
+              <span id="savingsRateVal" class="text-xs font-extrabold text-brand-600">0%</span>
+            </div>
+            <div class="w-full h-2 bg-brand-200/60 rounded-full overflow-hidden mb-1">
+              <div id="savingsRateProgress" class="h-full bg-brand-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1" data-i18n="savingsRateHint">Target ideal adalah menyisihkan minimal 20% dari total pemasukan Anda.</p>
+          </div>
+
+          <!-- Aksi Ekspor CSV & Print PDF -->
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="exportToCSV()" class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm transition">
+              <i class="fa-solid fa-file-csv text-emerald-600 text-lg"></i>
+              <span class="text-xs font-bold text-slate-700" data-i18n="exportCsv">Ekspor CSV</span>
+              <span class="text-[9px] text-slate-400">Excel / Spreadsheet</span>
+            </button>
+            <button onclick="printReport()" class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm transition">
+              <i class="fa-solid fa-print text-teal-600 text-lg"></i>
+              <span class="text-xs font-bold text-slate-700" data-i18n="printPdf">Cetak Laporan</span>
+              <span class="text-[9px] text-slate-400">Ringkasan PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: AI INSIGHTS -->
+        <div id="tabContentAi" class="hidden space-y-3.5 pb-6">
+          <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+              <h4 class="text-xs font-extrabold uppercase tracking-wider">Gemini Financial AI</h4>
+            </div>
+            <p class="text-[11px] text-purple-100 leading-relaxed" data-i18n="aiIntro">AI menganalisis pola transaksi Anda untuk memberikan saran hemat dan mendeteksi pengeluaran tak terasa.</p>
+            <button onclick="generateAiInsights()" id="btnGenerateAi" class="mt-3 w-full py-2 bg-white text-purple-700 font-extrabold text-xs rounded-xl shadow hover:bg-purple-50 transition active:scale-95 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-bolt"></i> <span data-i18n="aiAnalyzeBtn">Analisis Kebiasaan Belanja</span>
+            </button>
+          </div>
+
+          <div id="aiLoadingIndicator" class="hidden p-6 text-center space-y-2">
+            <div class="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs font-bold text-purple-600" data-i18n="aiAnalyzing">Membedah pola finansial Anda...</p>
+          </div>
+
+          <div id="aiInsightsContainer" class="space-y-3">
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-slate-800" data-i18n="aiCard1Title">Deteksi Pengeluaran Bocor Halus</h5>
+                <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed" id="aiLeakText">Klik tombol di atas untuk melihat apakah kopi harian atau jajan kecil Anda menguras saldo bulanan.</p>
+              </div>
+            </div>
+
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fa-solid fa-piggy-bank"></i>
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-slate-800" data-i18n="aiCard2Title">Rekomendasi Hemat Personal</h5>
+                <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed" id="aiTipText">AI akan memberikan saran penghematan konkret berdasarkan kategori pengeluaran terbesar Anda.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: DREAM PLANNER (GOALS) -->
+        <div id="tabContentDream" class="hidden space-y-3 pb-6">
+          <div class="flex justify-between items-center mb-1">
+            <div>
+              <h4 class="text-xs font-bold text-slate-700" data-i18n="dreamPlannerTitle">Dream Planner</h4>
+              <p class="text-[10px] text-slate-400" data-i18n="dreamPlannerSub">Rencanakan dan wujudkan barang impianmu</p>
+            </div>
+            <button onclick="openNewGoalModal()" class="text-xs font-semibold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg hover:bg-brand-100 transition" data-i18n="newGoalBtn">
+              + Goal Baru
+            </button>
+          </div>
+
+          <div id="goalsListContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- TAB 5: SPENDING CHALLENGE & CUAN TRACKER -->
+        <div id="tabContentChallenge" class="hidden space-y-4 pb-6">
+          <div class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white p-4 rounded-2xl shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[9px] uppercase font-extrabold tracking-wider bg-black/20 px-2 py-0.5 rounded-full">Cuan Tracker</span>
+                <h4 class="text-sm font-extrabold mt-1" id="cuanRankTitle">Level 2: Juragan Simpan</h4>
+                <p class="text-[10px] text-amber-100 mt-0.5" id="cuanMilestoneText">Tercapai 2 dari 5 milestone tabungan bulanan.</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl">
+                🏆
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-bold text-slate-700" data-i18n="activeChallenge">Tantangan Hemat Aktif</h4>
+              <button onclick="openNewChallengeModal()" class="text-[11px] font-bold text-brand-600" data-i18n="createChallengeBtn">+ Buat Challenge</button>
+            </div>
+            <div id="challengeListContainer" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FLOATING BOTTOM BAR -->
+      <div id="floatingBottomBar" class="fixed bottom-3 max-w-md w-full px-6 pointer-events-none z-30">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-float border border-slate-100 p-2 flex items-center justify-between pointer-events-auto">
+          <div class="pl-4">
+            <span class="text-xs font-bold text-slate-600" data-i18n="quickAddHint">Tambah catatan keuangan!</span>
+          </div>
+          <!-- Tombol Oranye (+) Sesuai Mockup -->
+          <button onclick="openTransactionForm()" class="w-12 h-12 rounded-2xl bg-accent-orange hover:bg-accent-orangeHover active:scale-95 text-white flex items-center justify-center text-xl font-bold shadow-btn-orange transition-all duration-200">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: FORM TAMBAH/EDIT TRANSAKSI                             -->
+    <!-- ============================================================== -->
+    <section id="viewForm" class="hidden absolute inset-0 bg-[#f9fbfa] z-40 flex flex-col overflow-y-auto no-scrollbar fade-enter p-6">
+      
+      <div class="flex items-center justify-between mb-4">
+        <button onclick="closeTransactionForm()" class="w-10 h-10 rounded-full bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm transition">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h2 id="formTitleText" class="text-base font-bold text-slate-700" data-i18n="newRecord">Catatan Baru</h2>
+        <div class="w-10"></div>
+      </div>
+
+      <!-- TOGGLE PILIHAN PEMASUKAN / PENGELUARAN -->
+      <div class="bg-[#e4ece9] p-1.5 rounded-2xl flex items-center justify-between mb-6">
+        <button type="button" onclick="setTxType('pemasukan')" id="btnTogglePemasukan" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 transition duration-200" data-i18n="income">
+          Pemasukan
+        </button>
+        <button type="button" onclick="setTxType('pengeluaran')" id="btnTogglePengeluaran" class="flex-1 py-3 rounded-xl text-xs font-bold bg-white text-slate-800 shadow-sm transition duration-200" data-i18n="expense">
+          Pengeluaran
+        </button>
+      </div>
+
+      <!-- TIPE PENGELUARAN (Kebutuhan, Keinginan, Investasi) -->
+      <div id="expenseTypeSection" class="mb-6">
+        <label class="block text-xs font-bold text-slate-700 mb-3" data-i18n="expenseType">Tipe Pengeluaran</label>
+        <div class="grid grid-cols-3 gap-3">
+          <button type="button" onclick="selectExpenseClassification('Kebutuhan')" id="btnClassKebutuhan" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-brand-500 shadow-sm transition">
+            <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-lg mb-2 group-hover:scale-105 transition">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700" data-i18n="needs">Kebutuhan</span>
+          </button>
+
+          <button type="button" onclick="selectExpenseClassification('Keinginan')" id="btnClassKeinginan" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-transparent hover:border-slate-200 shadow-sm transition">
+            <div class="w-12 h-12 rounded-full bg-cyan-50 text-cyan-500 flex items-center justify-center text-lg mb-2 group-hover:scale-105 transition">
+              <i class="fa-solid fa-gem"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-600" data-i18n="wants">Keinginan</span>
+          </button>
+
+          <button type="button" onclick="selectExpenseClassification('Investasi')" id="btnClassInvestasi" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-transparent hover:border-slate-200 shadow-sm transition">
+            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg mb-2 group-hover:scale-105 transition">
+              <i class="fa-solid fa-money-bill-trend-up"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-600" data-i18n="savingsInvest">Investasi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FORMULIR INPUT -->
+      <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
+        <input type="hidden" id="txId" value="" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="walletLabel">Dompet / Akun</label>
+            <select id="txWallet" class="w-full bg-white border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-700 focus:outline-none focus:border-brand-500 shadow-sm">
+              <option value="Dompet Utama">Dompet Utama</option>
+              <option value="BCA">BCA Mobile</option>
+              <option value="Mandiri">Mandiri</option>
+              <option value="GoPay">GoPay</option>
+              <option value="OVO">OVO</option>
+              <option value="Tabungan">Tabungan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="categoryLabel">Kategori</label>
+            <select id="txCategory" class="w-full bg-white border border-slate-200 rounded-2xl px-3 py-3 text-xs font-semibold text-slate-700 focus:outline-none focus:border-brand-500 shadow-sm">
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="dateLabel">Tanggal</label>
+          <input type="date" id="txDate" required class="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-brand-500 shadow-sm" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="amountLabel">Jumlah</label>
+          <div class="relative">
+            <span id="txCurrencyPrefix" class="absolute left-4 top-3.5 text-xs font-bold text-slate-400">Rp.</span>
+            <input type="number" id="txAmount" required min="1" step="any" class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:border-brand-500 shadow-sm" placeholder="0" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="notesLabel">Keterangan</label>
+          <input type="text" id="txNotes" data-i18n-placeholder="placeholderNotes" class="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-medium text-slate-700 focus:outline-none focus:border-brand-500 shadow-sm" placeholder="Masukkan keterangan (misal: Makan Siang)" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-4">
+          <button type="button" onclick="closeTransactionForm()" class="py-4 rounded-2xl bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-xs font-bold transition" data-i18n="cancel">
+            Batal
+          </button>
+          <button type="submit" class="py-4 rounded-2xl bg-accent-orange hover:bg-accent-orangeHover text-white text-xs font-bold shadow-btn-orange transition" data-i18n="save">
+            Simpan
+          </button>
+        </div>
+
+        <button type="button" id="btnDeleteTx" onclick="deleteCurrentTx()" class="hidden w-full py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition">
+          <i class="fa-solid fa-trash-can mr-1"></i> <span data-i18n="deleteRecord">Hapus Catatan Ini</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- MODAL SCAN STRUK KAMERA (GEMINI AI OCR)                        -->
+    <!-- ============================================================== -->
+    <div id="modalOcrCamera" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col justify-between p-4">
+      <div class="flex items-center justify-between z-10 pt-2 px-2 text-white">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h3 class="text-xs font-bold tracking-wide" data-i18n="cameraScanTitle">Pindai Struk Kamera (Gemini AI)</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="switchCameraFacing()" id="btnSwitchCam" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs hover:bg-white/30 transition">
+            <i class="fa-solid fa-camera-rotate"></i>
+          </button>
+          <button onclick="closeOcrCameraModal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs hover:bg-white/30 transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="relative flex-1 my-3 flex items-center justify-center rounded-3xl overflow-hidden bg-slate-950 border border-white/10 shadow-2xl">
+        <video id="ocrVideoLive" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <canvas id="ocrCaptureCanvas" class="hidden"></canvas>
+        <img id="ocrSnapshotPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-black" />
+
+        <div id="ocrFrameGuide" class="absolute inset-5 border-2 border-dashed border-emerald-400/80 rounded-2xl pointer-events-none flex flex-col justify-between p-3">
+          <div id="scanLaserEffect" class="scan-laser-line"></div>
+          <div class="flex justify-between text-emerald-300 text-[10px] font-mono font-bold bg-black/40 px-2 py-1 rounded-md self-center">
+            <span data-i18n="aimReceipt">Arahkan kamera ke struk belanja</span>
+          </div>
+          <div class="flex justify-between text-[8px] text-emerald-200/80 font-mono">
+            <span>[FOKUS: NOMINAL & MERCHANT]</span>
+            <span>GEMINI-2.5 VISION</span>
+          </div>
+        </div>
+
+        <div id="ocrAiLoading" class="hidden absolute inset-0 bg-black/75 flex flex-col items-center justify-center p-6 text-center z-20">
+          <div class="w-12 h-12 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p class="text-sm font-bold text-white mb-1" data-i18n="readingReceipt">Gemini AI sedang membaca struk...</p>
+          <p class="text-[11px] text-emerald-200/80 max-w-xs" data-i18n="extractingDetails">Mengekstrak total harga, toko, kategori, dan rincian transaksi otomatis.</p>
+        </div>
+
+        <div id="ocrCameraError" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 text-center z-20 text-white">
+          <i class="fa-solid fa-video-slash text-3xl text-rose-400 mb-2"></i>
+          <h4 class="text-xs font-bold mb-1" data-i18n="camErrorTitle">Kamera Tidak Dapat Diakses</h4>
+          <p class="text-[10px] text-slate-300 mb-4 max-w-xs" data-i18n="camErrorSub">Berikan izin akses kamera peramban, atau pilih gambar dari galeri.</p>
+          <div class="flex gap-2">
+            <button onclick="startCameraStream()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold" data-i18n="retry">Coba Lagi</button>
+            <label class="px-3 py-1.5 bg-slate-700 text-white rounded-xl text-xs font-bold cursor-pointer">
+              <span data-i18n="selectFile">Pilih File</span>
+              <input type="file" accept="image/*" class="hidden" onchange="handleFallbackImageUpload(this)" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="ocrAiResultsCard" class="hidden bg-white/95 backdrop-blur-md rounded-2xl p-4 mb-3 text-slate-800 space-y-2.5 shadow-2xl border border-white/40">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div>
+            <span class="text-[9px] uppercase font-bold text-emerald-600 tracking-wider" data-i18n="aiScanResult">Hasil Scan AI</span>
+            <h4 id="resMerchant" class="text-xs font-extrabold text-slate-800">Toko Belanja</h4>
+          </div>
+          <span id="resCategoryBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">Makanan & Minuman</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-50 p-2 rounded-xl">
+            <span class="text-[10px] text-slate-400 block" data-i18n="totalNominal">Total Nominal:</span>
+            <span id="resAmount" class="text-sm font-extrabold text-accent-orange">Rp0</span>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-xl">
+            <span class="text-[10px] text-slate-400 block" data-i18n="classification">Klasifikasi:</span>
+            <span id="resClassification" class="text-xs font-bold text-slate-700">Kebutuhan</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-2 rounded-xl text-[11px]">
+          <span class="text-[10px] text-slate-400 block" data-i18n="notesLabel">Catatan:</span>
+          <p id="resNotes" class="text-slate-600 italic">Rincian struk</p>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="retakePhoto()" class="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition" data-i18n="retake">
+            Foto Ulang
+          </button>
+          <button onclick="applyGeminiDataToForm()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition" data-i18n="useInForm">
+            Gunakan ke Formulir
+          </button>
+        </div>
+      </div>
+
+      <div id="ocrShutterControls" class="flex items-center justify-around pb-2">
+        <label class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center cursor-pointer transition">
+          <i class="fa-regular fa-image text-sm"></i>
+          <input type="file" accept="image/*" class="hidden" onchange="handleFallbackImageUpload(this)" />
+        </label>
+        <button onclick="captureAndScanReceipt()" class="w-18 h-18 rounded-full bg-white p-1.5 shadow-2xl active:scale-95 transition">
+          <div class="w-full h-full rounded-full border-4 border-slate-900 bg-white flex items-center justify-center text-slate-800 text-xl font-bold">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+        </button>
+        <div class="w-10"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL MODAL PENDUKUNG (GOALS, CHALLENGE, PROFILE/GDPR)        -->
+    <!-- ============================================================== -->
+    <!-- MODAL DREAM PLANNER: GOAL BARU -->
+    <div id="modalNewGoal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-[32px] p-5 shadow-2xl space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-xs font-bold text-slate-800" data-i18n="addGoalTitle">Tambah Target Tabungan</h3>
+          <button onclick="closeNewGoalModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="saveDreamGoal(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="goalNameLabel">Nama Target / Impian</label>
+            <input type="text" id="goalTitle" required data-i18n-placeholder="placeholderGoalTitle" placeholder="Beli Laptop / DP Rumah" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="goalTargetAmountLabel">Target Nominal</label>
+            <input type="number" id="goalTargetAmount" required min="10000" placeholder="10000000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="goalMonthlyAllocLabel">Tabungan Bulanan Rutin</label>
+            <input type="number" id="goalMonthlyAlloc" required min="10000" placeholder="1000000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none" />
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-brand-500 text-white font-bold text-xs rounded-xl shadow" data-i18n="saveGoal">Simpan & Hitung Estimasi</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL SPENDING CHALLENGE: BUAT CHALLENGE -->
+    <div id="modalNewChallenge" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-[32px] p-5 shadow-2xl space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-xs font-bold text-slate-800" data-i18n="newChallengeTitle">Buat Tantangan Hemat</h3>
+          <button onclick="closeNewChallengeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="saveSpendingChallenge(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="challengeNameLabel">Nama Tantangan</label>
+            <input type="text" id="challengeTitle" required data-i18n-placeholder="placeholderChallengeTitle" placeholder="Hemat Kopi 7 Hari / No Fast Food" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="challengeLimitLabel">Maksimal Pengeluaran (Batas)</label>
+            <input type="number" id="challengeLimit" required min="10000" placeholder="50000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none" />
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xs rounded-xl shadow" data-i18n="startChallenge">Mulai Tantangan!</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL PROFIL PENGGUNA & HAPUS AKUN (GDPR COMPLIANT) -->
+    <div id="modalProfile" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-[32px] p-6 shadow-2xl text-center space-y-3">
+        <div class="w-16 h-16 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-2xl font-bold mx-auto shadow-sm">
+          <span id="profileInitial">U</span>
+        </div>
+        <div>
+          <h4 id="profileName" class="font-bold text-slate-800 text-sm">Pengguna</h4>
+          <p id="profileUsername" class="text-xs text-slate-400">@username</p>
+        </div>
+        <div class="border-t border-slate-100 pt-3 flex flex-col gap-2">
+          <button onclick="closeProfileModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition" data-i18n="close">
+            Tutup
+          </button>
+          <button onclick="handleLogout()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5" data-i18n="logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Keluar Akun
+          </button>
+          <button onclick="handleDeleteAccountPermanently()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5" data-i18n="deleteAccount">
+            <i class="fa-solid fa-trash"></i> Hapus Akun & Data (GDPR)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL MULTI-CURRENCY -->
+    <div id="modalCurrency" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-[32px] p-5 shadow-2xl space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-xs font-bold text-slate-800" data-i18n="chooseCurrency">Pilih Mata Uang Utama</h3>
+          <button onclick="closeCurrencyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-1.5" id="currencyListContainer"></div>
+      </div>
+    </div>
+
+  </div> <!-- AKHIR CONTAINER SHELL -->
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT: LOGIKA LENGKAP FITUR BARU & DUA BAHASA             -->
+  <!-- ============================================================== -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. KAMUS DUA BAHASA (BILINGUAL DICTIONARY)
+    // -------------------------------------------------------------
+    const I18N = {
+      id: {
+        tagline: "Kelola keuangan pribadi dengan cerdas & presisi",
+        login: "Masuk",
+        register: "Daftar Baru",
+        usernameLabel: "Username",
+        passwordLabel: "Password",
+        fullNameLabel: "Nama Lengkap",
+        secQuestionLabel: "Kota Kelahiran (Pemulihan Sandi)",
+        secQuestionHint: "Digunakan untuk mereset kata sandi jika suatu saat lupa.",
+        loginBtn: "Masuk ke Dompet Pintar",
+        registerBtn: "Buat Akun & Mulai",
+        noAccount: "Belum punya akun?",
+        forgotPass: "Lupa Password?",
+        resetPassTitle: "Reset Kata Sandi",
+        resetPassSub: "Masukkan username Anda dan konfirmasi kota kelahiran untuk membuat sandi baru.",
+        birthCityLabel: "Jawaban: Kota Kelahiran",
+        newPasswordLabel: "Kata Sandi Baru",
+        cancel: "Batal",
+        savePass: "Simpan Sandi Baru",
+        welcomeSub: "Selamat datang di Dompet Pintar",
+        savings: "Tabungan",
+        liquidBalance: "Total saldo likuid",
+        income: "Masuk",
+        expense: "Keluar",
+        tabTx: "Transaksi",
+        tabReport: "📈 Laporan",
+        recentActivity: "Aktivitas Terkini",
+        emptyTx: "Belum ada transaksi",
+        emptyTxSub: "Scan struk belanja dengan kamera atau klik tombol oranye di bawah.",
+        monthly: "Bulanan",
+        yearly: "Tahunan",
+        chartIncomeVsExpense: "Pemasukan vs Pengeluaran",
+        categoryBreakdown: "Breakdown Pengeluaran",
+        savingsRateTitle: "Tingkat Tabungan (Savings Rate)",
+        savingsRateHint: "Target ideal adalah menyisihkan minimal 20% dari total pemasukan Anda.",
+        exportCsv: "Ekspor CSV",
+        printPdf: "Cetak Laporan",
+        aiIntro: "AI menganalisis pola transaksi Anda untuk memberikan saran hemat dan mendeteksi pengeluaran tak terasa.",
+        aiAnalyzeBtn: "Analisis Kebiasaan Belanja",
+        aiAnalyzing: "Membedah pola finansial Anda...",
+        aiCard1Title: "Deteksi Pengeluaran Bocor Halus",
+        aiCard2Title: "Rekomendasi Hemat Personal",
+        dreamPlannerTitle: "Dream Planner",
+        dreamPlannerSub: "Rencanakan dan wujudkan barang impianmu",
+        addGoalTitle: "Tambah Target Tabungan",
+        newGoalBtn: "+ Goal Baru",
+        goalNameLabel: "Nama Target / Impian",
+        goalTargetAmountLabel: "Target Nominal",
+        goalMonthlyAllocLabel: "Tabungan Bulanan Rutin",
+        saveGoal: "Simpan & Hitung Estimasi",
+        activeChallenge: "Tantangan Hemat Aktif",
+        newChallengeTitle: "Buat Tantangan Hemat",
+        createChallengeBtn: "+ Buat Challenge",
+        challengeNameLabel: "Nama Tantangan",
+        challengeLimitLabel: "Maksimal Pengeluaran (Batas)",
+        startChallenge: "Mulai Tantangan!",
+        newRecord: "Catatan Baru",
+        expenseType: "Tipe Pengeluaran",
+        needs: "Kebutuhan",
+        wants: "Keinginan",
+        savingsInvest: "Investasi",
+        walletLabel: "Dompet / Akun",
+        categoryLabel: "Kategori",
+        dateLabel: "Tanggal",
+        amountLabel: "Jumlah",
+        notesLabel: "Keterangan",
+        save: "Simpan",
+        deleteRecord: "Hapus Catatan Ini",
+        close: "Tutup",
+        logout: "Keluar Akun",
+        deleteAccount: "Hapus Akun & Data (GDPR)",
+        chooseCurrency: "Pilih Mata Uang Utama",
+        quickAddHint: "Tambah catatan keuangan!",
+        pwaTitle: "Unduh Aplikasi Hybrid",
+        pwaSub: "Pasang ke Layar Utama HP Anda",
+        install: "Pasang",
+        later: "Nanti",
+        activate: "Aktifkan",
+        scan: "Scan",
+        cameraScanTitle: "Pindai Struk Kamera (Gemini AI)",
+        aimReceipt: "Arahkan kamera ke struk belanja",
+        readingReceipt: "Gemini AI sedang membaca struk...",
+        extractingDetails: "Mengekstrak total harga, toko, kategori, dan rincian transaksi otomatis.",
+        camErrorTitle: "Kamera Tidak Dapat Diakses",
+        camErrorSub: "Berikan izin akses kamera peramban, atau pilih gambar dari galeri.",
+        retry: "Coba Lagi",
+        selectFile: "Pilih File",
+        aiScanResult: "Hasil Scan AI",
+        totalNominal: "Total Nominal:",
+        classification: "Klasifikasi:",
+        retake: "Foto Ulang",
+        useInForm: "Gunakan ke Formulir",
+        placeholderUsername: "Masukkan username Anda",
+        placeholderFullName: "contoh: Budi Setiawan",
+        placeholderRegUsername: "contoh: budi_santoso",
+        placeholderPassword: "Minimal 6 karakter",
+        placeholderSecurity: "contoh: Jakarta",
+        placeholderNotes: "Masukkan keterangan (misal: Makan Siang)",
+        placeholderGoalTitle: "Beli Laptop / DP Rumah",
+        placeholderChallengeTitle: "Hemat Kopi 7 Hari / No Fast Food"
+      },
+      en: {
+        tagline: "Manage personal finances smartly & accurately",
+        login: "Log In",
+        register: "Sign Up",
+        usernameLabel: "Username",
+        passwordLabel: "Password",
+        fullNameLabel: "Full Name",
+        secQuestionLabel: "Birth City (Password Recovery)",
+        secQuestionHint: "Used to recover your password if you ever forget it.",
+        loginBtn: "Log In to Smart Wallet",
+        registerBtn: "Create Account & Start",
+        noAccount: "Don't have an account?",
+        forgotPass: "Forgot Password?",
+        resetPassTitle: "Reset Password",
+        resetPassSub: "Enter your username and security city to create a new password.",
+        birthCityLabel: "Answer: Birth City",
+        newPasswordLabel: "New Password",
+        cancel: "Cancel",
+        savePass: "Save New Password",
+        welcomeSub: "Welcome to Smart Wallet",
+        savings: "Total Savings",
+        liquidBalance: "Total liquid balance",
+        income: "Income",
+        expense: "Expense",
+        tabTx: "Transactions",
+        tabReport: "📈 Analytics",
+        recentActivity: "Recent Activity",
+        emptyTx: "No transactions yet",
+        emptyTxSub: "Scan your receipt with the camera or click the orange button below.",
+        monthly: "Monthly",
+        yearly: "Yearly",
+        chartIncomeVsExpense: "Income vs Expenses",
+        categoryBreakdown: "Expense Breakdown",
+        savingsRateTitle: "Savings Rate",
+        savingsRateHint: "Aim to save at least 20% of your total monthly income.",
+        exportCsv: "Export CSV",
+        printPdf: "Print Report",
+        aiIntro: "AI analyzes your transactions to give saving tips and detect unnoticed leaks.",
+        aiAnalyzeBtn: "Analyze Spending Habits",
+        aiAnalyzing: "Analyzing your financial behavior...",
+        aiCard1Title: "Unnoticed Leak Detection",
+        aiCard2Title: "Personalized Saving Tip",
+        dreamPlannerTitle: "Dream Planner",
+        dreamPlannerSub: "Plan and achieve your dreams step-by-step",
+        addGoalTitle: "Add Savings Goal",
+        newGoalBtn: "+ New Goal",
+        goalNameLabel: "Goal Title",
+        goalTargetAmountLabel: "Target Amount",
+        goalMonthlyAllocLabel: "Monthly Allocation",
+        saveGoal: "Save & Calculate Time",
+        activeChallenge: "Active Spending Challenges",
+        newChallengeTitle: "Create Spending Challenge",
+        createChallengeBtn: "+ New Challenge",
+        challengeNameLabel: "Challenge Name",
+        challengeLimitLabel: "Max Spending Limit",
+        startChallenge: "Start Challenge!",
+        newRecord: "New Record",
+        expenseType: "Expense Type",
+        needs: "Needs",
+        wants: "Wants",
+        savingsInvest: "Investments",
+        walletLabel: "Wallet / Account",
+        categoryLabel: "Category",
+        dateLabel: "Date",
+        amountLabel: "Amount",
+        notesLabel: "Notes",
+        save: "Save",
+        deleteRecord: "Delete Record",
+        close: "Close",
+        logout: "Log Out",
+        deleteAccount: "Delete Account & Data (GDPR)",
+        chooseCurrency: "Select Main Currency",
+        quickAddHint: "Add transaction record!",
+        pwaTitle: "Download Hybrid App",
+        pwaSub: "Install to your phone Home Screen",
+        install: "Install",
+        later: "Later",
+        activate: "Activate",
+        scan: "Scan",
+        cameraScanTitle: "Receipt Camera Scanner (Gemini AI)",
+        aimReceipt: "Aim camera at your receipt",
+        readingReceipt: "Gemini AI is reading receipt...",
+        extractingDetails: "Extracting total, merchant, category & details automatically.",
+        camErrorTitle: "Camera Cannot Be Accessed",
+        camErrorSub: "Please allow camera access in browser or choose from gallery.",
+        retry: "Try Again",
+        selectFile: "Choose File",
+        aiScanResult: "AI Scan Results",
+        totalNominal: "Total Amount:",
+        classification: "Classification:",
+        retake: "Retake Photo",
+        useInForm: "Use in Form",
+        placeholderUsername: "Enter your username",
+        placeholderFullName: "e.g., John Doe",
+        placeholderRegUsername: "e.g., johndoe",
+        placeholderPassword: "Minimum 6 characters",
+        placeholderSecurity: "e.g., New York",
+        placeholderNotes: "Enter notes (e.g., Lunch)",
+        placeholderGoalTitle: "Buy Laptop / House Down Payment",
+        placeholderChallengeTitle: "7-Day No Coffee / No Fast Food"
+      }
+    };
+
+    let currentLang = 'id';
+
+    // FUNGSI EKSPLISIT PEMILIH BAHASA (ANTI-KEBALIK / SINKRON PENUH)
+    function setLanguage(lang) {
+      if (lang !== 'id' && lang !== 'en') return;
+      currentLang = lang;
+      persistState();
+      applyLanguageUI();
+      updateLanguageButtonsUI();
+      renderAll();
+      showToast(lang === 'id' ? "Bahasa diubah ke Bahasa Indonesia" : "Language switched to English");
+    }
+
+    function updateLanguageButtonsUI() {
+      const activeClass = "bg-white text-emerald-800 shadow-xs font-extrabold";
+      const inactiveClass = "text-white/80 hover:text-white font-medium";
+
+      ['authLangBtnId', 'dashLangBtnId'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = `px-2.5 py-0.5 rounded-full transition-all ${currentLang === 'id' ? activeClass : inactiveClass}`;
+      });
+
+      ['authLangBtnEn', 'dashLangBtnEn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = `px-2.5 py-0.5 rounded-full transition-all ${currentLang === 'en' ? activeClass : inactiveClass}`;
+      });
+    }
+
+    function applyLanguageUI() {
+      // Teks Konten
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[currentLang] && I18N[currentLang][key]) {
+          el.innerText = I18N[currentLang][key];
+        }
+      });
+
+      // Placeholder Input
+      const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+      placeholderElements.forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (I18N[currentLang] && I18N[currentLang][key]) {
+          el.setAttribute('placeholder', I18N[currentLang][key]);
+        }
+      });
+
+      // Update Label Periode Laporan
+      const pLabel = document.getElementById('analysisPeriodLabel');
+      if (pLabel) {
+        pLabel.innerText = AppState.analysisPeriod === 'monthly' ? (currentLang === 'id' ? "Bulan Ini" : "This Month") : (currentLang === 'id' ? "Tahun Ini" : "This Year");
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 2. KUNCI API & SUPABASE
+    // -------------------------------------------------------------
+    const apiKey = "";
+    const SUPABASE_URL = "https://binqtrjnwgymnrnjrjjq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_5vcmnxWZmZt-ktLRk4ElPQ_is7Ff6jm";
+    let supabaseClient = null;
+
+    if (window.supabase) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      } catch (err) {
+        console.warn("Supabase standby:", err);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. STATE APLIKASI
+    // -------------------------------------------------------------
+    const AppState = {
+      currentUser: null,
+      users: [],
+      privacyHidden: false,
+      analysisPeriod: 'monthly',
+
+      currentCurrency: "IDR",
+      exchangeRates: { IDR: 1, USD: 16200, EUR: 17500, SGD: 12100, JPY: 105 },
+      currencySymbols: { IDR: "Rp", USD: "$", EUR: "€", SGD: "S$", JPY: "¥" },
+      activeWalletFilter: "Semua",
+      wallets: ["Dompet Utama", "BCA", "Mandiri", "GoPay", "OVO", "Tabungan"],
+      categories: {
+        pemasukan: ["Gaji Pokok", "Bonus & Tunjangan", "Investasi & Dividen", "Bisnis Sampingan", "Lainnya"],
+        pengeluaran: [
+          "Makanan & Minuman",
+          "Transportasi",
+          "Belanja & Hiburan",
+          "Tagihan & Utilitas",
+          "Kesehatan",
+          "Pendidikan",
+          "Investasi Rutin",
+          "Lainnya"
+        ]
+      },
+      transactions: [],
+      budgets: {
+        "Makanan & Minuman": 1500000,
+        "Belanja & Hiburan": 800000,
+        "Transportasi": 600000
+      },
+      goals: [
+        { id: "goal_1", title: "Dana Darurat 6 Bulan", target: 15000000, monthly: 1500000, saved: 4500000 },
+        { id: "goal_2", title: "Laptop Kerja Baru", target: 12000000, monthly: 1000000, saved: 3000000 }
+      ],
+      challenges: [
+        { id: "ch_1", title: "Tantangan Hemat Kopi 7 Hari", limit: 75000, spent: 32000, daysLeft: 4, active: true },
+        { id: "ch_2", title: "Masak Sendiri Akhir Pekan", limit: 100000, spent: 45000, daysLeft: 2, active: true }
+      ],
+      formState: {
+        type: 'pengeluaran',
+        classification: 'Kebutuhan'
+      }
+    };
+
+    // Helper Terjemahan Kategori & Dompet
+    function getCategoryDisplay(cat) {
+      const map = {
+        "Gaji Pokok": { id: "Gaji Pokok", en: "Basic Salary" },
+        "Bonus & Tunjangan": { id: "Bonus & Tunjangan", en: "Bonus & Allowance" },
+        "Investasi & Dividen": { id: "Investasi & Dividen", en: "Investment & Dividend" },
+        "Bisnis Sampingan": { id: "Bisnis Sampingan", en: "Side Business" },
+        "Makanan & Minuman": { id: "Makanan & Minuman", en: "Food & Beverages" },
+        "Transportasi": { id: "Transportasi", en: "Transportation" },
+        "Belanja & Hiburan": { id: "Belanja & Hiburan", en: "Shopping & Entertainment" },
+        "Tagihan & Utilitas": { id: "Tagihan & Utilitas", en: "Bills & Utilities" },
+        "Kesehatan": { id: "Kesehatan", en: "Healthcare" },
+        "Pendidikan": { id: "Pendidikan", en: "Education" },
+        "Investasi Rutin": { id: "Investasi Rutin", en: "Regular Investment" },
+        "Lainnya": { id: "Lainnya", en: "Others" }
+      };
+      return map[cat] ? map[cat][currentLang] : cat;
+    }
+
+    function getClassificationDisplay(cls) {
+      if (cls === 'Kebutuhan') return currentLang === 'id' ? 'Kebutuhan' : 'Needs';
+      if (cls === 'Keinginan') return currentLang === 'id' ? 'Keinginan' : 'Wants';
+      if (cls === 'Investasi') return currentLang === 'id' ? 'Investasi' : 'Investments';
+      return cls;
+    }
+
+    function getWalletDisplay(w) {
+      if (w === 'Dompet Utama') return currentLang === 'id' ? 'Dompet Utama' : 'Main Wallet';
+      if (w === 'Tabungan') return currentLang === 'id' ? 'Tabungan' : 'Savings';
+      if (w === 'Semua') return currentLang === 'id' ? 'Semua Dompet' : 'All Wallets';
+      return w;
+    }
+
+    // -------------------------------------------------------------
+    // 4. INISIALISASI & PERSISTENSI
+    // -------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      applyLanguageUI();
+      updateLanguageButtonsUI();
+
+      if (AppState.currentUser) {
+        unlockAndShowDashboard();
+      } else {
+        lockToAuthGate();
+      }
+
+      initCharts();
+      checkSupabaseConnection();
+      setupHybridApp();
+      triggerSmartReminder();
+    });
+
+    function loadSavedState() {
+      const savedUsers = sessionStorage.getItem('dp_users_db');
+      const activeUser = sessionStorage.getItem('dp_active_session_user');
+      const savedTxs = sessionStorage.getItem('dp_txs_db');
+      const savedGoals = sessionStorage.getItem('dp_goals_db');
+      const savedCh = sessionStorage.getItem('dp_challenges_db');
+      const savedPriv = sessionStorage.getItem('dp_privacy_hidden');
+      const savedLang = sessionStorage.getItem('dp_lang');
+
+      if (savedUsers) AppState.users = JSON.parse(savedUsers);
+      if (activeUser) AppState.currentUser = JSON.parse(activeUser);
+      if (savedTxs) AppState.transactions = JSON.parse(savedTxs);
+      if (savedGoals) AppState.goals = JSON.parse(savedGoals);
+      if (savedCh) AppState.challenges = JSON.parse(savedCh);
+      if (savedPriv) AppState.privacyHidden = JSON.parse(savedPriv);
+      if (savedLang && (savedLang === 'id' || savedLang === 'en')) currentLang = savedLang;
+    }
+
+    function persistState() {
+      sessionStorage.setItem('dp_users_db', JSON.stringify(AppState.users));
+      if (AppState.currentUser) {
+        sessionStorage.setItem('dp_active_session_user', JSON.stringify(AppState.currentUser));
+      } else {
+        sessionStorage.removeItem('dp_active_session_user');
+      }
+      sessionStorage.setItem('dp_txs_db', JSON.stringify(AppState.transactions));
+      sessionStorage.setItem('dp_goals_db', JSON.stringify(AppState.goals));
+      sessionStorage.setItem('dp_challenges_db', JSON.stringify(AppState.challenges));
+      sessionStorage.setItem('dp_privacy_hidden', JSON.stringify(AppState.privacyHidden));
+      sessionStorage.setItem('dp_lang', currentLang);
+      syncToSupabase();
+    }
+
+    // -------------------------------------------------------------
+    // 5. PRIVACY EYE & FORMATTER
+    // -------------------------------------------------------------
+    function togglePrivacyMode() {
+      AppState.privacyHidden = !AppState.privacyHidden;
+      persistState();
+      const icon = document.getElementById('privacyIcon');
+      if (AppState.privacyHidden) {
+        icon.className = 'fa-solid fa-eye-slash text-xs text-amber-300';
+        showToast(currentLang === 'id' ? "Nominal disembunyikan untuk privasi" : "Amounts hidden for privacy");
+      } else {
+        icon.className = 'fa-solid fa-eye text-xs text-white';
+        showToast(currentLang === 'id' ? "Nominal ditampilkan" : "Amounts visible");
+      }
+      renderAll();
+    }
+
+    function formatCurrency(amountInIdr) {
+      if (AppState.privacyHidden) return "••••••";
+      const targetCurr = AppState.currentCurrency;
+      const rate = AppState.exchangeRates[targetCurr] || 1;
+      const converted = amountInIdr / rate;
+      const symbol = AppState.currencySymbols[targetCurr] || "Rp";
+
+      if (targetCurr === "IDR") {
+        return "Rp" + Math.round(converted).toLocaleString('id-ID');
+      } else {
+        return symbol + converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const msg = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+
+      msg.innerText = message;
+      if (type === 'error') {
+        icon.className = 'fa-solid fa-circle-exclamation text-rose-400';
+      } else if (type === 'warning') {
+        icon.className = 'fa-solid fa-triangle-exclamation text-amber-400';
+      } else {
+        icon.className = 'fa-solid fa-circle-check text-emerald-400';
+      }
+
+      toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-[-20px]');
+      }, 3200);
+    }
+
+    // -------------------------------------------------------------
+    // 6. AUTENTIKASI PENGGUNA & GDPR
+    // -------------------------------------------------------------
+    function lockToAuthGate() {
+      document.getElementById('viewAuthGate').classList.remove('hidden');
+      document.getElementById('viewDashboard').classList.add('hidden');
+      document.getElementById('viewForm').classList.add('hidden');
+      if (AppState.users.length === 0) switchGateTab('register');
+      else switchGateTab('login');
+    }
+
+    function unlockAndShowDashboard() {
+      document.getElementById('viewAuthGate').classList.add('hidden');
+      document.getElementById('viewDashboard').classList.remove('hidden');
+      renderAll();
+    }
+
+    function switchGateTab(tab) {
+      const btnLog = document.getElementById('btnGateTabLogin');
+      const btnReg = document.getElementById('btnGateTabRegister');
+      const formLog = document.getElementById('gateLoginForm');
+      const formReg = document.getElementById('gateRegisterForm');
+      const formFor = document.getElementById('gateForgotForm');
+
+      if (tab === 'login') {
+        btnLog.className = "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slate-800 transition";
+        btnReg.className = "flex-1 py-2.5 rounded-xl text-slate-500 hover:text-slate-700 transition";
+        formLog.classList.remove('hidden');
+        formReg.classList.add('hidden');
+        formFor.classList.add('hidden');
+      } else if (tab === 'register') {
+        btnReg.className = "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slate-800 transition";
+        btnLog.className = "flex-1 py-2.5 rounded-xl text-slate-500 hover:text-slate-700 transition";
+        formReg.classList.remove('hidden');
+        formLog.classList.add('hidden');
+        formFor.classList.add('hidden');
+      } else if (tab === 'forgot') {
+        btnLog.className = "flex-1 py-2.5 rounded-xl text-slate-500 transition";
+        btnReg.className = "flex-1 py-2.5 rounded-xl text-slate-500 transition";
+        formFor.classList.remove('hidden');
+        formLog.classList.add('hidden');
+        formReg.classList.add('hidden');
+      }
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+      }
+    }
+
+    function handleGateLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('gateLoginUsername').value.trim().toLowerCase();
+      const p = document.getElementById('gateLoginPassword').value;
+
+      const found = AppState.users.find(user => user.username.toLowerCase() === u && user.password === p);
+      if (found) {
+        AppState.currentUser = found;
+        persistState();
+        showToast(currentLang === 'id' ? `Selamat datang, ${found.name}!` : `Welcome, ${found.name}!`);
+        unlockAndShowDashboard();
+        if (typeof confetti === 'function') confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 } });
+      } else {
+        showToast(currentLang === 'id' ? "Username atau password tidak cocok!" : "Invalid credentials!", "error");
+      }
+    }
+
+    function handleGateRegister(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('gateRegFullName').value.trim();
+      const u = document.getElementById('gateRegUsername').value.trim().toLowerCase();
+      const p = document.getElementById('gateRegPassword').value;
+      const sec = document.getElementById('gateRegSecurity').value.trim().toLowerCase();
+
+      const exists = AppState.users.some(user => user.username.toLowerCase() === u);
+      if (exists) {
+        showToast(currentLang === 'id' ? "Username sudah digunakan!" : "Username already exists!", "warning");
+        return;
+      }
+
+      const newUser = { id: 'usr_' + Date.now(), name: fullName, username: u, password: p, securityAnswer: sec };
+      AppState.users.push(newUser);
+      AppState.currentUser = newUser;
+      persistState();
+
+      showToast(currentLang === 'id' ? `Pendaftaran berhasil, ${fullName}!` : `Registered successfully, ${fullName}!`);
+      unlockAndShowDashboard();
+      if (typeof confetti === 'function') confetti({ particleCount: 45, spread: 70, origin: { y: 0.8 } });
+    }
+
+    function handleGateForgotPassword(e) {
+      e.preventDefault();
+      const u = document.getElementById('gateForgotUsername').value.trim().toLowerCase();
+      const sec = document.getElementById('gateForgotSecurity').value.trim().toLowerCase();
+      const newPass = document.getElementById('gateForgotNewPassword').value;
+
+      const idx = AppState.users.findIndex(user => user.username.toLowerCase() === u);
+      if (idx === -1) {
+        showToast(currentLang === 'id' ? "Username tidak ditemukan!" : "Username not found!", "error");
+        return;
+      }
+      if (AppState.users[idx].securityAnswer && AppState.users[idx].securityAnswer.toLowerCase() !== sec) {
+        showToast(currentLang === 'id' ? "Jawaban kota kelahiran salah!" : "Security answer incorrect!", "error");
+        return;
+      }
+
+      AppState.users[idx].password = newPass;
+      persistState();
+      showToast(currentLang === 'id' ? "Sandi berhasil diperbarui!" : "Password updated successfully!");
+      switchGateTab('login');
+      document.getElementById('gateLoginUsername').value = u;
+    }
+
+    function handleLogout() {
+      AppState.currentUser = null;
+      sessionStorage.removeItem('dp_active_session_user');
+      closeProfileModal();
+      lockToAuthGate();
+      showToast(currentLang === 'id' ? "Anda telah keluar" : "Logged out successfully");
+    }
+
+    function handleDeleteAccountPermanently() {
+      if (!AppState.currentUser) return;
+      const currentUserId = AppState.currentUser.id;
+
+      AppState.transactions = AppState.transactions.filter(t => t.userId !== currentUserId);
+      AppState.users = AppState.users.filter(u => u.id !== currentUserId);
+      AppState.currentUser = null;
+
+      persistState();
+      closeProfileModal();
+      lockToAuthGate();
+      showToast(currentLang === 'id' ? "Akun dan seluruh data Anda telah dihapus permanen (GDPR)." : "Account & personal data deleted permanently (GDPR).", "warning");
+    }
+
+    function openProfileModal() {
+      if (!AppState.currentUser) return;
+      document.getElementById('profileName').innerText = AppState.currentUser.name;
+      document.getElementById('profileUsername').innerText = `@${AppState.currentUser.username}`;
+      document.getElementById('profileInitial').innerText = AppState.currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('modalProfile').classList.remove('hidden');
+    }
+    function closeProfileModal() { document.getElementById('modalProfile').classList.add('hidden'); }
+
+    // -------------------------------------------------------------
+    // 7. SMART NOTIFICATIONS
+    // -------------------------------------------------------------
+    function triggerSmartReminder() {
+      const lastRecordedDate = AppState.transactions[0]?.date;
+      const card = document.getElementById('smartReminderCard');
+      const title = document.getElementById('smartReminderTitle');
+      const text = document.getElementById('smartReminderText');
+
+      if (!card) return;
+
+      if (!lastRecordedDate) {
+        title.innerText = currentLang === 'id' ? "Mulai Catat Pengeluaran" : "Start Tracking Expenses";
+        text.innerText = currentLang === 'id' ? "Catat transaksi pertamamu untuk aktifkan analitik." : "Add your first transaction to unlock smart analytics.";
+        return;
+      }
+
+      const diffDays = Math.floor((new Date() - new Date(lastRecordedDate)) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 3) {
+        title.innerText = currentLang === 'id' ? "Sudah 3 Hari Tidak Mencatat" : "No Records in 3 Days";
+        text.innerText = currentLang === 'id' ? "Jangan sampai pengeluaran menumpuk dan lupa dicatat!" : "Keep your streak going to avoid unnoticed leaks!";
+      } else {
+        title.innerText = currentLang === 'id' ? "Pengingat Harian Cerdas" : "Daily Smart Reminder";
+        text.innerText = currentLang === 'id' ? "Catat jajan & pengeluaran hari ini biar tetap teratur." : "Log today's transactions to stay on track.";
+      }
+    }
+
+    function requestBrowserNotification() {
+      if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification("Dompet Pintar", {
+              body: currentLang === 'id' ? "Pengingat aktif! Kami akan ingatkan kamu catat pengeluaran harian." : "Smart reminder active! Keep tracking your spending.",
+              icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2318a879'/></svg>"
+            });
+            showToast(currentLang === 'id' ? "Notifikasi push diaktifkan!" : "Push notification enabled!");
+          } else {
+            showToast(currentLang === 'id' ? "Izin notifikasi belum diizinkan peramban" : "Notification permission denied", "warning");
+          }
+        });
+      } else {
+        showToast("Browser tidak mendukung Notification API", "warning");
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 8. GEMINI AI INSIGHTS
+    // -------------------------------------------------------------
+    async function generateAiInsights() {
+      const userTxs = AppState.transactions.filter(t => !t.userId || t.userId === AppState.currentUser?.id);
+      const loading = document.getElementById('aiLoadingIndicator');
+      const btn = document.getElementById('btnGenerateAi');
+      const leakText = document.getElementById('aiLeakText');
+      const tipText = document.getElementById('aiTipText');
+
+      if (userTxs.length < 2) {
+        showToast(currentLang === 'id' ? "Catat minimal 2 transaksi agar AI dapat menganalisis pola!" : "Add at least 2 transactions for AI analysis!", "warning");
+        return;
+      }
+
+      loading.classList.remove('hidden');
+      btn.disabled = true;
+
+      const summaryData = userTxs.map(t => `${t.type}: ${t.amount} IDR (${t.category} - ${t.notes || ''})`).join(", ");
+      const systemPrompt = "Kamu adalah penasihat keuangan pribadi cerdas. Analisis ringkasan transaksi belanja pengguna, berikan 1 deteksi kebocoran halus (latte factor/jajan tak terasa), dan 1 tips hemat praktis. Berikan output dalam format JSON murni.";
+
+      const userPrompt = `Data transaksi: ${summaryData}. 
+Bahasa: ${currentLang === 'id' ? 'Bahasa Indonesia' : 'English'}.
+Kembalikan JSON dengan struktur:
+{
+  "leakDetection": "ringkasan 2 kalimat tentang deteksi pengeluaran bocor halus yang sering muncul",
+  "savingTip": "ringkasan 2 kalimat tips hemat praktis dan realistis"
+}`;
+
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              leakDetection: { type: "STRING" },
+              savingTip: { type: "STRING" }
+            },
+            required: ["leakDetection", "savingTip"]
+          }
+        }
+      };
+
+      try {
+        const delays = [1000, 2000, 4000, 8000, 16000];
+        let result = null;
+        for (let attempt = 0; attempt <= 5; attempt++) {
+          try {
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (resp.ok) {
+              result = await resp.json();
+              break;
+            }
+          } catch (e) {
+            if (attempt < 5) await new Promise(r => setTimeout(r, delays[attempt]));
+            else throw e;
+          }
+        }
+
+        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const parsed = JSON.parse(rawText);
+          leakText.innerText = parsed.leakDetection;
+          tipText.innerText = parsed.savingTip;
+          showToast(currentLang === 'id' ? "AI selesai menganalisis keuanganmu!" : "AI analysis complete!");
+        }
+      } catch (err) {
+        console.warn("AI Insight Fallback:", err);
+        leakText.innerText = currentLang === 'id' ? "Terdeteksi pengeluaran sering untuk kategori Makanan & Minuman di luar kebutuhan pokok." : "Frequent small expenses detected under Food & Beverages category.";
+        tipText.innerText = currentLang === 'id' ? "Coba alokasikan 10% dari jajan mingguan langsung ke tabungan di awal bulan." : "Try automatically allocating 10% of weekly allowances to your savings.";
+      } finally {
+        loading.classList.add('hidden');
+        btn.disabled = false;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. DREAM PLANNER & SPENDING CHALLENGES
+    // -------------------------------------------------------------
+    function renderGoalsList() {
+      const container = document.getElementById('goalsListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      AppState.goals.forEach(goal => {
+        const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+        const remaining = Math.max(0, goal.target - goal.saved);
+        const monthsNeeded = goal.monthly > 0 ? Math.ceil(remaining / goal.monthly) : 0;
+
+        const card = document.createElement('div');
+        card.className = "bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-2";
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h5 class="text-xs font-bold text-slate-800">${goal.title}</h5>
+              <p class="text-[10px] text-slate-400">${currentLang === 'id' ? 'Target' : 'Goal'}: ${formatCurrency(goal.target)} • ${currentLang === 'id' ? 'Nabung' : 'Save'}: ${formatCurrency(goal.monthly)}/${currentLang === 'id' ? 'bln' : 'mo'}</p>
+            </div>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${percent >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-600'}">
+              ${percent}%
+            </span>
+          </div>
+
+          <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+          </div>
+
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="text-slate-500">${currentLang === 'id' ? 'Terkumpul' : 'Saved'}: <b>${formatCurrency(goal.saved)}</b></span>
+            <span class="text-brand-700 font-bold bg-brand-50 px-2 py-0.5 rounded-md">
+              <i class="fa-solid fa-clock-rotate-left mr-1"></i>${monthsNeeded === 0 ? (currentLang === 'id' ? 'Tercapai! 🎉' : 'Achieved! 🎉') : (currentLang === 'id' ? `Estimasi ${monthsNeeded} Bulan lagi` : `Est. ${monthsNeeded} Months left`)}
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openNewGoalModal() { document.getElementById('modalNewGoal').classList.remove('hidden'); }
+    function closeNewGoalModal() { document.getElementById('modalNewGoal').classList.add('hidden'); }
+
+    function saveDreamGoal(e) {
+      e.preventDefault();
+      const title = document.getElementById('goalTitle').value;
+      const target = parseFloat(document.getElementById('goalTargetAmount').value);
+      const monthly = parseFloat(document.getElementById('goalMonthlyAlloc').value);
+
+      AppState.goals.push({ id: 'goal_' + Date.now(), title, target, monthly, saved: 0 });
+      persistState();
+      renderGoalsList();
+      closeNewGoalModal();
+      showToast(currentLang === 'id' ? "Target impian berhasil dibuat!" : "Dream goal added!");
+    }
+
+    function renderChallengeList() {
+      const container = document.getElementById('challengeListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      AppState.challenges.forEach(ch => {
+        const isOver = ch.spent > ch.limit;
+        const percent = Math.min(100, Math.round((ch.spent / ch.limit) * 100));
+
+        const div = document.createElement('div');
+        div.className = "p-3 rounded-2xl border bg-white shadow-sm flex items-center justify-between";
+        div.innerHTML = `
+          <div class="space-y-1 flex-1 pr-2">
+            <div class="flex items-center gap-1.5">
+              <h5 class="text-xs font-bold text-slate-800">${ch.title}</h5>
+              ${isOver ? '<span class="text-[8px] bg-rose-100 text-rose-600 font-bold px-1.5 py-0.5 rounded">Gagal</span>' : '<span class="text-[8px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">On Track</span>'}
+            </div>
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full ${isOver ? 'bg-rose-500' : 'bg-amber-400'}" style="width: ${percent}%"></div>
+            </div>
+            <div class="flex justify-between text-[9px] text-slate-400">
+              <span>${currentLang === 'id' ? 'Terpakai' : 'Spent'}: ${formatCurrency(ch.spent)} / ${formatCurrency(ch.limit)}</span>
+              <span>${ch.daysLeft} ${currentLang === 'id' ? 'hari lagi' : 'days left'}</span>
+            </div>
+          </div>
+          <button onclick="addChallengeSpending('${ch.id}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-[10px] font-bold shrink-0">
+            + ${currentLang === 'id' ? 'Tambah' : 'Add'}
+          </button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addChallengeSpending(id) {
+      const ch = AppState.challenges.find(c => c.id === id);
+      if (ch) {
+        ch.spent += 10000;
+        persistState();
+        renderChallengeList();
+        showToast(currentLang === 'id' ? "+Rp10.000 tercatat di challenge" : "+Rp10,000 logged to challenge");
+      }
+    }
+
+    function openNewChallengeModal() { document.getElementById('modalNewChallenge').classList.remove('hidden'); }
+    function closeNewChallengeModal() { document.getElementById('modalNewChallenge').classList.add('hidden'); }
+
+    function saveSpendingChallenge(e) {
+      e.preventDefault();
+      const title = document.getElementById('challengeTitle').value;
+      const limit = parseFloat(document.getElementById('challengeLimit').value);
+
+      AppState.challenges.push({ id: 'ch_' + Date.now(), title, limit, spent: 0, daysLeft: 7, active: true });
+      persistState();
+      renderChallengeList();
+      closeNewChallengeModal();
+      showToast(currentLang === 'id' ? "Tantangan hemat dimulai! Gas hemat!" : "Challenge started! Keep saving!");
+    }
+
+    function updateCuanMilestone(totalSavings) {
+      const rankBadge = document.getElementById('userLevelBadge');
+      const rankTitle = document.getElementById('cuanRankTitle');
+      const text = document.getElementById('cuanMilestoneText');
+
+      if (!rankBadge) return;
+
+      if (totalSavings > 25000000) {
+        rankBadge.innerText = currentLang === 'id' ? "👑 Sultan Finansial" : "👑 Financial Sultan";
+        if (rankTitle) rankTitle.innerText = currentLang === 'id' ? "Level 5: Sultan Finansial" : "Level 5: Financial Sultan";
+        if (text) text.innerText = currentLang === 'id' ? "Luar biasa! Portofolio tabunganmu sangat kuat." : "Amazing! Your financial cushion is rock solid.";
+      } else if (totalSavings > 10000000) {
+        rankBadge.innerText = currentLang === 'id' ? "⭐ Master Cuan" : "⭐ Wealth Master";
+        if (rankTitle) rankTitle.innerText = currentLang === 'id' ? "Level 3: Master Cuan" : "Level 3: Wealth Master";
+        if (text) text.innerText = currentLang === 'id' ? "Keren! Kamu konsisten menyisihkan uang tiap bulan." : "Great! You are consistently saving money.";
+      } else {
+        rankBadge.innerText = currentLang === 'id' ? "🌱 Pemula Cuan" : "🌱 Wealth Beginner";
+        if (rankTitle) rankTitle.innerText = currentLang === 'id' ? "Level 1: Pemula Cuan" : "Level 1: Wealth Beginner";
+        if (text) text.innerText = currentLang === 'id' ? "Langkah awal yang baik! Yuk mulai nabung rutin." : "Good start! Keep tracking every day.";
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 10. GRAFIK & ANALISIS BULANAN / TAHUNAN
+    // -------------------------------------------------------------
+    let incomeVsExpenseChartInstance = null;
+    let categoryBreakdownChartInstance = null;
+
+    function setAnalysisPeriod(period) {
+      AppState.analysisPeriod = period;
+      const btnM = document.getElementById('btnPeriodMonthly');
+      const btnY = document.getElementById('btnPeriodYearly');
+      const label = document.getElementById('analysisPeriodLabel');
+
+      if (period === 'monthly') {
+        btnM.className = "flex-1 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs";
+        btnY.className = "flex-1 py-1.5 rounded-lg text-slate-500";
+        label.innerText = currentLang === 'id' ? "Bulan Ini" : "This Month";
+      } else {
+        btnY.className = "flex-1 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs";
+        btnM.className = "flex-1 py-1.5 rounded-lg text-slate-500";
+        label.innerText = currentLang === 'id' ? "Tahun Ini" : "This Year";
+      }
+      updateCharts();
+    }
+
+    function initCharts() {
+      const ctx1 = document.getElementById('incomeVsExpenseChart')?.getContext('2d');
+      const ctx2 = document.getElementById('categoryBreakdownChart')?.getContext('2d');
+
+      if (ctx1) {
+        incomeVsExpenseChartInstance = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: currentLang === 'id' ? ['Masuk', 'Keluar'] : ['Income', 'Expense'],
+            datasets: [{
+              data: [0, 0],
+              backgroundColor: ['#10b981', '#f97316'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+          }
+        });
+      }
+
+      if (ctx2) {
+        categoryBreakdownChartInstance = new Chart(ctx2, {
+          type: 'doughnut',
+          data: {
+            labels: ['Makanan', 'Transport', 'Belanja', 'Tagihan'],
+            datasets: [{
+              data: [40, 20, 25, 15],
+              backgroundColor: ['#f59e0b', '#06b6d4', '#10b981', '#8b5cf6'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } },
+            cutout: '70%'
+          }
+        });
+      }
+    }
+
+    function updateCharts() {
+      const userTxs = AppState.transactions.filter(t => !t.userId || t.userId === AppState.currentUser?.id);
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      const catTotals = {};
+
+      userTxs.forEach(t => {
+        const amt = Number(t.amount);
+        if (t.type === 'pemasukan') totalIncome += amt;
+        if (t.type === 'pengeluaran') {
+          totalExpense += amt;
+          catTotals[t.category] = (catTotals[t.category] || 0) + amt;
+        }
+      });
+
+      if (incomeVsExpenseChartInstance) {
+        incomeVsExpenseChartInstance.data.labels = currentLang === 'id' ? ['Masuk', 'Keluar'] : ['Income', 'Expense'];
+        incomeVsExpenseChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
+        incomeVsExpenseChartInstance.update();
+      }
+
+      if (categoryBreakdownChartInstance) {
+        const rawLabels = Object.keys(catTotals);
+        const translatedLabels = rawLabels.map(cat => getCategoryDisplay(cat));
+        const dataVals = Object.values(catTotals);
+        if (translatedLabels.length > 0) {
+          categoryBreakdownChartInstance.data.labels = translatedLabels;
+          categoryBreakdownChartInstance.data.datasets[0].data = dataVals;
+          categoryBreakdownChartInstance.update();
+        }
+      }
+
+      const rate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
+      const badge = document.getElementById('savingsRateBadge');
+      const val = document.getElementById('savingsRateVal');
+      const prog = document.getElementById('savingsRateProgress');
+
+      if (badge) badge.innerText = `${rate}% ${currentLang === 'id' ? 'Rasio Simpan' : 'Savings Rate'}`;
+      if (val) val.innerText = `${rate}%`;
+      if (prog) prog.style.width = `${rate}%`;
+    }
+
+    // -------------------------------------------------------------
+    // 11. RENDER DASHBOARD & TRANSAKSI
+    // -------------------------------------------------------------
+    function renderAll() {
+      if (!AppState.currentUser) return;
+
+      document.getElementById('userGreeting').innerText = `Hi, ${AppState.currentUser.name.split(' ')[0]}`;
+      document.getElementById('currentCurrencyTag').innerText = `${AppState.currentCurrency} (${AppState.currencySymbols[AppState.currentCurrency]})`;
+
+      let filteredTxs = AppState.transactions.filter(t => !t.userId || t.userId === AppState.currentUser.id);
+      if (AppState.activeWalletFilter !== "Semua") {
+        filteredTxs = filteredTxs.filter(t => t.wallet === AppState.activeWalletFilter);
+      }
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      filteredTxs.forEach(tx => {
+        if (tx.type === 'pemasukan') totalIncome += Number(tx.amount);
+        if (tx.type === 'pengeluaran') totalExpense += Number(tx.amount);
+      });
+
+      const netBalance = totalIncome - totalExpense;
+
+      document.getElementById('totalBalanceDisplay').innerText = formatCurrency(netBalance);
+      document.getElementById('statIncomeDisplay').innerText = formatCurrency(totalIncome);
+      document.getElementById('statExpenseDisplay').innerText = formatCurrency(totalExpense);
+      document.getElementById('txCountBadge').innerText = `${filteredTxs.length} ${currentLang === 'id' ? 'Catatan' : 'Records'}`;
+      document.getElementById('activeWalletLabel').innerText = getWalletDisplay(AppState.activeWalletFilter);
+
+      const now = new Date();
+      document.getElementById('currentDateDisplay').innerHTML = `<i class="fa-regular fa-calendar text-[10px]"></i> ${formatDateLocalized(now.toISOString().split('T')[0])}`;
+
+      updateCuanMilestone(netBalance);
+
+      const listContainer = document.getElementById('transactionList');
+      const emptyState = document.getElementById('emptyState');
+      listContainer.innerHTML = '';
+
+      if (filteredTxs.length === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+      } else {
+        emptyState.classList.add('hidden');
+        emptyState.classList.remove('flex');
+
+        const sorted = [...filteredTxs].sort((a, b) => new Date(b.date + ' ' + (b.time || '00:00')) - new Date(a.date + ' ' + (a.time || '00:00')));
+
+        sorted.forEach(tx => {
+          const isExpense = tx.type === 'pengeluaran';
+          const iconCircleBg = isExpense ? 'bg-orange-100/80 text-accent-orange' : 'bg-teal-100/80 text-brand-600';
+          const iconArrow = isExpense ? 'fa-arrow-up-right' : 'fa-arrow-down-left';
+          const amountColor = isExpense ? 'text-accent-orange' : 'text-brand-600';
+
+          const card = document.createElement('div');
+          card.className = "flex items-center justify-between p-3.5 bg-white hover:bg-slate-50/80 rounded-2xl border border-slate-100 shadow-sm transition duration-150 cursor-pointer";
+          card.onclick = () => openTransactionForm(tx);
+
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl ${iconCircleBg} flex items-center justify-center text-sm font-bold shadow-xs">
+                <i class="fa-solid ${iconArrow}"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-xs font-bold text-slate-800">${tx.type === 'pengeluaran' ? (currentLang === 'id' ? 'Pengeluaran' : 'Expense') : (currentLang === 'id' ? 'Pemasukan' : 'Income')}</h4>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 font-semibold">${getClassificationDisplay(tx.classification) || getCategoryDisplay(tx.category)}</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">${formatDateLocalized(tx.date)}, ${tx.time || '12:00'} • ${getWalletDisplay(tx.wallet)}</p>
+                ${tx.notes ? `<p class="text-[10px] text-slate-500 italic mt-0.5 line-clamp-1">"${tx.notes}"</p>` : ''}
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-bold ${amountColor}">
+                ${formatCurrency(tx.amount)}
+              </span>
+            </div>
+          `;
+          listContainer.appendChild(card);
+        });
+      }
+
+      renderGoalsList();
+      renderChallengeList();
+      updateCharts();
+    }
+
+    function formatDateLocalized(dateStr) {
+      if (!dateStr) return currentLang === 'id' ? "Hari ini" : "Today";
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const months = currentLang === 'id' 
+        ? ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+        : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${parseInt(parts[2])} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+    }
+
+    // -------------------------------------------------------------
+    // 12. FORMULIR CATATAN TRANSAKSI
+    // -------------------------------------------------------------
+    function openTransactionForm(txToEdit = null) {
+      const formView = document.getElementById('viewForm');
+      const form = document.getElementById('txForm');
+      const deleteBtn = document.getElementById('btnDeleteTx');
+      const title = document.getElementById('formTitleText');
+
+      populateCategorySelect(AppState.formState.type);
+
+      if (txToEdit) {
+        title.innerText = currentLang === 'id' ? "Ubah Catatan" : "Edit Record";
+        document.getElementById('txId').value = txToEdit.id;
+        document.getElementById('txAmount').value = txToEdit.amount;
+        document.getElementById('txDate').value = txToEdit.date;
+        document.getElementById('txWallet').value = txToEdit.wallet || "Dompet Utama";
+        document.getElementById('txCategory').value = txToEdit.category;
+        document.getElementById('txNotes').value = txToEdit.notes || "";
+        setTxType(txToEdit.type);
+        selectExpenseClassification(txToEdit.classification || 'Kebutuhan');
+        deleteBtn.classList.remove('hidden');
+      } else {
+        title.innerText = currentLang === 'id' ? "Catatan Baru" : "New Record";
+        form.reset();
+        document.getElementById('txId').value = "";
+        document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+        setTxType('pengeluaran');
+        selectExpenseClassification('Kebutuhan');
+        deleteBtn.classList.add('hidden');
+      }
+
+      formView.classList.remove('hidden');
+    }
+
+    function closeTransactionForm() { document.getElementById('viewForm').classList.add('hidden'); }
+
+    function setTxType(type) {
+      AppState.formState.type = type;
+      const btnIn = document.getElementById('btnTogglePemasukan');
+      const btnOut = document.getElementById('btnTogglePengeluaran');
+      const expenseSection = document.getElementById('expenseTypeSection');
+
+      if (type === 'pengeluaran') {
+        btnOut.className = "flex-1 py-3 rounded-xl text-xs font-bold bg-white text-slate-800 shadow-sm transition duration-200";
+        btnIn.className = "flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 transition duration-200";
+        expenseSection.classList.remove('hidden');
+      } else {
+        btnIn.className = "flex-1 py-3 rounded-xl text-xs font-bold bg-white text-slate-800 shadow-sm transition duration-200";
+        btnOut.className = "flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 transition duration-200";
+        expenseSection.classList.add('hidden');
+      }
+      populateCategorySelect(type);
+    }
+
+    function selectExpenseClassification(cls) {
+      AppState.formState.classification = cls;
+      const bKebutuhan = document.getElementById('btnClassKebutuhan');
+      const bKeinginan = document.getElementById('btnClassKeinginan');
+      const bInvestasi = document.getElementById('btnClassInvestasi');
+
+      const active = "border-2 border-brand-500 bg-white shadow-sm";
+      const inactive = "border-2 border-transparent hover:border-slate-200 bg-white shadow-sm";
+
+      bKebutuhan.className = `group flex flex-col items-center justify-center p-3 rounded-2xl ${cls === 'Kebutuhan' ? active : inactive} transition`;
+      bKeinginan.className = `group flex flex-col items-center justify-center p-3 rounded-2xl ${cls === 'Keinginan' ? active : inactive} transition`;
+      bInvestasi.className = `group flex flex-col items-center justify-center p-3 rounded-2xl ${cls === 'Investasi' ? active : inactive} transition`;
+    }
+
+    function populateCategorySelect(type) {
+      const select = document.getElementById('txCategory');
+      select.innerHTML = '';
+      const list = AppState.categories[type] || [];
+      list.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = getCategoryDisplay(cat);
+        select.appendChild(opt);
+      });
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      if (!AppState.currentUser) return;
+
+      const id = document.getElementById('txId').value;
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const date = document.getElementById('txDate').value;
+      const wallet = document.getElementById('txWallet').value;
+      const category = document.getElementById('txCategory').value;
+      const notes = document.getElementById('txNotes').value;
+
+      if (!amount || amount <= 0) {
+        showToast(currentLang === 'id' ? "Nominal transaksi harus lebih dari 0!" : "Amount must be greater than 0!", "warning");
+        return;
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      if (id) {
+        const idx = AppState.transactions.findIndex(t => t.id === id);
+        if (idx !== -1) {
+          AppState.transactions[idx] = {
+            ...AppState.transactions[idx],
+            type: AppState.formState.type,
+            classification: AppState.formState.type === 'pengeluaran' ? AppState.formState.classification : 'Investasi',
+            category,
+            wallet,
+            amount,
+            date,
+            notes
+          };
+          showToast(currentLang === 'id' ? "Catatan diperbarui!" : "Record updated!");
+        }
+      } else {
+        const newTx = {
+          id: 'tx_' + Date.now(),
+          userId: AppState.currentUser.id,
+          type: AppState.formState.type,
+          classification: AppState.formState.type === 'pengeluaran' ? AppState.formState.classification : 'Investasi',
+          category,
+          wallet,
+          amount,
+          date,
+          time: timeStr,
+          notes
+        };
+        AppState.transactions.unshift(newTx);
+        showToast(currentLang === 'id' ? "Catatan keuangan disimpan!" : "Transaction saved!");
+        if (typeof confetti === 'function') confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
+      }
+
+      persistState();
+      renderAll();
+      closeTransactionForm();
+    }
+
+    function deleteCurrentTx() {
+      const id = document.getElementById('txId').value;
+      if (!id) return;
+      AppState.transactions = AppState.transactions.filter(t => t.id !== id);
+      persistState();
+      renderAll();
+      closeTransactionForm();
+      showToast(currentLang === 'id' ? "Catatan dihapus" : "Record deleted", "warning");
+    }
+
+    // -------------------------------------------------------------
+    // 13. SCAN KAMERA LIVE OCR (GEMINI AI)
+    // -------------------------------------------------------------
+    let videoStream = null;
+    let currentFacingMode = "environment";
+    let lastGeminiExtractedData = null;
+
+    async function openOcrCameraModal() {
+      document.getElementById('modalOcrCamera').classList.remove('hidden');
+      resetCameraUI();
+      await startCameraStream();
+    }
+
+    function closeOcrCameraModal() {
+      stopCameraStream();
+      document.getElementById('modalOcrCamera').classList.add('hidden');
+    }
+
+    function resetCameraUI() {
+      document.getElementById('ocrVideoLive').classList.remove('hidden');
+      document.getElementById('ocrSnapshotPreview').classList.add('hidden');
+      document.getElementById('ocrAiLoading').classList.add('hidden');
+      document.getElementById('ocrAiResultsCard').classList.add('hidden');
+      document.getElementById('ocrShutterControls').classList.remove('hidden');
+      document.getElementById('ocrFrameGuide').classList.remove('hidden');
+      document.getElementById('ocrCameraError').classList.add('hidden');
+    }
+
+    async function startCameraStream() {
+      stopCameraStream();
+      document.getElementById('ocrCameraError').classList.add('hidden');
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+        const video = document.getElementById('ocrVideoLive');
+        video.srcObject = videoStream;
+        await video.play();
+      } catch (err) {
+        console.warn("Kamera error:", err);
+        document.getElementById('ocrCameraError').classList.remove('hidden');
+      }
+    }
+
+    function stopCameraStream() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(t => t.stop());
+        videoStream = null;
+      }
+    }
+
+    function switchCameraFacing() {
+      currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+      startCameraStream();
+    }
+
+    async function captureAndScanReceipt() {
+      const video = document.getElementById('ocrVideoLive');
+      const canvas = document.getElementById('ocrCaptureCanvas');
+      const preview = document.getElementById('ocrSnapshotPreview');
+      const loading = document.getElementById('ocrAiLoading');
+
+      if (!video || !video.videoWidth) {
+        showToast(currentLang === 'id' ? "Kamera belum siap membidik" : "Camera not ready yet", "warning");
+        return;
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const rawBase64 = dataUrl.split(',')[1];
+
+      preview.src = dataUrl;
+      preview.classList.remove('hidden');
+      video.classList.add('hidden');
+      document.getElementById('ocrFrameGuide').classList.add('hidden');
+      document.getElementById('ocrShutterControls').classList.add('hidden');
+      loading.classList.remove('hidden');
+
+      await processReceiptWithGemini(rawBase64);
+    }
+
+    function handleFallbackImageUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const dataUrl = e.target.result;
+          const rawBase64 = dataUrl.split(',')[1];
+
+          document.getElementById('ocrSnapshotPreview').src = dataUrl;
+          document.getElementById('ocrSnapshotPreview').classList.remove('hidden');
+          document.getElementById('ocrVideoLive').classList.add('hidden');
+          document.getElementById('ocrFrameGuide').classList.add('hidden');
+          document.getElementById('ocrShutterControls').classList.add('hidden');
+          document.getElementById('ocrAiLoading').classList.remove('hidden');
+
+          await processReceiptWithGemini(rawBase64);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function processReceiptWithGemini(base64Image) {
+      const loading = document.getElementById('ocrAiLoading');
+      const resultsCard = document.getElementById('ocrAiResultsCard');
+
+      const systemInstruction = "Kamu adalah sistem OCR keuangan pintar. Analisis foto struk belanja, ekstrak total nominal akhir kasir, toko, tanggal YYYY-MM-DD, kategori belanja, klasifikasi (Kebutuhan/Keinginan/Investasi), dan ringkasan barang belanjaan.";
+      const promptText = `Baca struk belanja ini. Ekstrak data format JSON murni:
+{
+  "total": number (hanya angka bulat total belanja kasir, contoh: 65000),
+  "merchant": string (nama toko/minimarket),
+  "date": string (format YYYY-MM-DD, jika tak terbaca pakai hari ini: ${new Date().toISOString().split('T')[0]}),
+  "category": string (pilih salah satu: 'Makanan & Minuman', 'Belanja & Hiburan', 'Transportasi', 'Tagihan & Utilitas', 'Kesehatan', 'Lainnya'),
+  "classification": string (pilih salah satu: 'Kebutuhan', 'Keinginan', atau 'Investasi'),
+  "notes": string (ringkasan 2-4 kata barang yang dibeli)
+}`;
+
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: { mimeType: "image/jpeg", data: base64Image } }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              total: { type: "NUMBER" },
+              merchant: { type: "STRING" },
+              date: { type: "STRING" },
+              category: { type: "STRING" },
+              classification: { type: "STRING" },
+              notes: { type: "STRING" }
+            },
+            required: ["total", "category", "classification"]
+          }
+        }
+      };
+
+      try {
+        const delays = [1000, 2000, 4000, 8000, 16000];
+        let result = null;
+        for (let attempt = 0; attempt <= 5; attempt++) {
+          try {
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (resp.ok) {
+              result = await resp.json();
+              break;
+            }
+          } catch (e) {
+            if (attempt < 5) await new Promise(r => setTimeout(r, delays[attempt]));
+            else throw e;
+          }
+        }
+
+        const textResult = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!textResult) throw new Error("Tidak ada respons");
+
+        const parsed = JSON.parse(textResult);
+        lastGeminiExtractedData = {
+          total: parsed.total || 0,
+          merchant: parsed.merchant || "Toko / Minimarket",
+          date: parsed.date || new Date().toISOString().split('T')[0],
+          category: parsed.category || "Makanan & Minuman",
+          classification: parsed.classification || "Kebutuhan",
+          notes: parsed.notes || `Belanja di ${parsed.merchant || 'Toko'}`
+        };
+
+        document.getElementById('resMerchant').innerText = lastGeminiExtractedData.merchant;
+        document.getElementById('resAmount').innerText = formatCurrency(lastGeminiExtractedData.total);
+        document.getElementById('resCategoryBadge').innerText = getCategoryDisplay(lastGeminiExtractedData.category);
+        document.getElementById('resClassification').innerText = getClassificationDisplay(lastGeminiExtractedData.classification);
+        document.getElementById('resNotes').innerText = lastGeminiExtractedData.notes;
+
+        loading.classList.add('hidden');
+        resultsCard.classList.remove('hidden');
+        showToast(currentLang === 'id' ? "Struk berhasil dibaca Gemini AI!" : "Receipt recognized by Gemini AI!");
+      } catch (error) {
+        console.error("Gemini OCR Error:", error);
+        loading.classList.add('hidden');
+        showToast(currentLang === 'id' ? "Gagal membaca struk. Coba foto lebih dekat." : "Failed to read receipt. Please retake photo.", "error");
+        retakePhoto();
+      }
+    }
+
+    function retakePhoto() {
+      document.getElementById('ocrAiResultsCard').classList.add('hidden');
+      document.getElementById('ocrSnapshotPreview').classList.add('hidden');
+      document.getElementById('ocrVideoLive').classList.remove('hidden');
+      document.getElementById('ocrFrameGuide').classList.remove('hidden');
+      document.getElementById('ocrShutterControls').classList.remove('hidden');
+    }
+
+    function applyGeminiDataToForm() {
+      if (!lastGeminiExtractedData) return;
+      closeOcrCameraModal();
+      openTransactionForm();
+
+      document.getElementById('txAmount').value = lastGeminiExtractedData.total;
+      document.getElementById('txDate').value = lastGeminiExtractedData.date;
+      document.getElementById('txNotes').value = `${lastGeminiExtractedData.notes} (${lastGeminiExtractedData.merchant})`;
+      
+      setTxType('pengeluaran');
+      selectExpenseClassification(lastGeminiExtractedData.classification);
+
+      const catSelect = document.getElementById('txCategory');
+      if (catSelect) {
+        let matched = false;
+        for (let i = 0; i < catSelect.options.length; i++) {
+          if (catSelect.options[i].value.toLowerCase().includes(lastGeminiExtractedData.category.toLowerCase())) {
+            catSelect.selectedIndex = i;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched && catSelect.options.length > 0) catSelect.selectedIndex = 0;
+      }
+      showToast(currentLang === 'id' ? "Data struk berhasil dipindahkan ke formulir!" : "Receipt data transferred to form!");
+    }
+
+    // -------------------------------------------------------------
+    // 14. TABS & MULTI CURRENCY
+    // -------------------------------------------------------------
+    function switchTab(tabName) {
+      const tabs = ['transaksi', 'analisis', 'ai', 'dream', 'challenge'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tabBtn' + capitalize(t));
+        const content = document.getElementById('tabContent' + capitalize(t));
+        if (t === tabName) {
+          btn.className = "px-2.5 py-1.5 rounded-xl bg-brand-500 text-white shadow-sm whitespace-nowrap transition";
+          content.classList.remove('hidden');
+        } else {
+          btn.className = "px-2.5 py-1.5 rounded-xl hover:bg-slate-100 whitespace-nowrap transition";
+          content.classList.add('hidden');
+        }
+      });
+      if (tabName === 'analisis') updateCharts();
+      if (tabName === 'dream') renderGoalsList();
+      if (tabName === 'challenge') renderChallengeList();
+    }
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function openCurrencyModal() {
+      const container = document.getElementById('currencyListContainer');
+      container.innerHTML = '';
+      const currencies = [
+        { code: 'IDR', label: 'Rupiah Indonesia (Rp)' },
+        { code: 'USD', label: 'US Dollar ($)' },
+        { code: 'SGD', label: 'Singapore Dollar (S$)' },
+        { code: 'EUR', label: 'Euro (€)' },
+        { code: 'JPY', label: 'Japanese Yen (¥)' }
+      ];
+
+      currencies.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-2.5 rounded-xl text-xs font-bold flex justify-between items-center ${AppState.currentCurrency === c.code ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'hover:bg-slate-50 text-slate-700'}`;
+        btn.innerHTML = `<span>${c.label}</span> ${AppState.currentCurrency === c.code ? '<i class="fa-solid fa-check text-brand-600"></i>' : ''}`;
+        btn.onclick = () => {
+          AppState.currentCurrency = c.code;
+          persistState();
+          renderAll();
+          closeCurrencyModal();
+          showToast(`Mata uang diganti ke ${c.code}`);
+        };
+        container.appendChild(btn);
+      });
+      document.getElementById('modalCurrency').classList.remove('hidden');
+    }
+    function closeCurrencyModal() { document.getElementById('modalCurrency').classList.add('hidden'); }
+
+    function changeWalletQuick() {
+      const nextWallets = ["Semua", ...AppState.wallets];
+      const currentIndex = nextWallets.indexOf(AppState.activeWalletFilter);
+      const next = nextWallets[(currentIndex + 1) % nextWallets.length];
+      AppState.activeWalletFilter = next;
+      document.getElementById('activeWalletLabel').innerText = getWalletDisplay(next);
+      renderAll();
+    }
+
+    function exportToCSV() {
+      const userTxs = AppState.transactions.filter(t => !t.userId || t.userId === AppState.currentUser?.id);
+      if (userTxs.length === 0) {
+        showToast("Belum ada data untuk diekspor!", "warning");
+        return;
+      }
+      let csv = "ID,Tipe,Klasifikasi,Kategori,Dompet,Jumlah_IDR,Tanggal,Waktu,Keterangan\n";
+      userTxs.forEach(t => {
+        csv += `"${t.id}","${t.type}","${t.classification || ''}","${t.category}","${t.wallet}","${t.amount}","${t.date}","${t.time || ''}","${(t.notes || '').replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Dompet_Pintar_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Data CSV berhasil diunduh!");
+    }
+
+    function printReport() { window.print(); }
+
+    // -------------------------------------------------------------
+    // 15. HYBRID APP & SUPABASE
+    // -------------------------------------------------------------
+    let deferredPrompt = null;
+    function setupHybridApp() {
+      const manifestObj = {
+        name: "Dompet Pintar",
+        short_name: "DompetPintar",
+        description: "Aplikasi Catatan Keuangan Hybrid Pribadi",
+        start_url: window.location.href,
+        display: "standalone",
+        background_color: "#18a879",
+        theme_color: "#18a879",
+        icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%2318a879'/><circle cx='65' cy='22' r='10' fill='%23f59e0b'/></svg>", sizes: "192x192 512x512", type: "image/svg+xml" }]
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = URL.createObjectURL(manifestBlob);
+      document.head.appendChild(manifestLink);
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwaBanner').classList.remove('hidden');
+      });
+    }
+
+    function triggerAppInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          dismissPwa();
+          deferredPrompt = null;
+        });
+      } else {
+        showToast(currentLang === 'id' ? "Tekan titik tiga browser Anda dan pilih 'Tambahkan ke Layar Utama'" : "Tap your browser menu and choose 'Add to Home Screen'");
+      }
+    }
+    function dismissPwa() { document.getElementById('pwaBanner').classList.add('hidden'); }
+
+    async function checkSupabaseConnection() {
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient.from('transactions').select('count', { count: 'exact', head: true });
+      } catch (e) {}
+    }
+
+    async function syncToSupabase() {
+      if (!supabaseClient || !AppState.currentUser) return;
+      try {
+        await supabaseClient.from('transactions').upsert(
+          AppState.transactions.map(t => ({
+            id: t.id,
+            type: t.type,
+            classification: t.classification,
+            category: t.category,
+            wallet: t.wallet,
+            amount: t.amount,
+            tx_date: t.date,
+            notes: t.notes,
+            user_id: AppState.currentUser.id
+          }))
+        );
+      } catch (err) {}
+    }
+  </script>
+</body>
+</html>
