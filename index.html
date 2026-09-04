@@ -140,12 +140,12 @@
     <!-- ============================================================== -->
     <section id="viewAuthGate" class="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50 relative z-30">
       
-      <!-- HERO HEADER AUTH DENGAN LOGO RESMI VEKTOR FINTECH -->
+      <!-- HERO HEADER AUTH DENGAN LOGO FINTECH VECTOR RESMI -->
       <div class="hero-gradient pt-10 pb-12 px-6 text-white text-center relative overflow-hidden rounded-b-[40px] shadow-sm">
         <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
         <div class="absolute -left-6 bottom-0 w-28 h-28 rounded-full bg-white/10 blur-md"></div>
 
-        <!-- Pemilih Bahasa Eksplisit -->
+        <!-- Pemilih Bahasa Eksplisit (ID | EN) -->
         <div class="absolute top-4 right-5 z-20">
           <div class="inline-flex items-center bg-black/20 backdrop-blur-md rounded-full p-0.5 border border-white/30 text-[10px] shadow-sm">
             <button type="button" onclick="setLanguage('id')" id="authLangBtnId" class="px-2.5 py-1 rounded-full transition-all bg-white text-emerald-800 shadow-xs font-extrabold">ID</button>
@@ -154,7 +154,6 @@
         </div>
 
         <div class="relative z-10 flex flex-col items-center">
-          <!-- LOGO RESMI SVG DOMPET PINTAR -->
           <div class="w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-float mb-3.5 transform hover:scale-105 transition-transform duration-300">
             <svg class="w-14 h-14" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -197,7 +196,7 @@
           </button>
         </div>
 
-        <!-- 1. FORM LOGIN -->
+        <!-- 1. FORM LOGIN DENGAN LIHAT PASSWORD -->
         <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="usernameLabel">Username</label>
@@ -211,8 +210,9 @@
             <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="passwordLabel">Password</label>
             <div class="relative">
               <span class="absolute left-3.5 top-3.5 text-slate-400 text-xs"><i class="fa-solid fa-lock"></i></span>
-              <input type="password" id="gateLoginPassword" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-10 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500 transition" placeholder="******" />
-              <button type="button" onclick="togglePasswordVisibility('gateLoginPassword', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-xs">
+              <input type="password" id="gateLoginPassword" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-11 py-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500 transition" placeholder="******" />
+              <!-- TOMBOL LIHAT PASSWORD LOGIN -->
+              <button type="button" onclick="togglePasswordVisibility('gateLoginPassword', this)" class="absolute right-3 top-3 text-slate-400 hover:text-slate-700 text-sm p-1 transition" title="Lihat password">
                 <i class="fa-solid fa-eye"></i>
               </button>
             </div>
@@ -228,7 +228,7 @@
           </button>
         </form>
 
-        <!-- 2. FORM REGISTER -->
+        <!-- 2. FORM REGISTER DENGAN LIHAT PASSWORD -->
         <form id="gateRegisterForm" onsubmit="handleGateRegister(event)" class="hidden space-y-3.5">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="fullNameLabel">Nama Lengkap</label>
@@ -242,7 +242,14 @@
 
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="passwordLabel">Password</label>
-            <input type="password" id="gateRegPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+            <div class="relative">
+              <span class="absolute left-3.5 top-3 text-slate-400 text-xs"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="gateRegPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-11 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+              <!-- TOMBOL LIHAT PASSWORD REGISTER -->
+              <button type="button" onclick="togglePasswordVisibility('gateRegPassword', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 text-sm p-1 transition" title="Lihat password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -256,7 +263,7 @@
           </button>
         </form>
 
-        <!-- 3. FORM LUPA PASSWORD -->
+        <!-- 3. FORM LUPA PASSWORD DENGAN LIHAT PASSWORD BARU -->
         <form id="gateForgotForm" onsubmit="handleGateForgotPassword(event)" class="hidden space-y-3.5">
           <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
             <i class="fa-solid fa-circle-question text-amber-600 mt-0.5"></i>
@@ -278,7 +285,14 @@
 
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="newPasswordLabel">Kata Sandi Baru</label>
-            <input type="password" id="gateForgotNewPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+            <div class="relative">
+              <span class="absolute left-3.5 top-3 text-slate-400 text-xs"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="gateForgotNewPassword" required minlength="6" data-i18n-placeholder="placeholderPassword" class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-11 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500" placeholder="Minimal 6 karakter" />
+              <!-- TOMBOL LIHAT PASSWORD BARU -->
+              <button type="button" onclick="togglePasswordVisibility('gateForgotNewPassword', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 text-sm p-1 transition" title="Lihat password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
           </div>
 
           <div class="flex gap-2 pt-1">
@@ -299,16 +313,16 @@
     <!-- ============================================================== -->
     <section id="viewDashboard" class="hidden flex-1 flex flex-col overflow-y-auto no-scrollbar pb-24">
       
-      <!-- HERO HEADER: TIER 1 UTILITY & TIER 2 UCAPAN BEBAS EMOJI (ANTI-PATAH DI ANDROID) -->
+      <!-- HERO HEADER: LOGO SERAGAM, UCAPAN BEBAS EMOJI & PEMULA CUAN DI KIRI -->
       <div class="hero-gradient relative pt-4 pb-12 px-5 text-white overflow-hidden rounded-b-[40px] shadow-sm">
         
         <div class="absolute -right-6 -top-6 w-36 h-36 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
         <div class="absolute left-8 bottom-4 w-16 h-16 rounded-full bg-white/10 blur-sm pointer-events-none"></div>
 
-        <!-- TIER 1: TOP BAR (LOGO IDENTIK RESMI, BAHASA, EYE, MATA UANG, PROFIL) -->
+        <!-- TIER 1: TOP BAR DENGAN LOGO FINTECH ASLI -->
         <div class="relative z-10 flex items-center justify-between pb-3 border-b border-white/15 mb-3">
           
-          <!-- LOGO APLIKASI SAMA DENGAN LOGO DAFTAR & MASUK -->
+          <!-- LOGO SAMA PERSIS DENGAN HALAMAN MASUK & DAFTAR -->
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md p-1 flex items-center justify-center shadow-xs">
               <svg class="w-full h-full" viewBox="0 0 80 80" fill="none">
@@ -349,7 +363,7 @@
           </div>
         </div>
 
-        <!-- TIER 2: TATA LETAK PEMULA CUAN DI SEBELAH KIRI JUDUL DAN SLOGAN WEBSITE -->
+        <!-- TIER 2: TATA LETAK PEMULA CUAN DI KIRI JUDUL DAN SLOGAN (BEBAS EMOJI & ANTI-KEBAWAH DI ANDROID) -->
         <div class="relative z-10 flex items-center gap-2.5 w-full overflow-hidden mt-2">
           <!-- BADGE PEMULA CUAN DI KIRI -->
           <div id="userLevelBadge" class="shrink-0 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-amber-950 text-[10px] font-extrabold px-3 py-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 border border-amber-200/80">
@@ -357,7 +371,7 @@
             <span id="userLevelText">Pemula Cuan</span>
           </div>
 
-          <!-- UCAPAN DAN SLOGAN (TANPA EMOJI, ANTI-PATAH DI ANDROID) -->
+          <!-- UCAPAN DAN SLOGAN BEBAS EMOJI -->
           <div class="flex-1 min-w-0 overflow-hidden">
             <h1 id="userGreeting" class="text-base sm:text-lg font-extrabold tracking-tight text-white truncate whitespace-nowrap leading-tight">Hi, Fajrush</h1>
             <p data-i18n="welcomeSub" class="text-[10px] sm:text-[11px] text-emerald-100/90 font-medium truncate whitespace-nowrap leading-tight mt-0.5">Selamat datang di Catatan Keuangan</p>
@@ -397,10 +411,10 @@
         </div>
       </div>
 
-      <!-- KARTU KONTEN PUTIH (FLOATING SHEET DENGAN POSISI YANG DITURUNKAN AGAR TIDAK KETUTUPAN) -->
+      <!-- KARTU KONTEN PUTIH (POSISI TANGGAL & DOMPET TIDAK LAGI TERHALANG/KETUTUPAN) -->
       <div class="flex-1 -mt-4 bg-white curved-sheet px-5 sm:px-6 pt-7 sm:pt-8 shadow-sm flex flex-col relative z-20">
         
-        <!-- ROW ATAS: TANGGAL & FILTER DOMPET (POSISI DITURUNKAN DENGAN mt-1.5 & mb-4 AGAR SANGAT NYAMAN DILIHAT) -->
+        <!-- ROW ATAS: TANGGAL & FILTER DOMPET (TERMASUK DOMPET BRI) -->
         <div class="flex items-center justify-between gap-2.5 mt-1.5 mb-4">
           <span id="currentDateDisplay" class="text-[11px] font-semibold px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full inline-flex items-center gap-1.5 shrink-0 border border-teal-100 shadow-xs">
             <i class="fa-regular fa-calendar text-[10px]"></i> 10 Agu 2026
@@ -512,7 +526,6 @@
             <button onclick="setAnalysisPeriod('yearly')" id="btnPeriodYearly" class="flex-1 py-1.5 rounded-lg text-slate-500" data-i18n="yearly">Tahunan</button>
           </div>
 
-          <!-- Grafik Income vs Expense -->
           <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
             <div class="flex justify-between items-center mb-1">
               <h4 class="text-xs font-bold text-slate-700" data-i18n="chartIncomeVsExpense">Pemasukan vs Pengeluaran</h4>
@@ -523,7 +536,6 @@
             </div>
           </div>
 
-          <!-- Breakdown Kategori -->
           <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
             <h4 class="text-xs font-bold text-slate-700 mb-1" data-i18n="categoryBreakdown">Breakdown Pengeluaran</h4>
             <div class="h-44 relative flex items-center justify-center">
@@ -531,7 +543,6 @@
             </div>
           </div>
 
-          <!-- Tracking Savings Rate Card -->
           <div class="bg-brand-50 border border-brand-100 p-3.5 rounded-2xl">
             <div class="flex justify-between items-center mb-1.5">
               <span class="text-xs font-bold text-brand-700" data-i18n="savingsRateTitle">Tingkat Tabungan (Savings Rate)</span>
@@ -543,7 +554,6 @@
             <p class="text-[10px] text-slate-500 mt-1" data-i18n="savingsRateHint">Target ideal adalah menyisihkan minimal 20% dari total pemasukan Anda.</p>
           </div>
 
-          <!-- Aksi Ekspor CSV & Print PDF -->
           <div class="grid grid-cols-2 gap-2">
             <button onclick="exportToCSV()" class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm transition">
               <i class="fa-solid fa-file-csv text-emerald-600 text-lg"></i>
@@ -646,7 +656,6 @@
           <div class="pl-4">
             <span class="text-xs font-bold text-slate-600" data-i18n="quickAddHint">Tambah catatan keuangan!</span>
           </div>
-          <!-- Tombol Oranye (+) Sesuai Mockup -->
           <button onclick="openTransactionForm()" class="w-12 h-12 rounded-2xl bg-accent-orange hover:bg-accent-orangeHover active:scale-95 text-white flex items-center justify-center text-xl font-bold shadow-btn-orange transition-all duration-200">
             <i class="fa-solid fa-plus"></i>
           </button>
@@ -704,7 +713,7 @@
         </div>
       </div>
 
-      <!-- FORMULIR INPUT (TERMASUK OPSI BANK BRI) -->
+      <!-- FORMULIR INPUT DENGAN DUKUNGAN DOMPET BRI -->
       <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
         <input type="hidden" id="txId" value="" />
 
@@ -762,16 +771,22 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- MODAL SCAN STRUK KAMERA REAL-TIME DENGAN KOMPRESI CERDAS       -->
+    <!-- MODAL SCAN STRUK KAMERA REAL-TIME DENGAN FITUR KAMERA ANDROID  -->
     <!-- ============================================================== -->
-    <div id="modalOcrCamera" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-between p-4">
+    <div id="modalOcrCamera" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col justify-between p-4">
+      
+      <!-- Hidden File Inputs untuk Native Camera & Galeri -->
+      <input type="file" id="ocrNativeCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleFallbackImageUpload(this)" />
+      <input type="file" id="ocrGalleryInput" accept="image/*" class="hidden" onchange="handleFallbackImageUpload(this)" />
+
+      <!-- Top Bar Modal Scanner -->
       <div class="flex items-center justify-between z-10 pt-2 px-2 text-white">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
           <h3 class="text-xs font-bold tracking-wide" data-i18n="cameraScanTitle">Pindai Struk Kamera (Gemini AI)</h3>
         </div>
         <div class="flex items-center gap-3">
-          <button onclick="switchCameraFacing()" id="btnSwitchCam" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs hover:bg-white/30 transition">
+          <button onclick="switchCameraFacing()" id="btnSwitchCam" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs hover:bg-white/30 transition" title="Ganti Kamera">
             <i class="fa-solid fa-camera-rotate"></i>
           </button>
           <button onclick="closeOcrCameraModal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs hover:bg-white/30 transition">
@@ -780,14 +795,16 @@
         </div>
       </div>
 
+      <!-- Area Viewfinder Kamera & Pratinjau -->
       <div class="relative flex-1 my-3 flex items-center justify-center rounded-3xl overflow-hidden bg-slate-950 border border-white/10 shadow-2xl">
         <video id="ocrVideoLive" autoplay playsinline muted class="w-full h-full object-cover"></video>
         <canvas id="ocrCaptureCanvas" class="hidden"></canvas>
         <img id="ocrSnapshotPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-black" />
 
+        <!-- Overlay Kotak Bidik Struk -->
         <div id="ocrFrameGuide" class="absolute inset-5 border-2 border-dashed border-emerald-400/80 rounded-2xl pointer-events-none flex flex-col justify-between p-3">
           <div id="scanLaserEffect" class="scan-laser-line"></div>
-          <div class="flex justify-between text-emerald-300 text-[10px] font-mono font-bold bg-black/40 px-2 py-1 rounded-md self-center">
+          <div class="flex justify-between text-emerald-300 text-[10px] font-mono font-bold bg-black/50 px-2 py-1 rounded-md self-center">
             <span data-i18n="aimReceipt">Arahkan kamera ke struk belanja</span>
           </div>
           <div class="flex justify-between text-[8px] text-emerald-200/80 font-mono">
@@ -796,27 +813,38 @@
           </div>
         </div>
 
-        <div id="ocrAiLoading" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center z-20">
-          <div class="w-12 h-12 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <!-- Animasi Loading Analisis AI -->
+        <div id="ocrAiLoading" class="hidden absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-6 text-center z-30">
+          <div class="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mb-3"></div>
           <p class="text-sm font-bold text-white mb-1" data-i18n="readingReceipt">Gemini AI sedang membaca struk...</p>
           <p class="text-[11px] text-emerald-200/80 max-w-xs" data-i18n="extractingDetails">Mengekstrak total harga, toko, kategori, dan rincian transaksi otomatis.</p>
         </div>
 
-        <div id="ocrCameraError" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 text-center z-20 text-white">
-          <i class="fa-solid fa-video-slash text-3xl text-rose-400 mb-2"></i>
-          <h4 class="text-xs font-bold mb-1" data-i18n="camErrorTitle">Kamera Tidak Dapat Diakses</h4>
-          <p class="text-[10px] text-slate-300 mb-4 max-w-xs" data-i18n="camErrorSub">Berikan izin akses kamera peramban, atau pilih gambar dari galeri.</p>
-          <div class="flex gap-2">
-            <button onclick="startCameraStream()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold" data-i18n="retry">Coba Lagi</button>
-            <label class="px-3 py-1.5 bg-slate-700 text-white rounded-xl text-xs font-bold cursor-pointer">
-              <span data-i18n="selectFile">Pilih File</span>
-              <input type="file" accept="image/*" class="hidden" onchange="handleFallbackImageUpload(this)" />
-            </label>
+        <!-- Tampilan Ramah Jika Izin Live Video Terkendala di Android / iOS -->
+        <div id="ocrCameraError" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-20 text-white">
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mb-3">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+          <h4 class="text-xs font-bold mb-1" data-i18n="camErrorTitle">Kamera Siap Digunakan</h4>
+          <p class="text-[10px] text-slate-300 mb-4 max-w-xs" data-i18n="camErrorSub">Gunakan kamera langsung ponsel Anda untuk memotret struk belanja:</p>
+          <div class="flex flex-col gap-2 w-full max-w-xs">
+            <button onclick="document.getElementById('ocrNativeCameraInput').click()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center gap-2">
+              <i class="fa-solid fa-camera"></i> Buka Kamera Ponsel
+            </button>
+            <div class="flex gap-2">
+              <button onclick="document.getElementById('ocrGalleryInput').click()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold">
+                <i class="fa-regular fa-image mr-1"></i> Pilih Galeri
+              </button>
+              <button onclick="startCameraStream()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold">
+                <i class="fa-solid fa-rotate mr-1"></i> Coba Live
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div id="ocrAiResultsCard" class="hidden bg-white/95 backdrop-blur-md rounded-2xl p-4 mb-3 text-slate-800 space-y-2.5 shadow-2xl border border-white/40">
+      <!-- KARTU HASIL DETEKSI GEMINI AI (HANYA MUNCUL JIKA HASIL SCAN SUDAH VALID) -->
+      <div id="ocrAiResultsCard" class="hidden bg-white/95 backdrop-blur-md rounded-2xl p-4 mb-3 text-slate-800 space-y-2.5 shadow-2xl border border-white/40 z-40">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
             <span class="text-[9px] uppercase font-bold text-emerald-600 tracking-wider" data-i18n="aiScanResult">Hasil Scan AI</span>
@@ -851,17 +879,19 @@
         </div>
       </div>
 
+      <!-- KONTROL SHUTTER KAMERA & OPSI KAMERA NATIVE -->
       <div id="ocrShutterControls" class="flex items-center justify-around pb-2">
-        <label class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center cursor-pointer transition">
+        <button onclick="document.getElementById('ocrGalleryInput').click()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center cursor-pointer transition" title="Buka Galeri">
           <i class="fa-regular fa-image text-sm"></i>
-          <input type="file" accept="image/*" class="hidden" onchange="handleFallbackImageUpload(this)" />
-        </label>
+        </button>
         <button onclick="captureAndScanReceipt()" class="w-18 h-18 rounded-full bg-white p-1.5 shadow-2xl active:scale-95 transition">
           <div class="w-full h-full rounded-full border-4 border-slate-900 bg-white flex items-center justify-center text-slate-800 text-xl font-bold">
             <i class="fa-solid fa-camera"></i>
           </div>
         </button>
-        <div class="w-10"></div>
+        <button onclick="document.getElementById('ocrNativeCameraInput').click()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center cursor-pointer transition" title="Kamera Ponsel">
+          <i class="fa-solid fa-mobile-screen text-sm"></i>
+        </button>
       </div>
     </div>
 
@@ -1039,8 +1069,8 @@
         aimReceipt: "Arahkan kamera ke struk belanja",
         readingReceipt: "Gemini AI sedang membaca struk...",
         extractingDetails: "Mengekstrak total harga, toko, kategori, dan rincian transaksi otomatis.",
-        camErrorTitle: "Kamera Tidak Dapat Diakses",
-        camErrorSub: "Berikan izin akses kamera peramban, atau pilih gambar dari galeri.",
+        camErrorTitle: "Kamera Siap Digunakan",
+        camErrorSub: "Gunakan kamera langsung ponsel Anda untuk memotret struk belanja:",
         retry: "Coba Lagi",
         selectFile: "Pilih File",
         aiScanResult: "Hasil Scan AI",
@@ -1140,8 +1170,8 @@
         aimReceipt: "Aim camera at your receipt",
         readingReceipt: "Gemini AI is reading receipt...",
         extractingDetails: "Extracting total, merchant, category & details automatically.",
-        camErrorTitle: "Camera Cannot Be Accessed",
-        camErrorSub: "Please allow camera access in browser or choose from gallery.",
+        camErrorTitle: "Camera Ready",
+        camErrorSub: "Use your device camera directly to capture receipt photo:",
         retry: "Try Again",
         selectFile: "Choose File",
         aiScanResult: "AI Scan Results",
@@ -1227,7 +1257,7 @@
     }
 
     // -------------------------------------------------------------
-    // 3. STATE APLIKASI (DENGAN DUKUNGAN DOMPET BRI)
+    // 3. STATE APLIKASI
     // -------------------------------------------------------------
     const AppState = {
       currentUser: null,
@@ -1414,8 +1444,27 @@
     }
 
     // -------------------------------------------------------------
-    // 6. AUTENTIKASI PENGGUNA & GDPR
+    // 6. FITUR TOGGLE LIHAT PASSWORD & AUTENTIKASI
     // -------------------------------------------------------------
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+    }
+
     function lockToAuthGate() {
       document.getElementById('viewAuthGate').classList.remove('hidden');
       document.getElementById('viewDashboard').classList.add('hidden');
@@ -1455,17 +1504,6 @@
         formFor.classList.remove('hidden');
         formLog.classList.add('hidden');
         formReg.classList.add('hidden');
-      }
-    }
-
-    function togglePasswordVisibility(inputId, btn) {
-      const input = document.getElementById(inputId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
-      } else {
-        input.type = 'password';
-        btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
       }
     }
 
@@ -1945,7 +1983,7 @@ Kembalikan JSON dengan struktur:
     function renderAll() {
       if (!AppState.currentUser) return;
 
-      // UCAPAN STRATEGIS BERSIH TANPA EMOJI
+      // UCAPAN STRATEGIS BEBAS EMOJI
       const firstName = AppState.currentUser.name ? AppState.currentUser.name.split(' ')[0] : 'Fajrush';
       document.getElementById('userGreeting').textContent = `Hi, ${firstName}`;
       document.getElementById('currentCurrencyTag').innerText = AppState.currentCurrency;
@@ -2186,7 +2224,7 @@ Kembalikan JSON dengan struktur:
     }
 
     // -------------------------------------------------------------
-    // 13. SCAN KAMERA LIVE OCR (GEMINI AI DENGAN SMART RESIZE & PARSER)
+    // 13. SCAN KAMERA LIVE OCR (GEMINI AI PERBAIKAN TOTAL)
     // -------------------------------------------------------------
     let videoStream = null;
     let currentFacingMode = "environment";
@@ -2207,7 +2245,7 @@ Kembalikan JSON dengan struktur:
       document.getElementById('ocrVideoLive').classList.remove('hidden');
       document.getElementById('ocrSnapshotPreview').classList.add('hidden');
       document.getElementById('ocrAiLoading').classList.add('hidden');
-      document.getElementById('ocrAiResultsCard').classList.add('hidden');
+      document.getElementById('ocrAiResultsCard').classList.add('hidden'); // Selalu sembunyikan hasil di awal
       document.getElementById('ocrShutterControls').classList.remove('hidden');
       document.getElementById('ocrFrameGuide').classList.remove('hidden');
       document.getElementById('ocrCameraError').classList.add('hidden');
@@ -2218,14 +2256,15 @@ Kembalikan JSON dengan struktur:
       document.getElementById('ocrCameraError').classList.add('hidden');
       try {
         videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: { facingMode: currentFacingMode === 'user' ? 'user' : { ideal: 'environment' } },
           audio: false
         });
         const video = document.getElementById('ocrVideoLive');
         video.srcObject = videoStream;
         await video.play();
       } catch (err) {
-        console.warn("Kamera error:", err);
+        console.warn("Kamera WebRTC belum diizinkan atau tidak aktif:", err);
+        // Tampilkan layar panduan kamera bawaan ponsel tanpa menampilkan kartu hasil scan yang menumpuk
         document.getElementById('ocrCameraError').classList.remove('hidden');
       }
     }
@@ -2242,22 +2281,22 @@ Kembalikan JSON dengan struktur:
       startCameraStream();
     }
 
-    // KOMPRESI GAMBAR OPTIMAL AGAR RESPON CEPAT & TIDAK PERNAH TIMEOUT
     async function captureAndScanReceipt() {
       const video = document.getElementById('ocrVideoLive');
       const canvas = document.getElementById('ocrCaptureCanvas');
       const preview = document.getElementById('ocrSnapshotPreview');
       const loading = document.getElementById('ocrAiLoading');
 
+      // Jika kamera video stream tidak aktif, langsung arahkan ke kamera bawaan ponsel
       if (!video || !video.videoWidth) {
-        showToast(currentLang === 'id' ? "Menunggu kamera siap..." : "Waiting for camera...", "warning");
+        document.getElementById('ocrNativeCameraInput').click();
         return;
       }
 
-      // Resize cerdas ke maksimal 1000px untuk menjaga ketajaman teks struk tanpa payload membengkak
+      // Resize cerdas ke maksimal 1200px agar teks struk sangat tajam tetapi payload tetap ringan
       let width = video.videoWidth;
       let height = video.videoHeight;
-      const maxDim = 1000;
+      const maxDim = 1200;
       if (width > maxDim || height > maxDim) {
         if (width > height) {
           height = Math.round((height * maxDim) / width);
@@ -2273,7 +2312,7 @@ Kembalikan JSON dengan struktur:
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, width, height);
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       const rawBase64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
 
       preview.src = dataUrl;
@@ -2281,6 +2320,7 @@ Kembalikan JSON dengan struktur:
       video.classList.add('hidden');
       document.getElementById('ocrFrameGuide').classList.add('hidden');
       document.getElementById('ocrShutterControls').classList.add('hidden');
+      document.getElementById('ocrCameraError').classList.add('hidden');
       loading.classList.remove('hidden');
 
       await processReceiptWithGemini(rawBase64);
@@ -2296,7 +2336,7 @@ Kembalikan JSON dengan struktur:
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxDim = 1000;
+            const maxDim = 1200;
             if (width > maxDim || height > maxDim) {
               if (width > height) {
                 height = Math.round((height * maxDim) / width);
@@ -2310,7 +2350,7 @@ Kembalikan JSON dengan struktur:
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
             const rawBase64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
 
             document.getElementById('ocrSnapshotPreview').src = dataUrl;
@@ -2318,6 +2358,7 @@ Kembalikan JSON dengan struktur:
             document.getElementById('ocrVideoLive').classList.add('hidden');
             document.getElementById('ocrFrameGuide').classList.add('hidden');
             document.getElementById('ocrShutterControls').classList.add('hidden');
+            document.getElementById('ocrCameraError').classList.add('hidden');
             document.getElementById('ocrAiLoading').classList.remove('hidden');
 
             await processReceiptWithGemini(rawBase64);
@@ -2332,7 +2373,7 @@ Kembalikan JSON dengan struktur:
       const loading = document.getElementById('ocrAiLoading');
       const resultsCard = document.getElementById('ocrAiResultsCard');
 
-      const systemInstruction = "Kamu adalah sistem OCR keuangan presisi tinggi. Analisis struk kasir/receipt ini secara teliti. Cari total harga akhir/grand total yang harus dibayar, nama toko/merchant, tanggal (format YYYY-MM-DD), kategori belanja, klasifikasi (Kebutuhan/Keinginan/Investasi), dan ringkasan barang belanjaan. Berikan output HANYA format JSON valid murni tanpa markdown.";
+      const systemInstruction = "Kamu adalah sistem OCR keuangan presisi tinggi. Analisis struk kasir/nota belanja ini secara teliti. Cari total nominal akhir pembayaran (grand total/total yang harus dibayar), nama toko/merchant, tanggal (format YYYY-MM-DD), kategori belanja, klasifikasi (Kebutuhan/Keinginan/Investasi), dan ringkasan singkat barang belanjaan. Output HANYA JSON murni.";
       
       const promptText = `Ekstrak data dari foto struk belanja kasir ini dalam format JSON:
 {
@@ -2390,45 +2431,34 @@ Kembalikan JSON dengan struktur:
           }
         }
 
-        lastGeminiExtractedData = {
-          total: (parsed && parsed.total) ? Number(parsed.total) : 50000,
-          merchant: (parsed && parsed.merchant) ? parsed.merchant : (currentLang === 'id' ? "Struk Belanja Kasir" : "Cashier Receipt"),
-          date: (parsed && parsed.date) ? parsed.date : new Date().toISOString().split('T')[0],
-          category: (parsed && parsed.category) ? parsed.category : "Makanan & Minuman",
-          classification: (parsed && parsed.classification) ? parsed.classification : "Kebutuhan",
-          notes: (parsed && parsed.notes) ? parsed.notes : (currentLang === 'id' ? "Belanja Struk Kasir" : "Receipt Purchase")
-        };
+        if (parsed && (parsed.total || parsed.merchant)) {
+          lastGeminiExtractedData = {
+            total: Number(parsed.total) || 0,
+            merchant: parsed.merchant || (currentLang === 'id' ? "Struk Belanja Kasir" : "Cashier Receipt"),
+            date: parsed.date || new Date().toISOString().split('T')[0],
+            category: parsed.category || "Makanan & Minuman",
+            classification: parsed.classification || "Kebutuhan",
+            notes: parsed.notes || (currentLang === 'id' ? "Belanja Struk Kasir" : "Receipt Purchase")
+          };
 
-        document.getElementById('resMerchant').innerText = lastGeminiExtractedData.merchant;
-        document.getElementById('resAmount').innerText = formatCurrency(lastGeminiExtractedData.total);
-        document.getElementById('resCategoryBadge').innerText = getCategoryDisplay(lastGeminiExtractedData.category);
-        document.getElementById('resClassification').innerText = getClassificationDisplay(lastGeminiExtractedData.classification);
-        document.getElementById('resNotes').innerText = lastGeminiExtractedData.notes;
+          document.getElementById('resMerchant').innerText = lastGeminiExtractedData.merchant;
+          document.getElementById('resAmount').innerText = formatCurrency(lastGeminiExtractedData.total);
+          document.getElementById('resCategoryBadge').innerText = getCategoryDisplay(lastGeminiExtractedData.category);
+          document.getElementById('resClassification').innerText = getClassificationDisplay(lastGeminiExtractedData.classification);
+          document.getElementById('resNotes').innerText = lastGeminiExtractedData.notes;
 
-        loading.classList.add('hidden');
-        resultsCard.classList.remove('hidden');
-        showToast(currentLang === 'id' ? "Struk berhasil dibaca!" : "Receipt recognized successfully!");
+          loading.classList.add('hidden');
+          resultsCard.classList.remove('hidden');
+          showToast(currentLang === 'id' ? "Struk berhasil dibaca!" : "Receipt recognized successfully!");
+        } else {
+          throw new Error("Struk tidak terdeteksi");
+        }
       } catch (error) {
-        console.warn("Gemini OCR fallback:", error);
+        console.warn("Gemini OCR error:", error);
         loading.classList.add('hidden');
-        
-        lastGeminiExtractedData = {
-          total: 50000,
-          merchant: currentLang === 'id' ? "Struk Kasir" : "Receipt Store",
-          date: new Date().toISOString().split('T')[0],
-          category: "Makanan & Minuman",
-          classification: "Kebutuhan",
-          notes: currentLang === 'id' ? "Hasil Pindai Struk" : "Scanned Receipt"
-        };
-
-        document.getElementById('resMerchant').innerText = lastGeminiExtractedData.merchant;
-        document.getElementById('resAmount').innerText = formatCurrency(lastGeminiExtractedData.total);
-        document.getElementById('resCategoryBadge').innerText = getCategoryDisplay(lastGeminiExtractedData.category);
-        document.getElementById('resClassification').innerText = getClassificationDisplay(lastGeminiExtractedData.classification);
-        document.getElementById('resNotes').innerText = lastGeminiExtractedData.notes;
-
-        resultsCard.classList.remove('hidden');
-        showToast(currentLang === 'id' ? "Struk siap ditinjau di formulir!" : "Receipt ready to verify in form!");
+        resultsCard.classList.add('hidden'); // Jangan tampilkan kartu hasil palsu jika gagal!
+        showToast(currentLang === 'id' ? "Gagal membaca struk. Pastikan tulisan pada struk terlihat jelas dan coba lagi." : "Failed to read receipt. Please ensure text is clear and retry.", "warning");
+        retakePhoto();
       }
     }
 
