@@ -1841,7 +1841,7 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
       }
     }
 
-    // Helper function to compress and resize image from smartphone camera
+    // Helper function to preprocess and optimize receipt image for OCR clarity
     function compressAndPrepareImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1853,7 +1853,8 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxDim = 1280;
+            // High-detail resolution: 1920px retains sharp rendering of thermal numbers & dots
+            const maxDim = 1920;
 
             if (width > maxDim || height > maxDim) {
               if (width > height) {
@@ -1872,7 +1873,22 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
             ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            // Enhance contrast and sharpness for faded thermal paper
+            try {
+              const imgData = ctx.getImageData(0, 0, width, height);
+              const d = imgData.data;
+              const contrastFactor = 1.15; // Mild contrast boost for thermal print
+              for (let i = 0; i < d.length; i += 4) {
+                d[i] = Math.min(255, Math.max(0, (d[i] - 128) * contrastFactor + 128));
+                d[i + 1] = Math.min(255, Math.max(0, (d[i + 1] - 128) * contrastFactor + 128));
+                d[i + 2] = Math.min(255, Math.max(0, (d[i + 2] - 128) * contrastFactor + 128));
+              }
+              ctx.putImageData(imgData, 0, 0);
+            } catch (ignore) {
+              // Canvas tainted or cross-origin safe fallback
+            }
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
             const base64Data = dataUrl.split(',')[1];
             resolve({ dataUrl, base64Data, mimeType: 'image/jpeg' });
           };
@@ -1894,28 +1910,36 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
       const file = event.target.files[0];
       if (!file) return;
 
-      showToast("Sedang memproses & membaca foto struk...", "info");
+      showToast("Sedang memindai struk dengan akurasi tinggi...", "info");
 
       try {
-        // Step 1: Compress high-res smartphone photo to prevent payload timeout & memory crash
+        // Step 1: Preprocess receipt photo
         const { dataUrl, base64Data, mimeType } = await compressAndPrepareImage(file);
 
         let extracted = null;
 
-        // Step 2: Tier 1 - Gemini Vision AI Extraction with user API key
+        // Step 2: Advanced Gemini Vision OCR Engine
         try {
           extracted = await scanReceiptWithGeminiVision(base64Data, mimeType);
         } catch (geminiErr) {
           console.warn("Gemini Vision API encountered an issue, running local OCR fallback:", geminiErr);
         }
 
-        // Step 3: Tier 2 - On-Device Tesseract.js & Heuristic Fallback if Gemini did not return valid result
-        if (!extracted || !extracted.amount) {
-          showToast("Membaca teks struk secara lokal...", "info");
-          extracted = await scanReceiptWithTesseractFallback(dataUrl);
+        // Step 3: Local Heuristic & Tesseract Fallback if Gemini Vision is unavailable
+        if (!extracted || !extracted.amount || extracted.amount <= 0) {
+          showToast("Menganalisis teks struk secara lokal...", "info");
+          const fallbackData = await scanReceiptWithTesseractFallback(dataUrl);
+          if (fallbackData) {
+            extracted = {
+              title: extracted?.title || fallbackData.title || "Struk Pembelian",
+              amount: fallbackData.amount || extracted?.amount || 0,
+              category: extracted?.category || fallbackData.category || "Belanja",
+              date: extracted?.date || fallbackData.date || new Date().toISOString().split('T')[0]
+            };
+          }
         }
 
-        // Step 4: Populate Transaction Modal with extracted data
+        // Step 4: Populate Transaction Modal with verified data
         openTransactionModal('expense');
         
         if (extracted) {
@@ -1935,92 +1959,135 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
           if (extracted.amount && extracted.amount > 0) {
             showToast(`Struk terbaca: ${extracted.title || 'Transaksi'} (${formatAmount(extracted.amount)})`, "success");
           } else {
-            showToast("Struk berhasil dibuka. Silakan masukkan nominal yang tertera pada struk.", "info");
+            document.getElementById('txAmountInput').focus();
+            showToast(`Struk ${extracted.title || 'terdeteksi'}. Silakan masukkan nominal pembayaran.`, "info");
           }
         } else {
           showToast("Struk berhasil dibuka. Silakan masukkan nominal belanja Anda.", "info");
         }
       } catch (err) {
         console.error("OCR Processing error:", err);
-        // Resilient fallback: Still open transaction modal so user is never blocked
         openTransactionModal('expense');
         showToast("Struk terbuka. Silakan masukkan nominal pembayaran.", "info");
       }
     }
 
     async function scanReceiptWithGeminiVision(base64Image, mimeType) {
-      const prompt = `Anda adalah sistem OCR cerdas ekstraktor struk dan bukti transaksi multi-tipe (ritel minimarket/supermarket seperti Indomaret/Alfamart, kafe, restoran, transfer bank/e-wallet seperti BCA/Mandiri/BRI/BNI/Dana/GoPay/OVO/ShopeePay, tagihan listrik/PDAM/pulsa, SPBU/bensin, hingga nota tulisan tangan).
+      const prompt = `Anda adalah sistem OCR paling akurat untuk membaca struk kasir, nota belanja, dan bukti pembayaran digital di INDONESIA.
+Tugas utama Anda: Temukan TOTAL NOMINAL AKHIR yang sebenarnya dibayarkan oleh pengguna.
 
-Tugas Anda: Analisis foto struk/bukti transaksi ini dan ekstrak data berikut secara akurat:
-1. "title": Nama toko, merchant, penyedia jasa, penerima transfer, atau deskripsi transaksi singkat (contoh: "Indomaret", "Alfamart", "SPBU Pertamina", "Kopi Kenangan", "Transfer ke BCA", "PLN Pascabayar").
-2. "amount": Angka nominal TOTAL AKHIR / GRAND TOTAL / TOTAL BAYAR / TOTAL TRANSFER yang harus dibayar/dikeluarkan (hanya angka bulat integer murni tanpa titik, koma, huruf, atau lambang Rp). JANGAN mengambil subtotal, pajak saja, atau uang kembalian (change).
-3. "category": Tentukan kategori paling tepat dari daftar ini:
-   - "Makanan & Minuman"
-   - "Belanja"
-   - "Transportasi"
-   - "Tagihan & Utilitas"
-   - "Biaya dan pajak"
-   - "Top up wallet"
-   - "Investasi"
-   - "Hiburan"
-   - "Belum terkategori"
-4. "date": Tanggal transaksi dalam format YYYY-MM-DD jika terbaca pada struk, atau null jika tidak ada.
+ATURAN STRUK INDONESIA (PENTING):
+1. Format Angka Indonesia: Tanda titik (.) adalah pemisah ribuan (contoh: 48.500 artinya 48500 rupiah, 1.250.000 artinya 1250000 rupiah). Tanda koma (,) adalah desimal (contoh: 48.500,00 jadikan 48500).
+2. Struk Minimarket/Supermarket (Indomaret, Alfamart, Superindo, Hypermart, dll.):
+   - Temukan baris: "TOTAL BELANJA", "TOTAL AKHIR", "TOTAL HARGA", "HARGA JUAL", "GRAND TOTAL", "TAGIHAN", atau "TOTAL Rp".
+   - JANGAN mengambil "TUNAI" / "CASH" / "BAYAR" (itu uang yang diserahkan pembeli, bukan harga barang).
+   - JANGAN mengambil "KEMBALI" / "KEMBALIAN" / "CHANGE".
+   - JANGAN mengambil "PPN", "DISKON", "HEMAT", atau "SUBTOTAL".
+3. Bukti Transfer & E-Wallet (BCA, Mandiri Livin, BRImo, BNI, BSI, DANA, GoPay, OVO, ShopeePay, QRIS):
+   - Temukan: "Total Transaksi", "Jumlah Transfer", "Total Pembayaran", "Nominal", "Total Bayar". Jika ada biaya admin, ambil total keseluruhan.
+4. Struk SPBU Pertamina/Shell & Restoran:
+   - Ambil nominal total akhir sebelum baris tunai/kembalian.
 
-Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code block:
-{"title": "Nama Toko / Merchant", "amount": 50000, "category": "Belanja", "date": "2026-09-05"}`;
+Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
+{
+  "title": "Nama Toko / Merchant / Deskripsi",
+  "amount": 48500,
+  "category": "Makanan & Minuman" | "Belanja" | "Transportasi" | "Tagihan & Utilitas" | "Biaya dan pajak" | "Top up wallet" | "Investasi" | "Hiburan" | "Belum terkategori",
+  "date": "YYYY-MM-DD"
+}`;
 
       const modelsToTry = [
-        "gemini-1.5-flash",
+        "gemini-3-flash-preview",
+        "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-2.5-flash-preview-09-2025"
+        "gemini-1.5-flash"
       ];
 
-      const currentKey = apiKey || DEFAULT_GEMINI_API_KEY;
+      // Try user key and platform auto-injected key
+      const keysToTry = [
+        apiKey || DEFAULT_GEMINI_API_KEY,
+        "" // Canvas automatic runtime injection fallback
+      ];
 
-      for (const model of modelsToTry) {
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey}`;
-          const payload = {
-            contents: [{
-              role: "user",
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: mimeType, data: base64Image } }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1
-            }
-          };
+      for (const currentKey of keysToTry) {
+        for (const model of modelsToTry) {
+          try {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey}`;
+            const payload = {
+              contents: [{
+                role: "user",
+                parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType: mimeType, data: base64Image } }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.1
+              }
+            };
 
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
 
-          if (res.ok) {
-            const data = await res.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              const cleanJsonMatch = text.match(/\{[\s\S]*\}/);
-              if (cleanJsonMatch) {
-                const parsed = JSON.parse(cleanJsonMatch[0]);
-                if (parsed && typeof parsed.amount === 'number') {
-                  return parsed;
-                } else if (parsed && parsed.amount) {
-                  parsed.amount = parseInt(String(parsed.amount).replace(/[^0-9]/g, '')) || 0;
+            if (res.ok) {
+              const data = await res.json();
+              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                const parsed = cleanAndParseReceiptJson(text);
+                if (parsed && parsed.amount > 0) {
                   return parsed;
                 }
               }
             }
+          } catch (e) {
+            // continue to next model/key combination
           }
-        } catch (e) {
-          // try next model
         }
       }
       return null;
+    }
+
+    function cleanAndParseReceiptJson(rawText) {
+      if (!rawText) return null;
+      try {
+        let clean = rawText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (jsonMatch) clean = jsonMatch[0];
+
+        const parsed = JSON.parse(clean);
+        if (!parsed) return null;
+
+        // Sanitize Amount for Indonesian Currency
+        if (parsed.amount !== undefined && parsed.amount !== null) {
+          let strVal = String(parsed.amount).trim();
+          // Remove currency markers and trailing decimal zeros e.g. ",00" or ".00"
+          strVal = strVal.replace(/[Rr][Pp]\.?\s*/g, '');
+          strVal = strVal.replace(/[,\.]00$/, '');
+          // Remove dots or commas used as thousand separators
+          strVal = strVal.replace(/[^0-9]/g, '');
+          const intVal = parseInt(strVal, 10);
+          parsed.amount = (!isNaN(intVal) && intVal > 0) ? intVal : 0;
+        }
+
+        // Sanitize Date
+        if (parsed.date) {
+          const dMatch = parsed.date.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+          if (dMatch) {
+            parsed.date = `${dMatch[1]}-${String(dMatch[2]).padStart(2, '0')}-${String(dMatch[3]).padStart(2, '0')}`;
+          } else {
+            parsed.date = new Date().toISOString().split('T')[0];
+          }
+        } else {
+          parsed.date = new Date().toISOString().split('T')[0];
+        }
+
+        return parsed;
+      } catch (err) {
+        return null;
+      }
     }
 
     async function scanReceiptWithTesseractFallback(dataUrl) {
@@ -2037,7 +2104,6 @@ Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code blo
       } catch (err) {
         console.warn("Tesseract OCR fallback skipped:", err);
       }
-      // Return basic structure so user can seamlessly input amount
       return {
         title: "Struk Pembelian",
         amount: 0,
@@ -2052,10 +2118,10 @@ Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code blo
       
       let title = "";
       let amount = 0;
-      let category = "Belum terkategori";
+      let category = "Belanja";
       let date = new Date().toISOString().split('T')[0];
 
-      // 1. Detect known merchants/brands in Indonesian retail & banking
+      // 1. Indonesian Merchant Brand Recognition
       const merchantPatterns = [
         { pattern: /indomaret/i, name: "Indomaret", cat: "Belanja" },
         { pattern: /alfamart/i, name: "Alfamart", cat: "Belanja" },
@@ -2072,13 +2138,15 @@ Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code blo
         { pattern: /kfc/i, name: "KFC", cat: "Makanan & Minuman" },
         { pattern: /solaria/i, name: "Solaria", cat: "Makanan & Minuman" },
         { pattern: /hokben/i, name: "HokBen", cat: "Makanan & Minuman" },
-        { pattern: /grab|gojek|gofood|grabfood/i, name: "Ojol / Transportasi Online", cat: "Transportasi" },
+        { pattern: /grab|gojek|gofood|grabfood/i, name: "Transportasi Online", cat: "Transportasi" },
         { pattern: /pln|listrik/i, name: "Tagihan Listrik PLN", cat: "Tagihan & Utilitas" },
         { pattern: /pdam/i, name: "Tagihan PDAM", cat: "Tagihan & Utilitas" },
         { pattern: /telkom|indihome/i, name: "Tagihan Internet", cat: "Tagihan & Utilitas" },
         { pattern: /bca|klikbca/i, name: "Transfer Bank BCA", cat: "Biaya dan pajak" },
         { pattern: /mandiri|livin/i, name: "Transfer Bank Mandiri", cat: "Biaya dan pajak" },
         { pattern: /bri|brimo/i, name: "Transfer Bank BRI", cat: "Biaya dan pajak" },
+        { pattern: /bni|bni mobile/i, name: "Transfer Bank BNI", cat: "Biaya dan pajak" },
+        { pattern: /bsi|bsi mobile/i, name: "Transfer Bank BSI", cat: "Biaya dan pajak" },
         { pattern: /gopay/i, name: "GoPay", cat: "Top up wallet" },
         { pattern: /dana/i, name: "DANA Wallet", cat: "Top up wallet" },
         { pattern: /ovo/i, name: "OVO", cat: "Top up wallet" },
@@ -2098,43 +2166,58 @@ Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code blo
           const clean = lines[i].replace(/[^a-zA-Z0-9\s]/g, '').trim();
           if (clean.length >= 3 && !/^\d+$/.test(clean) && !/jl|jalan|alamat|telp|pos|npwp/i.test(clean)) {
             title = clean;
-            category = "Belanja";
             break;
           }
         }
         if (!title) title = "Struk Pembelian";
       }
 
-      // 2. Extract Total Amount candidates
-      const amountsFound = [];
-      const totalKeywords = /(total|grand\s*total|total\s*bayar|tagihan|jumlah\s*bayar|netto|total\s*belanja|total\s*rp|tunai|rp)/i;
+      // 2. Extract Total Amount candidate lines (Priority to TOTAL / GRAND TOTAL over TUNAI)
+      const primaryTotalRegex = /(?:total\s*(?:belanja|akhir|harga|bayar|tagihan|transaksi|rp)?|grand\s*total|harga\s*jual|jumlah\s*(?:transfer|bayar)?|total)\s*[:=]?\s*(?:rp\.?)?\s*([0-9\.,]+)/i;
+      const excludeKeywords = /kembali|kembalian|change|kembalian\s*rp|tunai|cash|bayar\s*tunai|ppn|pajak|diskon|hemat/i;
 
       for (const line of lines) {
-        if (totalKeywords.test(line)) {
-          const numbers = line.match(/(?:rp\.?|idr)?\s*([0-9\.,]+)/gi);
-          if (numbers) {
-            numbers.forEach(numStr => {
-              const digits = numStr.replace(/[^0-9]/g, '');
-              const val = parseInt(digits);
-              if (val && val >= 100 && val <= 500000000) {
-                amountsFound.push(val);
-              }
-            });
+        if (!excludeKeywords.test(line)) {
+          const match = line.match(primaryTotalRegex);
+          if (match && match[1]) {
+            let digits = match[1].replace(/[,\.]00$/, '').replace(/[^0-9]/g, '');
+            const parsedVal = parseInt(digits, 10);
+            if (parsedVal && parsedVal >= 100 && parsedVal <= 500000000) {
+              amount = parsedVal;
+              break;
+            }
           }
         }
       }
 
-      if (amountsFound.length > 0) {
-        // Pick the largest recognized total
-        amount = Math.max(...amountsFound);
+      // Fallback: search all lines with Rp pattern if primary regex didn't catch
+      if (amount === 0) {
+        const amountsFound = [];
+        for (const line of lines) {
+          if (!excludeKeywords.test(line)) {
+            const matches = line.match(/(?:rp\.?|idr)?\s*([0-9]{1,3}(?:[\.,][0-9]{3})+)/gi);
+            if (matches) {
+              matches.forEach(mStr => {
+                const digits = mStr.replace(/[,\.]00$/, '').replace(/[^0-9]/g, '');
+                const val = parseInt(digits, 10);
+                if (val && val >= 500 && val <= 500000000) {
+                  amountsFound.push(val);
+                }
+              });
+            }
+          }
+        }
+        if (amountsFound.length > 0) {
+          amount = Math.max(...amountsFound);
+        }
       }
 
-      // 3. Extract date if available
+      // 3. Extract date
       const dateMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
       if (dateMatch) {
-        let d = parseInt(dateMatch[1]);
-        let m = parseInt(dateMatch[2]);
-        let y = parseInt(dateMatch[3]);
+        let d = parseInt(dateMatch[1], 10);
+        let m = parseInt(dateMatch[2], 10);
+        let y = parseInt(dateMatch[3], 10);
         if (y < 100) y += 2000;
         if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
           date = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -2146,7 +2229,7 @@ Keluarkan HANYA teks JSON valid murni tanpa markdown, tanpa tanda kutip code blo
 
     // Exponential Backoff helper as required by rules
     async function callGeminiApiWithRetry(prompt) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey || DEFAULT_GEMINI_API_KEY}`;
       const payload = {
         contents: [{ parts: [{ text: prompt }] }]
       };
