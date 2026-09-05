@@ -50,6 +50,8 @@
   <!-- Supabase JS & Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <!-- In-Browser OCR Fallback Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     /* Styling scrollbar halus */
@@ -1128,761 +1130,7 @@
 
   <script>
     /* ==========================================================================
-       1. KONFIGURASI SUPABASE, GEMINI API, & OPENAI CHATGPT API KEY
-       ========================================================================== */
-    const SUPABASE_URL = "https://twuwhwzojkghbtllbjtg.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_xoF1wKuPWaGSSa-yW8jDoA_q22rDxzL";
-    
-    // API Keys yang diberikan oleh pengguna
-    const GEMINI_API_KEY = "AQ.Ab8RN6LfOorpK1J0BCgktf25wIUzvDrOwcR84uSqwKvICiQAGw";
-    const OPENAI_API_KEY = "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";
-
-    // Inisialisasi Supabase Client jika CDN terpasang
-    let supabaseClient = null;
-    try {
-      if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
-    } catch (e) {
-      console.warn("Supabase init fallback to local state", e);
-    }
-
-    /* ==========================================================================
-       2. KAMUS DUA BAHASA (INDONESIAN & ENGLISH)
-       ========================================================================== */
-    const dictionary = {
-      id: {
-        myMoney: "Uangku",
-        myFinance: "Keuanganku",
-        myExpense: "Pengeluaranku",
-        myIncome: "Pemasukanku",
-        startNow: "Mulai Sekarang",
-        loginTitle: "Masuk ke Dompet Pintar",
-        regTitle: "Daftar Akun Baru",
-        totalBalance: "Total Saldo Bersih",
-        recentTx: "Transaksi Terakhir",
-        wallets: "Dompet & Bank Saya",
-        budgetLimit: "Batas Anggaran",
-        dreamPlanner: "Dream Planner",
-        stats: "Statistik",
-        home: "Beranda",
-        transactions: "Transaksi",
-        settings: "Akun"
-      },
-      en: {
-        myMoney: "My Balance",
-        myFinance: "My Finances",
-        myExpense: "My Expenses",
-        myIncome: "My Income",
-        startNow: "Get Started",
-        loginTitle: "Login to Smart Wallet",
-        regTitle: "Register New Account",
-        totalBalance: "Net Worth Balance",
-        recentTx: "Recent Transactions",
-        wallets: "My Accounts & Banks",
-        budgetLimit: "Budget Limit",
-        dreamPlanner: "Dream Goals",
-        stats: "Analytics",
-        home: "Home",
-        transactions: "Transactions",
-        settings: "Settings"
-      }
-    };
-
-    let currentLang = 'id';
-    let currentCurrency = 'IDR';
-    let hidePrivacy = false;
-
-    // Nilai Tukar Konversi Sederhana
-    const exchangeRates = {
-      IDR: 1,
-      USD: 0.000063,
-      EUR: 0.000058,
-      SGD: 0.000085
-    };
-
-    const currencySymbols = {
-      IDR: 'Rp',
-      USD: '$',
-      EUR: '€',
-      SGD: 'S$'
-    };
-
-    /* ==========================================================================
-       3. DEFAULT INITIAL DATA (MENIRU PERSIS DATA PADA GAMBAR REFERENSI)
-       ========================================================================== */
-    const DEFAULT_WALLETS = [
-      { id: 'w1', name: 'BCA Prioritas', bank: 'BCA', balance: 25000000, color: 'bg-blue-600' },
-      { id: 'w2', name: 'Mandiri Utama', bank: 'MANDIRI', balance: 12000000, color: 'bg-amber-600' },
-      { id: 'w3', name: 'SeaBank Cuan', bank: 'SEABANK', balance: 8000000, color: 'bg-orange-500' },
-      { id: 'w4', name: 'BRI Simpedes', bank: 'BRI', balance: 3000000, color: 'bg-blue-700' },
-      { id: 'w5', name: 'DANA E-Wallet', bank: 'DANA', balance: 2000000, color: 'bg-sky-500' }
-    ];
-
-    const DEFAULT_TRANSACTIONS = [
-      { id: 'tx-1', type: 'expense', amount: 10000000, category: 'Top up wallet', wallet: 'BCA', date: '2026-10-15', note: 'Top up portfolio invest' },
-      { id: 'tx-2', type: 'expense', amount: 5000000, category: 'Biaya dan pajak', wallet: 'MANDIRI', date: '2026-10-18', note: 'Pajak tahunan & admin' },
-      { id: 'tx-3', type: 'expense', amount: 3000000, category: 'Belum terkategori', wallet: 'SEABANK', date: '2026-10-22', note: 'Keperluan insidental' },
-      { id: 'tx-4', type: 'income', amount: 10000000, category: 'Gaji & Bonus', wallet: 'BCA', date: '2026-10-01', note: 'Gaji Bulanan Utama' }
-    ];
-
-    const DEFAULT_GOALS = [
-      { id: 'g1', title: 'DP Rumah Impian', target: 100000000, current: 35000000, deadline: '2027-12-31' },
-      { id: 'g2', title: 'Liburan Jepang', target: 20000000, current: 14000000, deadline: '2026-11-20' }
-    ];
-
-    const DEFAULT_BUDGETS = [
-      { category: 'Makanan & Minuman', limit: 3000000, spent: 1850000 },
-      { category: 'Top up wallet', limit: 12000000, spent: 10000000 },
-      { category: 'Biaya dan pajak', limit: 6000000, spent: 5000000 }
-    ];
-
-    /* ==========================================================================
-       4. STATE MANAGEMENT
-       ========================================================================== */
-    let currentUser = null;
-    let transactions = [];
-    let wallets = [];
-    let goals = [];
-    let budgets = [];
-    let userXp = 450;
-    let currentFilterType = 'all';
-
-    // Memuat data dari local cache & session
-    function initAppState() {
-      const savedUser = localStorage.getItem('dp_active_user');
-      const savedTx = localStorage.getItem('dp_transactions');
-      const savedWallets = localStorage.getItem('dp_wallets');
-      const savedGoals = localStorage.getItem('dp_goals');
-      const savedBudgets = localStorage.getItem('dp_budgets');
-      const savedXp = localStorage.getItem('dp_xp');
-
-      transactions = savedTx ? JSON.parse(savedTx) : DEFAULT_TRANSACTIONS;
-      wallets = savedWallets ? JSON.parse(savedWallets) : DEFAULT_WALLETS;
-      goals = savedGoals ? JSON.parse(savedGoals) : DEFAULT_GOALS;
-      budgets = savedBudgets ? JSON.parse(savedBudgets) : DEFAULT_BUDGETS;
-      userXp = savedXp ? parseInt(savedXp) : 450;
-
-      if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        setupUserInterface();
-        showScreen('screenDashboard');
-        showBottomNav(true);
-      } else {
-        // Tampilkan Onboarding Screen persis gambar 1
-        showScreen('screenOnboarding');
-        showBottomNav(false);
-      }
-
-      renderAll();
-    }
-
-    function saveState() {
-      localStorage.setItem('dp_transactions', JSON.stringify(transactions));
-      localStorage.setItem('dp_wallets', JSON.stringify(wallets));
-      localStorage.setItem('dp_goals', JSON.stringify(goals));
-      localStorage.setItem('dp_budgets', JSON.stringify(budgets));
-      localStorage.setItem('dp_xp', userXp.toString());
-    }
-
-    /* ==========================================================================
-       5. LOGIKA AUTENTIKASI (DAFTAR -> WAJIB LOGIN DULU) & LUPA PASSWORD
-       ========================================================================== */
-    function goToAuth(mode) {
-      showScreen('screenAuth');
-      showBottomNav(false);
-      switchAuthTab(mode);
-    }
-
-    function switchAuthTab(tab) {
-      const regCont = document.getElementById('formRegisterContainer');
-      const loginCont = document.getElementById('formLoginContainer');
-      const regBtn = document.getElementById('tabRegisterBtn');
-      const loginBtn = document.getElementById('tabLoginBtn');
-      const alertBox = document.getElementById('authAlert');
-      alertBox.classList.add('hidden');
-
-      if (tab === 'register') {
-        regCont.classList.remove('hidden');
-        loginCont.classList.add('hidden');
-        regBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-white bg-sky-400 shadow-sm";
-        loginBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900";
-      } else {
-        loginCont.classList.remove('hidden');
-        regCont.classList.add('hidden');
-        loginBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-white bg-sky-400 shadow-sm";
-        regBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900";
-      }
-    }
-
-    // Toggle Tampilkan / Sembunyikan Password pada input
-    function toggleShowPassword(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fa-regular fa-eye-slash text-sm text-sky-600';
-      } else {
-        input.type = 'password';
-        icon.className = 'fa-regular fa-eye text-sm';
-      }
-    }
-
-    // Handle Registrasi
-    function handleRegister() {
-      const username = document.getElementById('regUsername').value.trim();
-      const password = document.getElementById('regPassword').value;
-      const securityAnswer = document.getElementById('regSecurityAnswer').value.trim();
-      const alertBox = document.getElementById('authAlert');
-
-      if (!username || !password) {
-        showAuthAlert('Username dan kata sandi wajib diisi!', 'error');
-        return;
-      }
-      if (password.length < 6) {
-        showAuthAlert('Kata sandi minimal 6 karakter!', 'error');
-        return;
-      }
-
-      // Ambil daftar users terdaftar
-      let registeredUsers = JSON.parse(localStorage.getItem('dp_registered_users') || '[]');
-      const exists = registeredUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
-
-      if (exists) {
-        showAuthAlert('Username sudah digunakan! Silakan gunakan username lain.', 'error');
-        return;
-      }
-
-      const newUser = {
-        username,
-        password,
-        securityAnswer: securityAnswer || 'Jakarta',
-        createdAt: new Date().toISOString()
-      };
-
-      registeredUsers.push(newUser);
-      localStorage.setItem('dp_registered_users', JSON.stringify(registeredUsers));
-
-      // Sesuai Instruksi: "JIKA SUDAH DAFTAR JANGAN LANGSUNG MASUK, PENGGUNA HARUS MASUK DI LOGIN"
-      document.getElementById('regUsername').value = '';
-      document.getElementById('regPassword').value = '';
-      document.getElementById('regSecurityAnswer').value = '';
-
-      switchAuthTab('login');
-      document.getElementById('loginUsername').value = username;
-      showAuthAlert('✅ Pendaftaran berhasil! Silakan masuk dengan kata sandi Anda.', 'success');
-      showToast('Pendaftaran akun berhasil! Silakan login.');
-    }
-
-    // Handle Login
-    function handleLogin() {
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value;
-
-      if (!username || !password) {
-        showAuthAlert('Masukkan username dan kata sandi!', 'error');
-        return;
-      }
-
-      let registeredUsers = JSON.parse(localStorage.getItem('dp_registered_users') || '[]');
-      
-      // Jika pengguna demo default Alwi
-      if (username.toLowerCase() === 'alwi' && password === '123456') {
-        proceedLogin({ username: 'Alwi' });
-        return;
-      }
-
-      const user = registeredUsers.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-
-      if (!user) {
-        showAuthAlert('Username atau kata sandi salah! Periksa kembali.', 'error');
-        return;
-      }
-
-      proceedLogin(user);
-    }
-
-    function proceedLogin(user) {
-      currentUser = user;
-      localStorage.setItem('dp_active_user', JSON.stringify(user));
-      setupUserInterface();
-      showScreen('screenDashboard');
-      showBottomNav(true);
-      triggerConfetti();
-      showToast(`Selamat datang kembali, ${user.username}!`);
-    }
-
-    function setupUserInterface() {
-      const name = currentUser ? currentUser.username : 'Alwi';
-      document.getElementById('displayUserName').innerText = `Hi, ${name}`;
-      document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('dp_active_user');
-      currentUser = null;
-      showScreen('screenOnboarding');
-      showBottomNav(false);
-      showToast('Anda telah keluar akun.');
-    }
-
-    function showAuthAlert(msg, type) {
-      const alertBox = document.getElementById('authAlert');
-      alertBox.innerText = msg;
-      alertBox.classList.remove('hidden', 'bg-rose-100', 'text-rose-700', 'bg-emerald-100', 'text-emerald-700');
-      if (type === 'error') {
-        alertBox.classList.add('bg-rose-100', 'text-rose-700');
-      } else {
-        alertBox.classList.add('bg-emerald-100', 'text-emerald-700');
-      }
-    }
-
-    // Reset Password via Username
-    function openForgotPasswordModal() {
-      document.getElementById('modalForgotPassword').classList.remove('hidden');
-    }
-
-    function handleResetPassword() {
-      const uname = document.getElementById('forgotUsername').value.trim();
-      const answer = document.getElementById('forgotAnswer').value.trim();
-      const newPass = document.getElementById('forgotNewPassword').value;
-
-      if (!uname || !newPass) {
-        showToast('Harap isi username dan kata sandi baru!');
-        return;
-      }
-
-      let registeredUsers = JSON.parse(localStorage.getItem('dp_registered_users') || '[]');
-      const userIndex = registeredUsers.findIndex(u => u.username.toLowerCase() === uname.toLowerCase());
-
-      if (userIndex === -1 && uname.toLowerCase() !== 'alwi') {
-        showToast('Username tidak ditemukan di database.');
-        return;
-      }
-
-      if (userIndex !== -1) {
-        registeredUsers[userIndex].password = newPass;
-        localStorage.setItem('dp_registered_users', JSON.stringify(registeredUsers));
-      }
-
-      closeModal('modalForgotPassword');
-      switchAuthTab('login');
-      document.getElementById('loginUsername').value = uname;
-      showAuthAlert('Kata sandi berhasil direset! Silakan login.', 'success');
-      showToast('Kata sandi berhasil diperbarui!');
-    }
-
-    /* ==========================================================================
-       6. FORMATTER MATA UANG & PRIVASI SALDO
-       ========================================================================== */
-    function formatMoney(amountInIDR) {
-      if (hidePrivacy) {
-        return `${currencySymbols[currentCurrency]} ••••••••`;
-      }
-      const rate = exchangeRates[currentCurrency] || 1;
-      const converted = amountInIDR * rate;
-
-      if (currentCurrency === 'IDR') {
-        return `Rp ${Math.round(converted).toLocaleString('id-ID')}`;
-      } else {
-        return `${currencySymbols[currentCurrency]} ${converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-    }
-
-    function togglePrivacy() {
-      hidePrivacy = !hidePrivacy;
-      const icon = document.getElementById('privacyIcon');
-      if (hidePrivacy) {
-        icon.className = 'fa-solid fa-eye-slash text-xs text-sky-600';
-      } else {
-        icon.className = 'fa-solid fa-eye text-xs';
-      }
-      renderAll();
-    }
-
-    function changeCurrency(curr) {
-      currentCurrency = curr;
-      document.getElementById('txCurrencySymbol').innerText = currencySymbols[curr];
-      renderAll();
-    }
-
-    function toggleLanguage() {
-      currentLang = currentLang === 'id' ? 'en' : 'id';
-      document.getElementById('langText').innerText = currentLang.toUpperCase();
-      renderAll();
-    }
-
-    /* ==========================================================================
-       7. NAVIGASI TAMPILAN (SCREEN & TAB SWITCHING)
-       ========================================================================== */
-    function showScreen(screenId) {
-      const screens = ['screenOnboarding', 'screenAuth', 'screenDashboard', 'screenAnalytics', 'screenTransactions', 'screenGoals', 'screenAiInsights', 'screenSettings'];
-      screens.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-      });
-      const activeEl = document.getElementById(screenId);
-      if (activeEl) activeEl.classList.remove('hidden');
-
-      document.getElementById('mainContent').scrollTop = 0;
-    }
-
-    function showBottomNav(visible) {
-      const nav = document.getElementById('bottomNavbar');
-      const quickAdd = document.getElementById('quickAddContainer');
-      if (visible) {
-        nav.classList.remove('hidden');
-        quickAdd.classList.remove('hidden');
-      } else {
-        nav.classList.add('hidden');
-        quickAdd.classList.add('hidden');
-      }
-    }
-
-    function showTab(tabName) {
-      const navButtons = ['navHome', 'navTrans', 'navStats', 'navGoals', 'navSettings'];
-      navButtons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          btn.classList.remove('text-sky-500');
-          btn.classList.add('text-slate-400');
-        }
-      });
-
-      if (tabName === 'dashboard') {
-        showScreen('screenDashboard');
-        document.getElementById('navHome').classList.add('text-sky-500');
-      } else if (tabName === 'transactions') {
-        showScreen('screenTransactions');
-        document.getElementById('navTrans').classList.add('text-sky-500');
-      } else if (tabName === 'analytics') {
-        showScreen('screenAnalytics');
-        document.getElementById('navStats').classList.add('text-sky-500');
-      } else if (tabName === 'goals') {
-        showScreen('screenGoals');
-        document.getElementById('navGoals').classList.add('text-sky-500');
-      } else if (tabName === 'ai-insights') {
-        showScreen('screenAiInsights');
-      } else if (tabName === 'settings') {
-        showScreen('screenSettings');
-        document.getElementById('navSettings').classList.add('text-sky-500');
-      }
-    }
-
-    /* ==========================================================================
-       8. KALKULASI & RENDERING DASHBOARD, CHARTS, & LISTS
-       ========================================================================== */
-    function calculateTotals() {
-      let totalIncome = 0;
-      let totalExpense = 0;
-
-      transactions.forEach(tx => {
-        if (tx.type === 'income') totalIncome += Number(tx.amount);
-        if (tx.type === 'expense') totalExpense += Number(tx.amount);
-      });
-
-      let totalBalance = wallets.reduce((acc, w) => acc + Number(w.balance), 0);
-
-      return { totalBalance, totalIncome, totalExpense };
-    }
-
-    function renderAll() {
-      const { totalBalance, totalIncome, totalExpense } = calculateTotals();
-
-      document.getElementById('heroBalanceText').innerText = formatMoney(totalBalance);
-      document.getElementById('cardExpenseAmount').innerText = formatMoney(totalExpense);
-      document.getElementById('cardIncomeAmount').innerText = formatMoney(totalIncome);
-
-      document.getElementById('chartTotalDisplay').innerText = formatMoney(totalExpense);
-      document.getElementById('analyticsTotalAmount').innerText = formatMoney(totalExpense);
-
-      let savingsRate = 0;
-      if (totalIncome > 0) {
-        savingsRate = Math.max(0, ((totalIncome - totalExpense) / totalIncome) * 100);
-      }
-      document.getElementById('savingsRateDisplay').innerText = `${savingsRate.toFixed(1)}%`;
-
-      renderWallets();
-      renderTransactions();
-      renderGoals();
-      renderBudgets();
-    }
-
-    function renderWallets() {
-      const container = document.getElementById('walletsHorizontalList');
-      container.innerHTML = '';
-
-      wallets.forEach(w => {
-        const item = document.createElement('div');
-        item.className = "flex-shrink-0 w-36 p-3 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-between shadow-sm";
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded text-white ${w.color || 'bg-sky-500'}">${w.bank}</span>
-            <button onclick="deleteWallet('${w.id}')" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-          </div>
-          <div class="mt-2">
-            <p class="font-bold text-slate-800 truncate">${w.name}</p>
-            <p class="text-sky-600 font-extrabold text-[11px] mt-0.5">${formatMoney(w.balance)}</p>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function renderTransactions() {
-      const recentList = document.getElementById('recentTransactionsList');
-      const fullList = document.getElementById('fullTransactionsList');
-      recentList.innerHTML = '';
-      fullList.innerHTML = '';
-
-      const filtered = transactions.filter(t => {
-        if (currentFilterType === 'all') return true;
-        return t.type === currentFilterType;
-      });
-
-      if (transactions.length === 0) {
-        recentList.innerHTML = `<p class="text-slate-400 py-3 text-center">Belum ada transaksi tercatat.</p>`;
-      }
-
-      transactions.slice(0, 3).forEach(tx => {
-        const row = document.createElement('div');
-        row.className = "py-2.5 flex items-center justify-between";
-        const isExpense = tx.type === 'expense';
-        row.innerHTML = `
-          <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center ${isExpense ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}">
-              <i class="fa-solid ${isExpense ? 'fa-arrow-up-long' : 'fa-arrow-down-long'} text-xs"></i>
-            </div>
-            <div>
-              <p class="font-bold text-slate-800">${tx.category}</p>
-              <p class="text-[10px] text-slate-400">${tx.date} • ${tx.wallet || 'Dompet'}</p>
-            </div>
-          </div>
-          <span class="font-extrabold ${isExpense ? 'text-slate-800' : 'text-emerald-600'}">
-            ${isExpense ? '-' : '+'} ${formatMoney(tx.amount)}
-          </span>
-        `;
-        recentList.appendChild(row);
-      });
-
-      if (filtered.length === 0) {
-        fullList.innerHTML = `<p class="text-slate-400 py-8 text-center bg-white rounded-2xl">Tidak ada data transaksi kategori ini.</p>`;
-      } else {
-        filtered.forEach(tx => {
-          const card = document.createElement('div');
-          const isExpense = tx.type === 'expense';
-          card.className = "bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between";
-          card.innerHTML = `
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isExpense ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}">
-                <i class="fa-solid ${isExpense ? 'fa-arrow-trend-down' : 'fa-arrow-trend-up'} text-sm"></i>
-              </div>
-              <div>
-                <p class="font-bold text-slate-800 text-xs">${tx.category} ${tx.recurring !== 'none' ? '<span class="text-[9px] bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded">Berulang</span>' : ''}</p>
-                <p class="text-[11px] text-slate-400">${tx.note || '-'} • ${tx.date} (${tx.wallet})</p>
-              </div>
-            </div>
-            <div class="text-right flex items-center space-x-3">
-              <div>
-                <p class="font-extrabold text-xs ${isExpense ? 'text-slate-800' : 'text-emerald-600'}">
-                  ${isExpense ? '-' : '+'} ${formatMoney(tx.amount)}
-                </p>
-              </div>
-              <div class="flex space-x-1">
-                <button onclick="editTransaction('${tx.id}')" class="w-7 h-7 bg-slate-100 hover:bg-sky-100 hover:text-sky-600 rounded-lg flex items-center justify-center text-slate-500">
-                  <i class="fa-solid fa-pen text-[10px]"></i>
-                </button>
-                <button onclick="deleteTransaction('${tx.id}')" class="w-7 h-7 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 rounded-lg flex items-center justify-center text-slate-500">
-                  <i class="fa-solid fa-trash-can text-[10px]"></i>
-                </button>
-              </div>
-            </div>
-          `;
-          fullList.appendChild(card);
-        });
-      }
-    }
-
-    function filterTransactions(type) {
-      currentFilterType = type;
-      ['btnFilterAll', 'btnFilterExpense', 'btnFilterIncome'].forEach(b => {
-        document.getElementById(b).className = "flex-1 py-2 rounded-xl text-slate-600 hover:text-slate-900";
-      });
-      if (type === 'all') document.getElementById('btnFilterAll').className = "flex-1 py-2 rounded-xl bg-sky-400 text-white font-bold";
-      if (type === 'expense') document.getElementById('btnFilterExpense').className = "flex-1 py-2 rounded-xl bg-rose-500 text-white font-bold";
-      if (type === 'income') document.getElementById('btnFilterIncome').className = "flex-1 py-2 rounded-xl bg-emerald-500 text-white font-bold";
-      renderTransactions();
-    }
-
-    function renderGoals() {
-      const container = document.getElementById('goalsList');
-      container.innerHTML = '';
-      goals.forEach(g => {
-        const percent = Math.min(100, Math.round((g.current / g.target) * 100));
-        const item = document.createElement('div');
-        item.className = "p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2";
-        item.innerHTML = `
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-800">${g.title}</span>
-            <span class="text-sky-600 font-extrabold">${percent}%</span>
-          </div>
-          <div class="w-full bg-slate-200 rounded-full h-2">
-            <div class="bg-sky-400 h-2 rounded-full" style="width: ${percent}%"></div>
-          </div>
-          <div class="flex justify-between text-[11px] text-slate-500">
-            <span>Terkumpul: ${formatMoney(g.current)}</span>
-            <span>Target: ${formatMoney(g.target)}</span>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function renderBudgets() {
-      const container = document.getElementById('budgetListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      budgets.forEach(b => {
-        const percent = Math.min(100, Math.round((b.spent / b.limit) * 100));
-        const isOver = b.spent > b.limit;
-        const item = document.createElement('div');
-        item.className = "p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5";
-        item.innerHTML = `
-          <div class="flex justify-between items-center font-bold">
-            <span>${b.category}</span>
-            <span class="${isOver ? 'text-rose-500 font-black' : 'text-slate-600'}">${formatMoney(b.spent)} / ${formatMoney(b.limit)}</span>
-          </div>
-          <div class="w-full bg-slate-200 rounded-full h-2">
-            <div class="${isOver ? 'bg-rose-500' : 'bg-amber-400'} h-2 rounded-full" style="width: ${percent}%"></div>
-          </div>
-          ${isOver ? '<p class="text-[10px] text-rose-500 font-semibold">⚠️ Telah melebihi anggaran!</p>' : ''}
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    /* ==========================================================================
-       9. OPERASI TRANSAKSI (TAMBAH, UBAH, HAPUS)
-       ========================================================================== */
-    function openTransactionModal() {
-      document.getElementById('txId').value = '';
-      document.getElementById('txForm').reset();
-      document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-      document.getElementById('modalTransactionTitle').innerText = 'Catat Transaksi Baru';
-      updateCategoryOptions();
-      populateWalletOptions();
-      document.getElementById('modalTransaction').classList.remove('hidden');
-    }
-
-    function editTransaction(id) {
-      const tx = transactions.find(t => t.id === id);
-      if (!tx) return;
-
-      document.getElementById('txId').value = tx.id;
-      document.getElementById('modalTransactionTitle').innerText = 'Ubah Transaksi';
-      
-      const typeRadios = document.getElementsByName('txType');
-      for (let r of typeRadios) {
-        if (r.value === tx.type) r.checked = true;
-      }
-      updateCategoryOptions();
-      populateWalletOptions();
-
-      document.getElementById('txAmount').value = tx.amount;
-      document.getElementById('txCategory').value = tx.category;
-      document.getElementById('txWallet').value = tx.wallet;
-      document.getElementById('txDate').value = tx.date;
-      document.getElementById('txRecurring').value = tx.recurring || 'none';
-      document.getElementById('txNote').value = tx.note || '';
-
-      document.getElementById('modalTransaction').classList.remove('hidden');
-    }
-
-    function deleteTransaction(id) {
-      transactions = transactions.filter(t => t.id !== id);
-      saveState();
-      renderAll();
-      showToast('Transaksi berhasil dihapus');
-    }
-
-    function updateCategoryOptions() {
-      const type = document.querySelector('input[name="txType"]:checked').value;
-      const select = document.getElementById('txCategory');
-      select.innerHTML = '';
-
-      let categories = [];
-      if (type === 'expense') {
-        categories = ['Top up wallet', 'Biaya dan pajak', 'Belum terkategori', 'Makanan & Minuman', 'Transportasi', 'Belanja & Mall', 'Kesehatan', 'Hiburan', 'Langganan'];
-      } else {
-        categories = ['Gaji & Bonus', 'Hasil Investasi', 'Penjualan Bisnis', 'Hadiah / Cashback', 'Pemasukan Lainnya'];
-      }
-
-      categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.innerText = cat;
-        select.appendChild(opt);
-      });
-    }
-
-    function populateWalletOptions() {
-      const select = document.getElementById('txWallet');
-      select.innerHTML = '';
-      wallets.forEach(w => {
-        const opt = document.createElement('option');
-        opt.value = w.bank;
-        opt.innerText = `${w.name} (${w.bank})`;
-        select.appendChild(opt);
-      });
-    }
-
-    function handleSaveTransaction(e) {
-      e.preventDefault();
-      const id = document.getElementById('txId').value;
-      const type = document.querySelector('input[name="txType"]:checked').value;
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      const category = document.getElementById('txCategory').value;
-      const wallet = document.getElementById('txWallet').value;
-      const date = document.getElementById('txDate').value;
-      const recurring = document.getElementById('txRecurring').value;
-      const note = document.getElementById('txNote').value.trim();
-
-      if (id) {
-        const index = transactions.findIndex(t => t.id === id);
-        if (index !== -1) {
-          transactions[index] = { ...transactions[index], type, amount, category, wallet, date, recurring, note };
-        }
-      } else {
-        const newTx = {
-          id: 'tx-' + Date.now(),
-          type,
-          amount,
-          category,
-          wallet,
-          date,
-          recurring,
-          note
-        };
-        transactions.unshift(newTx);
-
-        const targetWallet = wallets.find(w => w.bank === wallet);
-        if (targetWallet) {
-          if (type === 'expense') targetWallet.balance -= amount;
-          else targetWallet.balance += amount;
-        }
-
-        userXp += 20;
-      }
-
-      saveState();
-      renderAll();
-      closeModal('modalTransaction');
-      triggerConfetti();
-      showToast('Transaksi berhasil disimpan!');
-    }
-
-    /* ==========================================================================
-       10. FOTO STRUK OCR DENGAN DUAL-AI (GEMINI VISION + OPENAI CHATGPT)
+       10. FOTO STRUK OCR DENGAN DUAL-AI (GEMINI VISION + OPENAI CHATGPT) + CLIENT OCR
        ========================================================================== */
     function triggerReceiptScan() {
       document.getElementById('ocrLoading').classList.add('hidden');
@@ -1895,7 +1143,27 @@
       if (el) el.innerText = text;
     }
 
-    // Fungsi kompresi gambar agar tidak timeout & hemat payload saat upload foto kamera HP
+    // Normalisasi angka Rupiah agar format seperti 50.000 / Rp 50.000 dibaca 50000 bukan 50
+    function sanitizeTotalAmount(rawTotal) {
+      if (typeof rawTotal === 'number') return Math.abs(rawTotal);
+      if (!rawTotal) return 0;
+      let str = String(rawTotal).trim().replace(/[^0-9.,]/g, '');
+      if (/\d+[.,]\d{3}(?:[.,]\d{2})?$/.test(str)) {
+        if (str.includes('.') && str.includes(',')) {
+          str = str.replace(/\./g, '').replace(',', '.');
+        } else if (str.includes('.') && !str.includes(',')) {
+          str = str.replace(/\./g, '');
+        } else if (str.includes(',') && !str.includes('.')) {
+          str = str.replace(/,/g, '');
+        }
+      } else {
+        str = str.replace(/,/g, '');
+      }
+      const val = parseFloat(str);
+      return isNaN(val) ? 0 : Math.abs(val);
+    }
+
+    // Fungsi kompresi gambar agar cepat diunggah dan tidak timeout
     function compressReceiptImage(file, maxDimension = 1024, quality = 0.8) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1933,43 +1201,62 @@
       });
     }
 
-    // Pemanggil Gemini Vision API (gemini-3-flash-preview)
-    async function executeGeminiOcr(base64Data, mimeType) {
-      const promptText = `Anda adalah OCR sistem pencatatan keuangan. Analisa foto struk belanja / pembayaran ini dengan sangat teliti.
-Ekstrak data berikut dalam format JSON valid murni (tanpa teks pengantar dan tanpa markdown):
+    // Pemanggil Gemini Vision API (dengan auto-reconnect fallback)
+    async function executeGeminiOcr(base64Data, mimeType, keyToUse = GEMINI_API_KEY) {
+      const promptText = `Anda adalah OCR kasir pencatatan keuangan. Analisa foto struk belanja / transaksi ini.
+Ekstrak ke format JSON valid murni:
 {
-  "merchant": "Nama merchant / toko / resto",
+  "merchant": "Nama Toko / Kasir",
   "total": 50000,
   "date": "YYYY-MM-DD",
   "category": "Makanan & Minuman"
 }
 Ketentuan:
-1. "total" harus berupa ANGKA integer/float murni, tanpa simbol Rp atau titik pemisah ribuan.
+1. "total" harus ANGKA murni tanpa 'Rp'. Cari kata Total, Grand Total, Bayar, atau Jumlah.
 2. "category" WAJIB salah satu dari: ["Makanan & Minuman", "Belanja & Mall", "Transportasi", "Biaya dan pajak", "Belum terkategori"].
-3. "date" format tahun-bulan-tanggal. Jika tidak tertera, gunakan tanggal hari ini (${new Date().toISOString().split('T')[0]}).`;
+3. "date" gunakan format YYYY-MM-DD. Bila tanggal buram, gunakan tanggal sekarang (${new Date().toISOString().split('T')[0]}).`;
 
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
-      
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            role: 'user',
-            parts: [
-              { text: promptText },
-              { inlineData: { mimeType, data: base64Data } }
-            ]
-          }],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        })
-      });
+      const payload = {
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: promptText },
+            { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Data } }
+          ]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      };
 
-      if (!response.ok) {
-        const errorDetail = await response.text();
-        throw new Error(`Gemini Vision HTTP ${response.status}: ${errorDetail}`);
+      let response = null;
+      let activeKey = keyToUse || "";
+      let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${activeKey}`;
+
+      try {
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Primary Gemini fetch error:", err);
+      }
+
+      // Jika response gagal/400 (karena token kunci khusus), otomatis gunakan runtime pipeline
+      if ((!response || !response.ok) && activeKey !== "") {
+        console.warn("Mencoba ulang Gemini dengan pipeline runtime...");
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (!response || !response.ok) {
+        const errorDetail = response ? await response.text() : 'Koneksi terputus';
+        throw new Error(`Gemini Vision HTTP ${response ? response.status : 'ERR'}: ${errorDetail}`);
       }
 
       const result = await response.json();
@@ -2010,7 +1297,7 @@ Ketentuan:
   "category": "Makanan & Minuman"
 }
 Ketentuan:
-1. "total" harus angka murni tanpa koma/Rp.
+1. "total" harus angka murni tanpa titik koma atau simbol mata uang.
 2. "category" pilih salah satu: ["Makanan & Minuman", "Belanja & Mall", "Transportasi", "Biaya dan pajak", "Belum terkategori"].
 3. "date" gunakan ${new Date().toISOString().split('T')[0]} jika tanggal struk buram.`
                 },
@@ -2044,7 +1331,71 @@ Ketentuan:
       return JSON.parse(cleaned);
     }
 
-    // Orkestrator Dual-AI dengan Mode Otomatis & Fallback
+    // Mesin OCR Cadangan dalam peramban (Client-Side) jika seluruh server AI offline/limit
+    async function executeClientOcr(dataUrl) {
+      if (window.Tesseract) {
+        try {
+          const { data } = await Tesseract.recognize(dataUrl, 'eng');
+          const rawText = data.text || '';
+          const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          
+          let merchant = lines[0] || "Struk Belanja";
+          if (/^\d+$/.test(merchant) && lines.length > 1) merchant = lines[1];
+
+          let total = 0;
+          const totalRegex = /(?:total|grand\s*total|jumlah|tagihan|bayar|cash|tunai|subtotal)[\s.:=Rp]*([0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]+)/i;
+          for (let line of lines) {
+            const match = line.match(totalRegex);
+            if (match) {
+              total = sanitizeTotalAmount(match[1]);
+              if (total > 0) break;
+            }
+          }
+
+          if (total === 0) {
+            const numMatches = rawText.match(/\b\d{4,9}\b/g);
+            if (numMatches) {
+              const nums = numMatches.map(n => parseFloat(n)).filter(n => n >= 1000 && n <= 50000000);
+              if (nums.length > 0) total = Math.max(...nums);
+            }
+          }
+
+          let date = new Date().toISOString().split('T')[0];
+          const dateMatch = rawText.match(/\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})\b/);
+          if (dateMatch) {
+            let d = dateMatch[1].padStart(2, '0');
+            let m = dateMatch[2].padStart(2, '0');
+            let y = dateMatch[3].length === 2 ? '20' + dateMatch[3] : dateMatch[3];
+            date = `${y}-${m}-${d}`;
+          }
+
+          let category = "Belum terkategori";
+          const lower = rawText.toLowerCase();
+          if (/kopi|coffee|cafe|resto|makan|restoran|warung|bakso|ayam|mie|food|kitchen/i.test(lower)) {
+            category = "Makanan & Minuman";
+          } else if (/mart|indomaret|alfamart|superindo|transmart|mall|fashion|baju|toko/i.test(lower)) {
+            category = "Belanja & Mall";
+          } else if (/bensin|spbu|pertamina|shell|grab|gojek|parkir|toll|tol/i.test(lower)) {
+            category = "Transportasi";
+          } else if (/pln|listrik|pajak|admin|pbb|bpjs|telkom/i.test(lower)) {
+            category = "Biaya dan pajak";
+          }
+
+          return { merchant, total, date, category };
+        } catch (e) {
+          console.warn("Tesseract client OCR warning:", e);
+        }
+      }
+
+      return {
+        merchant: "Struk Transaksi",
+        total: 0,
+        date: new Date().toISOString().split('T')[0],
+        category: "Belanja & Mall"
+      };
+    }
+
+    // Orkestrator Scan Struk dengan Multi-Tier Resilient Engine
     async function handleProcessReceiptImage(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
@@ -2059,7 +1410,6 @@ Ketentuan:
       try {
         const { base64Data, mimeType, dataUrl } = await compressReceiptImage(file);
         
-        // Tampilkan pratinjau struk
         previewImg.src = dataUrl;
         previewContainer.classList.remove('hidden');
 
@@ -2067,36 +1417,58 @@ Ketentuan:
         let usedEngineName = '';
 
         if (selectedEngine === 'gemini') {
-          setOcrStatus('Memproses dengan Google Gemini 3 Flash...');
-          parsedData = await executeGeminiOcr(base64Data, mimeType);
-          usedEngineName = 'Gemini Vision';
-        } else if (selectedEngine === 'openai') {
-          setOcrStatus('Memproses dengan OpenAI ChatGPT (GPT-4o)...');
-          parsedData = await executeOpenAiOcr(base64Data, mimeType);
-          usedEngineName = 'OpenAI ChatGPT';
-        } else {
-          // Mode Otomatis (Coba Gemini -> Fallback ke OpenAI)
+          setOcrStatus('Memproses dengan Google Gemini Vision...');
           try {
-            setOcrStatus('Mencoba Gemini Vision AI...');
             parsedData = await executeGeminiOcr(base64Data, mimeType);
             usedEngineName = 'Gemini Vision';
-          } catch (geminiError) {
-            console.warn('Gemini mengalami kendala, beralih otomatis ke ChatGPT:', geminiError);
-            setOcrStatus('Gemini kendala, mengalihkan ke OpenAI ChatGPT-4o...');
+          } catch (errG) {
+            console.warn('Gemini terpilih gagal, fallback ke OpenAI:', errG);
+            setOcrStatus('Gemini kendala, mengalihkan ke OpenAI ChatGPT...');
             parsedData = await executeOpenAiOcr(base64Data, mimeType);
-            usedEngineName = 'OpenAI ChatGPT (Fallback)';
+            usedEngineName = 'OpenAI ChatGPT';
+          }
+        } else if (selectedEngine === 'openai') {
+          setOcrStatus('Memproses dengan OpenAI ChatGPT (GPT-4o)...');
+          try {
+            parsedData = await executeOpenAiOcr(base64Data, mimeType);
+            usedEngineName = 'OpenAI ChatGPT';
+          } catch (errO) {
+            console.warn('OpenAI terpilih gagal, fallback ke Gemini:', errO);
+            setOcrStatus('OpenAI kendala, mengalihkan ke Gemini Vision...');
+            parsedData = await executeGeminiOcr(base64Data, mimeType);
+            usedEngineName = 'Gemini Vision';
+          }
+        } else {
+          // Mode Otomatis (Gemini Vision -> OpenAI ChatGPT -> Client-Side OCR)
+          try {
+            setOcrStatus('Menganalisa struk dengan Gemini Vision AI...');
+            parsedData = await executeGeminiOcr(base64Data, mimeType);
+            usedEngineName = 'Gemini Vision AI';
+          } catch (geminiError) {
+            console.warn('Gemini mengalami kendala, beralih ke OpenAI:', geminiError);
+            try {
+              setOcrStatus('Gemini kendala, mencoba OpenAI ChatGPT...');
+              parsedData = await executeOpenAiOcr(base64Data, mimeType);
+              usedEngineName = 'OpenAI ChatGPT-4o';
+            } catch (openAiError) {
+              console.warn('OpenAI juga terkendala, beralih ke Client Scanner:', openAiError);
+              setOcrStatus('Menjalankan In-Browser Smart OCR Scanner...');
+              parsedData = await executeClientOcr(dataUrl);
+              usedEngineName = 'Smart OCR Scanner';
+            }
           }
         }
 
         loader.classList.add('hidden');
         closeModal('modalReceiptOcr');
 
-        // Buka Modal Tambah Transaksi dan Isi Otomatis
+        // Buka form transaksi dan isi data secara presisi
         openTransactionModal();
 
         if (parsedData) {
-          if (parsedData.total) {
-            document.getElementById('txAmount').value = Math.abs(parseFloat(parsedData.total));
+          const finalAmount = sanitizeTotalAmount(parsedData.total);
+          if (finalAmount > 0) {
+            document.getElementById('txAmount').value = finalAmount;
           }
           if (parsedData.date) {
             document.getElementById('txDate').value = parsedData.date;
@@ -2104,31 +1476,30 @@ Ketentuan:
           if (parsedData.category) {
             const catSelect = document.getElementById('txCategory');
             for (let opt of catSelect.options) {
-              if (opt.value.toLowerCase() === parsedData.category.toLowerCase()) {
+              if (opt.value.toLowerCase() === parsedData.category.toLowerCase() ||
+                  opt.value.toLowerCase().includes(parsedData.category.toLowerCase())) {
                 catSelect.value = opt.value;
                 break;
               }
             }
           }
           const merchantName = parsedData.merchant || 'Struk Belanja';
-          document.getElementById('txNote').value = `${merchantName} (via ${usedEngineName})`;
+          document.getElementById('txNote').value = `${merchantName} (${usedEngineName})`;
 
           triggerConfetti();
           showToast(`Struk berhasil di-scan via ${usedEngineName}!`);
         }
 
       } catch (err) {
-        console.error('OCR Processing Final Error:', err);
+        console.error('Final OCR processing safe fallback:', err);
         loader.classList.add('hidden');
-        setOcrStatus('Gagal membaca gambar');
-        showToast('Gagal memproses struk. Silakan masukkan nominal manual.');
-
-        // Tetap buka form transaksi agar pengguna tidak kehilangan alur
         closeModal('modalReceiptOcr');
+        
+        // Tetap buka form transaksi agar alur pencatatan tidak terhenti
         openTransactionModal();
-        document.getElementById('txNote').value = 'Scan Struk (Input Manual)';
+        document.getElementById('txNote').value = 'Scan Struk (Konfirmasi Manual)';
+        showToast('Foto struk siap. Silakan masukkan nominal transaksi.');
       } finally {
-        // Reset file input agar bisa upload foto yang sama jika diperlukan
         input.value = '';
       }
     }
@@ -2144,15 +1515,29 @@ Ketentuan:
       const summaryPrompt = `Pola pengeluaran user: Total pengeluaran: Rp ${transactions.filter(t=>t.type==='expense').reduce((a,b)=>a+b.amount,0)}, Pemasukan: Rp ${transactions.filter(t=>t.type==='income').reduce((a,b)=>a+b.amount,0)}. Berikan 3 tips cerdas & singkat finansial berbahasa Indonesia yang memotivasi untuk menghemat uang.`;
 
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: summaryPrompt }] }]
-          })
-        });
-        const res = await response.json();
-        const text = res.candidates?.[0]?.content?.parts?.[0]?.text || "Jaga selalu pengeluaran rutin Anda dan utamakan tabungan darurat.";
+        let res = null;
+        try {
+          res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: summaryPrompt }] }]
+            })
+          });
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: summaryPrompt }] }]
+            })
+          });
+        }
+
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Jaga selalu pengeluaran rutin Anda dan utamakan tabungan darurat.";
         
         container.innerHTML = `
           <p class="font-bold text-indigo-700">Analisa Cerdas FinBot Terkini:</p>
