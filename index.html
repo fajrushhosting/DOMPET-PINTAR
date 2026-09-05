@@ -48,11 +48,7 @@
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Tesseract.js CDN for Robust On-Device OCR Fallback -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
   <style>
-    /* Smooth mobile scroll and custom scrollbar */
     * {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
@@ -67,7 +63,6 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Ambient background matching the screenshot */
     .app-bg-gradient {
       background: radial-gradient(circle at 10% 20%, #e0f2fe 0%, #bae6fd 45%, #e0f7fa 85%, #f8fafc 100%);
     }
@@ -77,12 +72,6 @@
     .donut-shadow {
       filter: drop-shadow(0px 8px 16px rgba(56, 189, 248, 0.25));
     }
-    /* Privacy blur class */
-    .nominal-hidden {
-      filter: blur(8px);
-      transition: filter 0.2s ease-in-out;
-    }
-    /* PWA Animation */
     @keyframes pulse-light {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.85; transform: scale(1.02); }
@@ -95,7 +84,7 @@
 
 <body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex justify-center selection:bg-brand-200">
 
-  <!-- Mobile Container Wrapper (Centered for desktop, native feel on mobile) -->
+  <!-- Mobile Container Wrapper -->
   <div id="mobileApp" class="w-full max-w-md min-h-screen app-bg-gradient flex flex-col relative shadow-2xl overflow-x-hidden border-x border-sky-100">
 
     <!-- TOP SYSTEM / APP BAR -->
@@ -119,7 +108,7 @@
           <option value="USD">USD ($)</option>
           <option value="EUR">EUR (€)</option>
           <option value="SGD">SGD (S$)</option>
-          <option value="JPY">JPY (¥)</option>
+          <option value="JPY">¥ (JPY)</option>
         </select>
 
         <!-- Privacy Eye (Hide/Show Nominal) -->
@@ -132,20 +121,33 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none space-y-2"></div>
 
+    <!-- OCR SCANNING LOADING OVERLAY -->
+    <div id="ocrLoadingOverlay" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex flex-col items-center justify-center p-6 text-center">
+      <div class="bg-white rounded-3xl p-6 shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full animate-bounce-short">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-400 to-cyan-400 flex items-center justify-center text-white text-2xl shadow-lg shadow-brand-400/30">
+          <i class="fa-solid fa-receipt fa-spin"></i>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-sm font-bold text-slate-800" id="ocrLoadingTitle">Memindai Struk dengan AI...</h4>
+          <p class="text-xs text-slate-500 leading-relaxed" id="ocrLoadingSub">Mencocokkan dengan Memori Supabase...</p>
+        </div>
+        <div class="w-full bg-sky-100 h-1.5 rounded-full overflow-hidden">
+          <div class="bg-brand-500 h-full w-2/3 rounded-full animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- MAIN APP SCREENS -->
     <main class="flex-1 pb-24 overflow-y-auto custom-scrollbar">
 
       <!-- ============================================ -->
-      <!-- VIEW 0: ONBOARDING / INTRO (SCREEN 1 DESIGN) -->
+      <!-- VIEW 0: ONBOARDING / INTRO                   -->
       <!-- ============================================ -->
       <section id="onboardingView" class="min-h-[88vh] px-6 flex flex-col justify-between items-center text-center py-8">
-        <!-- Decorative Vector Illustration Area -->
         <div class="w-full flex-1 flex flex-col items-center justify-center relative">
-          <!-- Ambient Glow circles -->
           <div class="absolute w-56 h-56 bg-sky-300/40 rounded-full blur-3xl -top-6"></div>
           
           <div class="relative w-64 h-64 flex items-center justify-center">
-            <!-- Simulated Isometric Receipt & Hands Graphics from screenshot -->
             <div class="w-48 h-56 bg-white rounded-2xl shadow-xl border border-sky-100 p-4 flex flex-col justify-between transform -rotate-3 relative">
               <div class="w-8 h-2 bg-slate-200 rounded-full mx-auto mb-2"></div>
               <div class="space-y-2">
@@ -153,17 +155,16 @@
                 <div class="h-3 bg-slate-100 rounded w-full"></div>
                 <div class="h-3 bg-slate-100 rounded w-4/6"></div>
                 <div class="h-8 bg-sky-50 rounded-lg p-1.5 flex items-center justify-between border border-sky-100">
-                  <span class="text-[10px] font-bold text-sky-700">Rp 50.000.000</span>
+                  <span class="text-[10px] font-bold text-sky-700">Rp 0</span>
                   <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
                 </div>
               </div>
               <div class="border-t border-dashed border-slate-200 pt-2 flex justify-between items-center text-[10px] text-slate-400 font-mono">
-                <span>TOTAL</span>
-                <span class="font-bold text-slate-700">LUNAS</span>
+                <span>STATUS</span>
+                <span class="font-bold text-slate-700">SIAP PAKAI</span>
               </div>
             </div>
 
-            <!-- Floating Rp Badges -->
             <div class="absolute -top-3 -left-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-md border border-sky-100 text-brand-600 font-extrabold text-sm flex items-center gap-1">
               <i class="fa-solid fa-coins text-amber-400 text-xs"></i> Rp
             </div>
@@ -171,7 +172,6 @@
               Rp
             </div>
 
-            <!-- Mini Calculator Icon badge -->
             <div class="absolute bottom-6 -left-3 bg-gradient-to-tr from-cyan-400 to-brand-500 text-white w-14 h-16 rounded-xl shadow-lg flex flex-col items-center justify-center p-1.5 transform rotate-6">
               <span class="text-[9px] font-mono font-semibold">2973</span>
               <div class="grid grid-cols-2 gap-1 w-full mt-1">
@@ -184,7 +184,6 @@
           </div>
         </div>
 
-        <!-- Typography & Action -->
         <div class="w-full space-y-4 pt-4">
           <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight" data-i18n="onboardingTitle">
             Keuanganku
@@ -205,18 +204,17 @@
       <section id="authView" class="hidden min-h-[85vh] px-5 py-6 flex flex-col justify-center">
         <div class="bg-white rounded-3xl p-6 shadow-xl card-shadow border border-sky-100">
           
-          <!-- Auth Segment Toggle -->
           <div class="flex p-1 bg-slate-100 rounded-xl mb-6">
-            <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-500" data-i18n="tabRegister">
+            <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-brand-600 shadow-sm" data-i18n="tabRegister">
               Daftar Akun
             </button>
-            <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-brand-600 shadow-sm" data-i18n="tabLogin">
+            <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-500" data-i18n="tabLogin">
               Masuk
             </button>
           </div>
 
           <!-- REGISTER FORM -->
-          <div id="registerFormContainer" class="hidden space-y-3">
+          <div id="registerFormContainer" class="space-y-3">
             <div class="text-left mb-3">
               <h2 class="text-xl font-bold text-slate-900" data-i18n="regHeader">Buat Akun Baru</h2>
               <p class="text-xs text-slate-400" data-i18n="regSub">Daftar terlebih dahulu untuk mengakses dompet</p>
@@ -264,7 +262,7 @@
           </div>
 
           <!-- LOGIN FORM -->
-          <div id="loginFormContainer" class="space-y-3">
+          <div id="loginFormContainer" class="hidden space-y-3">
             <div class="text-left mb-3">
               <h2 class="text-xl font-bold text-slate-900" data-i18n="loginHeader">Selamat Datang Kembali</h2>
               <p class="text-xs text-slate-400" data-i18n="loginSub">Masuk dengan username dan password Anda</p>
@@ -303,25 +301,23 @@
       </section>
 
       <!-- ============================================ -->
-      <!-- VIEW 2: DASHBOARD UTAMA (SCREEN 2 DESIGN)    -->
+      <!-- VIEW 2: DASHBOARD UTAMA                      -->
       <!-- ============================================ -->
       <section id="dashboardView" class="hidden px-5 py-4 space-y-4">
-        
-        <!-- User Greeting & Profile Avatar -->
         <div class="flex items-center justify-between">
           <div>
             <span class="text-xs font-medium text-slate-400" data-i18n="greetingLabel">Halo,</span>
-            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight" id="userGreetingName">Alwi</h2>
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight" id="userGreetingName">Pengguna</h2>
           </div>
           <div class="relative cursor-pointer" onclick="openProfileModal()">
             <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-brand-400 to-sky-200 p-0.5 shadow-md">
-              <img id="userAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-full h-full rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Alwi&background=0284c7&color=fff'" />
+              <img id="userAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-full h-full rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=User&background=0284c7&color=fff'" />
             </div>
             <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
           </div>
         </div>
 
-        <!-- Total Balance Header (Matches Screenshot 2: "Uangku" -> Rp 50.000.000) -->
+        <!-- Total Balance Header -->
         <div class="text-center py-2">
           <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase" data-i18n="myMoney">Uangku</p>
           <div class="flex items-center justify-center gap-2 mt-1">
@@ -339,21 +335,20 @@
           </div>
         </div>
 
-        <!-- KEUSNGANKU SECTION CARDS (Matches Screenshot 2: Pengeluarkanku & Pemasukanku) -->
+        <!-- Keuanganku Section Cards -->
         <div class="space-y-3">
           <div class="flex justify-between items-center">
             <h3 class="text-base font-bold text-slate-800" data-i18n="myFinances">Keuanganku</h3>
             <span class="text-xs text-brand-600 font-semibold cursor-pointer" onclick="switchNav('analytics')" data-i18n="viewDetails">Lihat Detail</span>
           </div>
 
-          <!-- Card 1: Pengeluarkanku (Clickable to open Detail Analytics screen) -->
+          <!-- Card 1: Pengeluarkanku -->
           <div onclick="switchNav('analytics')" class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition card-shadow border border-sky-100/80 flex items-center justify-between cursor-pointer">
             <div class="space-y-1">
               <span class="text-xs font-bold text-slate-800" data-i18n="myExpenses">Pengeluarkanku</span>
               <p class="text-[11px] text-slate-400" id="expenseDateRangeLabel">Bulan Ini</p>
               <p class="text-base font-extrabold text-brand-600" id="totalExpenseSummaryDisplay">Rp 0</p>
             </div>
-            <!-- Mini Donut Graphic (Orange & Cyan preview matching screenshot) -->
             <div class="w-14 h-14 relative flex items-center justify-center">
               <canvas id="miniExpenseDonut" width="56" height="56"></canvas>
             </div>
@@ -366,14 +361,13 @@
               <p class="text-[11px] text-slate-400" id="incomeDateRangeLabel">Bulan Ini</p>
               <p class="text-base font-extrabold text-emerald-600" id="totalIncomeSummaryDisplay">Rp 0</p>
             </div>
-            <!-- Mini Green Donut Graphic preview matching screenshot -->
             <div class="w-14 h-14 relative flex items-center justify-center">
               <canvas id="miniIncomeDonut" width="56" height="56"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- MULTI WALLETS CAROUSEL (BRI, Mandiri, BCA, SeaBank, BNI, BSI, etc.) -->
+        <!-- Multi-Wallets Carousel -->
         <div class="space-y-2 pt-1">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-bold text-slate-800" data-i18n="myWallets">Dompet & Bank Saya</h3>
@@ -381,12 +375,10 @@
               <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="addWallet">Tambah</span>
             </button>
           </div>
-          <div id="walletsContainer" class="flex gap-2.5 overflow-x-auto pb-2 custom-scrollbar">
-            <!-- Dynamically populated bank cards -->
-          </div>
+          <div id="walletsContainer" class="flex gap-2.5 overflow-x-auto pb-2 custom-scrollbar"></div>
         </div>
 
-        <!-- STATISTIK SECTION (Bar Chart Comparison) -->
+        <!-- Statistik Section -->
         <div class="space-y-2 pt-1">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-bold text-slate-800" data-i18n="statisticsHeader">Statistik</h3>
@@ -399,24 +391,20 @@
           </div>
         </div>
 
-        <!-- RECENT TRANSACTIONS PREVIEW -->
+        <!-- Recent Transactions Preview -->
         <div class="space-y-2 pt-1">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-bold text-slate-800" data-i18n="recentTransactions">Transaksi Terkini</h3>
             <span class="text-xs text-brand-600 font-semibold cursor-pointer" onclick="switchNav('transactions')" data-i18n="seeAll">Semua</span>
           </div>
-          <div id="recentTxList" class="space-y-2">
-            <!-- Dynamically populated transaction cards -->
-          </div>
+          <div id="recentTxList" class="space-y-2"></div>
         </div>
-
       </section>
 
       <!-- ============================================ -->
-      <!-- VIEW 3: DETAIL ANALISIS (SCREEN 3 DESIGN)   -->
+      <!-- VIEW 3: DETAIL ANALISIS                      -->
       <!-- ============================================ -->
       <section id="analyticsView" class="hidden px-5 py-4 space-y-4">
-        <!-- Header with Back button and menu -->
         <div class="flex items-center justify-between">
           <button onclick="switchNav('dashboard')" class="w-9 h-9 rounded-xl bg-white text-slate-700 shadow-sm border border-sky-100 flex items-center justify-center active:scale-95 transition">
             <i class="fa-solid fa-arrow-left text-sm"></i>
@@ -427,12 +415,10 @@
           </button>
         </div>
 
-        <!-- Date Range Filter Subtitle -->
         <div class="text-center">
           <p class="text-xs text-slate-400 font-medium" id="analyticsDateRange">Bulan Ini</p>
         </div>
 
-        <!-- BIG DONUT CHART (Replicating Screen 3: Segmented orange 40%, light-blue 30%, teal 30%) -->
         <div class="bg-white rounded-3xl p-6 card-shadow border border-sky-100 flex flex-col items-center justify-center">
           <div class="w-52 h-52 relative flex items-center justify-center">
             <canvas id="largeExpenseDonut" class="donut-shadow"></canvas>
@@ -443,18 +429,13 @@
           </div>
         </div>
 
-        <!-- TOTAL DISPLAY ROW (Matching screenshot: "Total Rp 20.000.000") -->
         <div class="flex justify-between items-center px-1">
           <span class="text-sm font-bold text-slate-700" data-i18n="total">Total</span>
           <span class="text-base font-extrabold text-slate-900" id="analyticsTotalAmount">Rp 0</span>
         </div>
 
-        <!-- ITEMIZED PERCENTAGE CARDS (Replicating Screenshot 3 List) -->
-        <div id="analyticsCategoryList" class="space-y-2.5">
-          <!-- Dynamic Category Rows -->
-        </div>
+        <div id="analyticsCategoryList" class="space-y-2.5"></div>
 
-        <!-- AI ADVISOR INSIGHT TRIGGER BUTTON -->
         <div class="pt-2">
           <button onclick="generateAiFinancialInsights()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-brand-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 hover:opacity-95 active:scale-98 transition">
             <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-sm"></i>
@@ -462,7 +443,6 @@
           </button>
         </div>
 
-        <!-- AI Insights Container -->
         <div id="aiInsightsCard" class="hidden bg-gradient-to-br from-indigo-50/90 to-sky-50 rounded-2xl p-4 border border-indigo-100 card-shadow space-y-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 text-indigo-900 font-bold text-xs">
@@ -473,14 +453,12 @@
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
-          <div id="aiInsightsContent" class="text-xs text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-            <!-- Output from Gemini API -->
-          </div>
+          <div id="aiInsightsContent" class="text-xs text-slate-700 leading-relaxed font-normal whitespace-pre-line"></div>
         </div>
       </section>
 
       <!-- ============================================ -->
-      <!-- VIEW 4: TRANSAKSI (DAFTAR & TAMBAH)          -->
+      <!-- VIEW 4: TRANSAKSI                            -->
       <!-- ============================================ -->
       <section id="transactionsView" class="hidden px-5 py-4 space-y-4">
         <div class="flex items-center justify-between">
@@ -493,7 +471,6 @@
           </button>
         </div>
 
-        <!-- Filter Tab (Semua, Pemasukan, Pengeluaran) -->
         <div class="flex p-1 bg-slate-200/70 rounded-xl">
           <button onclick="filterTransactions('all')" id="txFilterAll" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm" data-i18n="filterAll">Semua</button>
           <button onclick="filterTransactions('expense')" id="txFilterExpense" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-500" data-i18n="filterExpense">Pengeluaran</button>
@@ -503,14 +480,11 @@
         <!-- Hidden input for file upload / camera capture -->
         <input type="file" id="receiptFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptImageUpload(event)" />
 
-        <!-- Transaction List -->
-        <div id="allTransactionsList" class="space-y-2">
-          <!-- Populated by JavaScript -->
-        </div>
+        <div id="allTransactionsList" class="space-y-2"></div>
       </section>
 
       <!-- ============================================ -->
-      <!-- VIEW 5: DREAM PLANNER & CUAN TRACKER         -->
+      <!-- VIEW 5: CUAN & GOALS                         -->
       <!-- ============================================ -->
       <section id="cuanView" class="hidden px-5 py-4 space-y-4">
         <div class="flex items-center justify-between">
@@ -523,14 +497,13 @@
           </button>
         </div>
 
-        <!-- Financial Level Card -->
         <div class="bg-gradient-to-r from-amber-400 to-amber-500 rounded-3xl p-5 text-white shadow-lg shadow-amber-500/20 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div class="relative z-10 space-y-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full" id="userRankTier">Level 1: Pejuang Receh</span>
-            <h3 class="text-xl font-extrabold" id="userTotalSavingsGoal">Target Tabungan: Rp 0</h3>
+            <span class="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full" id="userRankTier">Level 1: Pejuang Finansial</span>
+            <h3 class="text-xl font-extrabold" id="userTotalSavingsGoal">Target Tabungan Aktif</h3>
             <p class="text-xs text-white/90">Kumpulkan lebih banyak saldo untuk naik level ke Sultan Finansial!</p>
             <div class="w-full bg-black/20 rounded-full h-2.5 mt-2">
               <div id="cuanProgressBar" class="bg-white rounded-full h-2.5 transition-all duration-500" style="width: 0%"></div>
@@ -538,45 +511,34 @@
           </div>
         </div>
 
-        <!-- SPENDING CHALLENGES -->
         <div class="space-y-2">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-bold text-slate-800" data-i18n="challengesHeader">Tantangan Berhemat</h3>
             <span class="text-xs text-brand-600 font-semibold cursor-pointer" onclick="openNewChallengeModal()" data-i18n="newChallenge">+ Tantangan</span>
           </div>
-          <div id="challengesContainer" class="space-y-2.5">
-            <!-- Populated with gamified challenges -->
-          </div>
+          <div id="challengesContainer" class="space-y-2.5"></div>
         </div>
 
-        <!-- DREAM GOALS LIST -->
         <div class="space-y-2 pt-2">
           <h3 class="text-sm font-bold text-slate-800" data-i18n="dreamGoalsHeader">Impian Finansial (Dream Planner)</h3>
-          <div id="goalsContainer" class="space-y-2.5">
-            <!-- Populated with savings goals -->
-          </div>
+          <div id="goalsContainer" class="space-y-2.5"></div>
         </div>
 
-        <!-- BUDGETING (ANGGARAN) SECTION -->
         <div class="space-y-2 pt-2">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-bold text-slate-800" data-i18n="budgetHeader">Anggaran Kategori (Budgeting)</h3>
             <button onclick="openBudgetModal()" class="text-xs font-semibold text-brand-600" data-i18n="setBudget">+ Set Limit</button>
           </div>
-          <div id="budgetsContainer" class="space-y-2.5">
-            <!-- Populated with budget progress -->
-          </div>
+          <div id="budgetsContainer" class="space-y-2.5"></div>
         </div>
-
       </section>
 
       <!-- ============================================ -->
-      <!-- VIEW 6: SETTINGS & SMART NOTIF & PWA HYBRID -->
+      <!-- VIEW 6: SETTINGS & PREFERENCES               -->
       <!-- ============================================ -->
       <section id="settingsView" class="hidden px-5 py-4 space-y-4">
         <h2 class="text-xl font-bold text-slate-900" data-i18n="settingsTitle">Pengaturan & Fitur</h2>
 
-        <!-- HYBRID APP DOWNLOAD BANNER -->
         <div class="bg-gradient-to-tr from-cyan-500 to-brand-600 text-white rounded-2xl p-4 shadow-md flex items-center justify-between">
           <div class="space-y-1 max-w-[70%]">
             <h4 class="text-xs font-extrabold uppercase tracking-wide flex items-center gap-1.5">
@@ -589,7 +551,6 @@
           </button>
         </div>
 
-        <!-- Notification Preferences -->
         <div class="bg-white rounded-2xl p-4 card-shadow border border-sky-100 space-y-3">
           <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="smartNotifHeader">Smart Notifications</h3>
           
@@ -614,7 +575,6 @@
           </button>
         </div>
 
-        <!-- Recurring Transactions List -->
         <div class="bg-white rounded-2xl p-4 card-shadow border border-sky-100 space-y-2">
           <div class="flex justify-between items-center">
             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="recurringHeader">Transaksi Berulang (Recurring)</h3>
@@ -625,7 +585,6 @@
           </div>
         </div>
 
-        <!-- Account Controls & GDPR -->
         <div class="bg-white rounded-2xl p-4 card-shadow border border-sky-100 space-y-3">
           <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="securityHeader">Keamanan & Akun (GDPR)</h3>
           
@@ -641,54 +600,43 @@
 
     </main>
 
-    <!-- ============================================ -->
-    <!-- BOTTOM NAVIGATION DOCK (FLOATING BAR)       -->
-    <!-- ============================================ -->
+    <!-- BOTTOM NAVIGATION DOCK -->
     <nav id="bottomNavBar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/85 backdrop-blur-lg border-t border-sky-100 px-4 py-2 flex items-center justify-around z-40">
-      
-      <!-- Home -->
       <button onclick="switchNav('dashboard')" id="navBtnDashboard" class="flex flex-col items-center justify-center text-brand-600 transition">
         <i class="fa-solid fa-house text-lg"></i>
         <span class="text-[10px] font-bold mt-0.5" data-i18n="navHome">Home</span>
       </button>
 
-      <!-- Analytics (Screen 3) -->
       <button onclick="switchNav('analytics')" id="navBtnAnalytics" class="flex flex-col items-center justify-center text-slate-400 hover:text-brand-500 transition">
         <i class="fa-solid fa-chart-pie text-lg"></i>
         <span class="text-[10px] font-bold mt-0.5" data-i18n="navAnalytics">Analisis</span>
       </button>
 
-      <!-- CENTER ACTION: TAMBAH TRANSAKSI -->
       <button onclick="openTransactionModal()" class="w-12 h-12 -mt-5 rounded-full bg-gradient-to-tr from-brand-400 to-cyan-400 text-white shadow-lg shadow-brand-400/40 flex items-center justify-center active:scale-90 transition hover:shadow-cyan-400/60">
         <i class="fa-solid fa-plus text-xl"></i>
       </button>
 
-      <!-- Cuan / Goals -->
       <button onclick="switchNav('cuan')" id="navBtnCuan" class="flex flex-col items-center justify-center text-slate-400 hover:text-brand-500 transition">
         <i class="fa-solid fa-trophy text-lg"></i>
         <span class="text-[10px] font-bold mt-0.5" data-i18n="navCuan">Cuan</span>
       </button>
 
-      <!-- Settings / Riwayat -->
       <button onclick="switchNav('transactions')" id="navBtnTransactions" class="flex flex-col items-center justify-center text-slate-400 hover:text-brand-500 transition">
         <i class="fa-solid fa-receipt text-lg"></i>
         <span class="text-[10px] font-bold mt-0.5" data-i18n="navHistory">Riwayat</span>
       </button>
 
-      <!-- More / Settings -->
       <button onclick="switchNav('settings')" id="navBtnSettings" class="flex flex-col items-center justify-center text-slate-400 hover:text-brand-500 transition">
         <i class="fa-solid fa-gear text-lg"></i>
         <span class="text-[10px] font-bold mt-0.5" data-i18n="navSettings">Opsi</span>
       </button>
     </nav>
 
-    <!-- ============================================ -->
-    <!-- MODALS SECTION                               -->
-    <!-- ============================================ -->
+    <!-- MODALS -->
 
     <!-- MODAL 1: ADD / EDIT TRANSACTION -->
-    <div id="txModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-end justify-center">
-      <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar animate-slide-up">
+    <div id="txModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-end justify-center">
+      <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
         <div class="flex justify-between items-center">
           <h3 class="text-base font-bold text-slate-900" id="txModalTitle">Catat Transaksi</h3>
           <button onclick="closeModal('txModal')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700">
@@ -698,7 +646,6 @@
 
         <input type="hidden" id="editTxId" value="" />
 
-        <!-- Type Segment (Pengeluaran / Pemasukan) -->
         <div class="flex p-1 bg-slate-100 rounded-xl">
           <button type="button" onclick="setTxType('expense')" id="txTypeExpenseBtn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-rose-500 text-white shadow-sm transition">
             Pengeluaran
@@ -708,7 +655,6 @@
           </button>
         </div>
 
-        <!-- Nominal -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal (<span class="currencySymbolDisplay">Rp</span>)</label>
           <div class="relative">
@@ -716,22 +662,20 @@
           </div>
         </div>
 
-        <!-- Judul / Keterangan -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi / Catatan</label>
-          <input type="text" id="txTitleInput" placeholder="e.g. Makan Siang Bakso" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none" />
+          <input type="text" id="txTitleInput" placeholder="e.g. Belanja Indomaret / Bensin" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none" />
         </div>
 
-        <!-- Kategori -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
           <select id="txCategorySelect" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none bg-white">
-            <option value="Top up wallet">Top up wallet</option>
-            <option value="Biaya dan pajak">Biaya dan pajak</option>
             <option value="Makanan & Minuman">Makanan & Minuman</option>
             <option value="Belanja">Belanja</option>
             <option value="Transportasi">Transportasi</option>
             <option value="Tagihan & Utilitas">Tagihan & Utilitas</option>
+            <option value="Biaya dan pajak">Biaya dan pajak</option>
+            <option value="Top up wallet">Top up wallet</option>
             <option value="Gaji & Bonus">Gaji & Bonus</option>
             <option value="Investasi">Investasi</option>
             <option value="Hiburan">Hiburan</option>
@@ -739,21 +683,16 @@
           </select>
         </div>
 
-        <!-- Dompet / Bank -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Dompet / Bank</label>
-          <select id="txWalletSelect" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none bg-white">
-            <!-- Populated from state -->
-          </select>
+          <select id="txWalletSelect" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none bg-white"></select>
         </div>
 
-        <!-- Tanggal -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal</label>
           <input type="date" id="txDateInput" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm focus:border-brand-400 outline-none bg-white" />
         </div>
 
-        <!-- Recurring Toggle -->
         <div class="flex items-center justify-between p-3 bg-sky-50 rounded-xl border border-sky-100">
           <div>
             <p class="text-xs font-bold text-slate-800">Pencatatan Berulang</p>
@@ -769,7 +708,7 @@
     </div>
 
     <!-- MODAL 2: FORGOT PASSWORD -->
-    <div id="forgotPasswordModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center px-4">
+    <div id="forgotPasswordModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center px-4">
       <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
         <div class="flex justify-between items-center">
           <h3 class="text-base font-bold text-slate-900" data-i18n="forgotPassHeader">Pemulihan Password</h3>
@@ -801,7 +740,7 @@
     </div>
 
     <!-- MODAL 3: ADD BANK / WALLET -->
-    <div id="walletModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-end justify-center">
+    <div id="walletModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-end justify-center">
       <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-3">
         <div class="flex justify-between items-center">
           <h3 class="text-base font-bold text-slate-900">Tambah Akun Bank / E-Wallet</h3>
@@ -830,7 +769,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Rekening / Label</label>
-          <input type="text" id="walletNameInput" placeholder="e.g. Rekening Tabungan Utama" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
+          <input type="text" id="walletNameInput" placeholder="e.g. Rekening Tabungan" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
         </div>
 
         <div>
@@ -845,7 +784,7 @@
     </div>
 
     <!-- MODAL 4: DREAM PLANNER GOAL -->
-    <div id="goalModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-end justify-center">
+    <div id="goalModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-end justify-center">
       <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-3">
         <div class="flex justify-between items-center">
           <h3 class="text-base font-bold text-slate-900">Buat Target Impian (Dream Planner)</h3>
@@ -854,21 +793,21 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Impian</label>
-          <input type="text" id="goalTitleInput" placeholder="e.g. Liburan ke Jepang, Beli iPhone 16" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
+          <input type="text" id="goalTitleInput" placeholder="e.g. Beli Rumah, Dana Darurat" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Target Dana (Rp)</label>
-          <input type="number" id="goalTargetInput" placeholder="25000000" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
+          <input type="number" id="goalTargetInput" placeholder="10000000" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Dana Terkumpul Saat Ini (Rp)</label>
-          <input type="number" id="goalCurrentInput" placeholder="5000000" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
+          <input type="number" id="goalCurrentInput" placeholder="0" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Target Tenggat Waktu (Bulan / Tahun)</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Target Tenggat Waktu</label>
           <input type="date" id="goalDeadlineInput" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none bg-white" />
         </div>
 
@@ -879,7 +818,7 @@
     </div>
 
     <!-- MODAL 5: BUDGETING MODAL -->
-    <div id="budgetModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-end justify-center">
+    <div id="budgetModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-end justify-center">
       <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-3">
         <div class="flex justify-between items-center">
           <h3 class="text-base font-bold text-slate-900">Atur Anggaran Kategori</h3>
@@ -900,7 +839,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Batas Maksimal Bulanan (Rp)</label>
-          <input type="number" id="budgetLimitInput" placeholder="2000000" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
+          <input type="number" id="budgetLimitInput" placeholder="1000000" class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm outline-none" />
         </div>
 
         <button type="button" onclick="saveCategoryBudget()" class="w-full py-3 bg-brand-500 text-white font-bold text-xs rounded-xl shadow">
@@ -910,7 +849,7 @@
     </div>
 
     <!-- MODAL 6: EXPORT DATA MODAL -->
-    <div id="exportModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center px-4">
+    <div id="exportModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center px-4">
       <div class="bg-white w-full max-w-xs rounded-3xl p-5 space-y-3 text-center">
         <h3 class="text-base font-bold text-slate-900">Ekspor Laporan Keuangan</h3>
         <p class="text-xs text-slate-400">Unduh riwayat transaksi ke format yang Anda butuhkan.</p>
@@ -934,7 +873,7 @@
     </div>
 
     <!-- MODAL 7: DELETE ACCOUNT CONFIRMATION (GDPR) -->
-    <div id="deleteAccountModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center px-4">
+    <div id="deleteAccountModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center px-4">
       <div class="bg-white w-full max-w-xs rounded-3xl p-5 space-y-3 text-center">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-xl">
           <i class="fa-solid fa-triangle-exclamation"></i>
@@ -958,16 +897,16 @@
 
   <!-- JAVASCRIPT APPLICATION CORE LOGIC -->
   <script>
-    /**
-     * DOMPET PINTAR CORE APPLICATION
-     * Full-Stack Client & Supabase Integration with Local In-Memory Fallback
-     */
-
     // 1. Mandatory Gemini API Key definition as specified in rules
-    const DEFAULT_GEMINI_API_KEY = "AQ.Ab8RN6LTt2Fp_e-ggCTHFVwhh6gfpKXsMzpdSH7ybFmPFmcmGQ";
-    let apiKey = localStorage.getItem("dompet_pintar_gemini_key") || DEFAULT_GEMINI_API_KEY;
+    const apiKey = "";
+    // User-provided Gemini fallback key for direct deployments
+    const userFallbackKey = "AQ.Ab8RN6LTt2Fp_e-ggCTHFVwhh6gfpKXsMzpdSH7ybFmPFmcmGQ";
 
-    // 2. Supabase Configuration provided by user
+    function getGeminiApiKey() {
+      return (typeof apiKey !== 'undefined' && apiKey) ? apiKey : userFallbackKey;
+    }
+
+    // 2. Supabase Configuration
     const SUPABASE_URL = "https://bmgnmyukpwjaemlzmkrq.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_D0rtEscMnzoEj48JZydFsw_BgkIuKeGsb_publishable_D0rtEscMnzoEj48JZydFsw_BgkIuKeG";
     let supabaseClient = null;
@@ -976,10 +915,10 @@
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
     } catch (e) {
-      console.warn("Supabase initialization bypassed or fallback enabled:", e);
+      // safe fallback
     }
 
-    // 3. Multi-Currency Conversion Rates (Relative to IDR)
+    // 3. Multi-Currency Conversion Rates
     const CURRENCY_RATES = {
       IDR: { symbol: "Rp", rate: 1, format: (val) => "Rp " + Math.round(val).toLocaleString('id-ID') },
       USD: { symbol: "$", rate: 0.0000625, format: (val) => "$ " + (val * 0.0000625).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
@@ -992,7 +931,7 @@
     let isPrivacyNominalHidden = false;
     let currentLang = 'id';
 
-    // 4. Multi-Language Dictionary (ID & EN)
+    // 4. Multi-Language Dictionary
     const I18N = {
       id: {
         onboardingTitle: "Keuanganku",
@@ -1138,17 +1077,17 @@
       }
     };
 
-    // 5. Initial Application State - Pure Zero Balance & Real Data (No Dummy)
+    // 5. Initial Clean State: ZERO-BALANCE WALLETS & ZERO DUMMY DATA
     let appState = {
       currentUser: null,
       wallets: [
-        { id: "w_bca", name: "BCA Tahapan", bank: "BCA", color: "from-blue-600 to-blue-700", balance: 0, icon: "fa-building-columns" },
-        { id: "w_mandiri", name: "Mandiri Livin", bank: "MANDIRI", color: "from-sky-700 to-indigo-900", balance: 0, icon: "fa-building-columns" },
+        { id: "w_bca", name: "BCA Tahapan", bank: "BCA", color: "from-blue-600 to-blue-800", balance: 0, icon: "fa-building-columns" },
+        { id: "w_mandiri", name: "Mandiri Livin", bank: "MANDIRI", color: "from-sky-800 to-indigo-950", balance: 0, icon: "fa-building-columns" },
         { id: "w_seabank", name: "SeaBank", bank: "SEABANK", color: "from-orange-500 to-amber-600", balance: 0, icon: "fa-vault" },
-        { id: "w_bri", name: "BRI BritAma", bank: "BRI", color: "from-blue-800 to-cyan-800", balance: 0, icon: "fa-building-columns" },
+        { id: "w_bri", name: "BRI BritAma", bank: "BRI", color: "from-blue-700 to-cyan-900", balance: 0, icon: "fa-building-columns" },
         { id: "w_bni", name: "BNI Taplus", bank: "BNI", color: "from-teal-600 to-teal-800", balance: 0, icon: "fa-building-columns" },
         { id: "w_btn", name: "BTN Batara", bank: "BTN", color: "from-blue-600 to-amber-600", balance: 0, icon: "fa-building-columns" },
-        { id: "w_bsi", name: "BSI Hasanah", bank: "BSI", color: "from-teal-600 to-emerald-700", balance: 0, icon: "fa-mosque" }
+        { id: "w_bsi", name: "BSI Hasanah", bank: "BSI", color: "from-emerald-600 to-teal-700", balance: 0, icon: "fa-mosque" }
       ],
       transactions: [],
       goals: [],
@@ -1164,22 +1103,77 @@
       }
     };
 
-    // Chart instances
     let miniExpenseChartInstance = null;
     let miniIncomeChartInstance = null;
     let largeExpenseChartInstance = null;
     let weeklyBarChartInstance = null;
-
-    // Active form state
     let activeTxType = 'expense';
     let deferredPwaPrompt = null;
+
+    // ============================================
+    // MEMORI SUPABASE INTEGRATION FOR OCR
+    // ============================================
+    let supabaseOcrMemories = [];
+
+    // Mengambil riwayat memori struk dari database Supabase
+    async function loadSupabaseOcrMemory() {
+      if (!supabaseClient) return [];
+      try {
+        const { data, error } = await supabaseClient
+          .from('ocr_scans')
+          .select('extracted_merchant, extracted_amount, extracted_category, extracted_date')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          supabaseOcrMemories = data;
+          return data;
+        }
+      } catch (err) {
+        // Fallback anggun ke memori sesi lokal
+      }
+      return [];
+    }
+
+    // Menyimpan memori hasil pemindaian struk ke Supabase
+    async function saveOcrScanToSupabase(ocrResult) {
+      if (!ocrResult || typeof ocrResult.amount !== 'number') return;
+      
+      const newMemoryItem = {
+        extracted_merchant: ocrResult.title || 'Transaksi Struk',
+        extracted_amount: ocrResult.amount,
+        extracted_category: ocrResult.category || 'Belum terkategori',
+        extracted_date: ocrResult.date || new Date().toISOString().split('T')[0]
+      };
+
+      // Tambahkan ke memori runtime lokal
+      supabaseOcrMemories.unshift(newMemoryItem);
+
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient
+          .from('ocr_scans')
+          .insert([{
+            extracted_merchant: newMemoryItem.extracted_merchant,
+            extracted_amount: newMemoryItem.extracted_amount,
+            extracted_category: newMemoryItem.extracted_category,
+            extracted_date: newMemoryItem.extracted_date,
+            raw_ocr_text: JSON.stringify(ocrResult),
+            created_at: new Date().toISOString()
+          }]);
+      } catch (e) {
+        // Non-blocking jika tabel belum dibuat atau ada batasan RLS
+      }
+    }
 
     // ============================================
     // INITIALIZATION & ONBOARDING FLOW
     // ============================================
     window.addEventListener('DOMContentLoaded', () => {
-      // Check stored user session in memory
       loadLocalPersistence();
+
+      // Pre-load Memori Supabase saat aplikasi dibuka
+      loadSupabaseOcrMemory();
 
       if (appState.currentUser) {
         showDashboard();
@@ -1187,13 +1181,11 @@
         showOnboarding();
       }
 
-      // Initialize PWA install prompt handler
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPwaPrompt = e;
       });
 
-      // Set today's date in tx form
       const today = new Date().toISOString().split('T')[0];
       const dateEl = document.getElementById('txDateInput');
       if (dateEl) dateEl.value = today;
@@ -1261,14 +1253,12 @@
         return;
       }
 
-      // Check if user already exists
       let registeredUsers = getStoredUsers();
       if (registeredUsers.some(u => u.username === username)) {
         showToast("Username sudah digunakan! Silakan gunakan username lain.", "error");
         return;
       }
 
-      // Save user record
       const newUser = {
         fullName,
         username,
@@ -1279,16 +1269,13 @@
       registeredUsers.push(newUser);
       saveStoredUsers(registeredUsers);
 
-      // MANDATORY RULE: Do NOT log in immediately! Switch to Login view.
       showToast("Pendaftaran Berhasil! Silakan Masuk menggunakan akun Anda.", "success");
       
-      // Clear registration inputs
       document.getElementById('regFullName').value = "";
       document.getElementById('regUsername').value = "";
       document.getElementById('regPassword').value = "";
       document.getElementById('regSecurityAnswer').value = "";
 
-      // Switch to Login tab automatically
       switchAuthTab('login');
       document.getElementById('loginUsername').value = username;
       document.getElementById('loginPassword').focus();
@@ -1309,7 +1296,7 @@
       if (userMatch) {
         appState.currentUser = { fullName: userMatch.fullName, username: userMatch.username };
       } else {
-        showToast("Username atau Password tidak cocok! Silakan daftar terlebih dahulu.", "error");
+        showToast("Username atau Password salah!", "error");
         return;
       }
 
@@ -1376,7 +1363,6 @@
       const activeEl = document.getElementById(target + 'View');
       if (activeEl) activeEl.classList.remove('hidden');
 
-      // Update Nav Buttons
       const navButtons = {
         dashboard: 'navBtnDashboard',
         analytics: 'navBtnAnalytics',
@@ -1419,9 +1405,6 @@
       populateWalletSelect();
     }
 
-    // ============================================
-    // DATA COMPUTATIONS & RENDERING
-    // ============================================
     function computeTotals() {
       const totalIncome = appState.transactions
         .filter(t => t.type === 'income')
@@ -1431,7 +1414,6 @@
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      // Sum of wallet balances
       const totalWalletBalance = appState.wallets.reduce((sum, w) => sum + Number(w.balance), 0);
 
       return { totalIncome, totalExpense, totalWalletBalance };
@@ -1469,7 +1451,6 @@
       const btn = document.getElementById('langToggleBtn');
       btn.innerText = currentLang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN';
 
-      // Update all elements with data-i18n
       const dict = I18N[currentLang];
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -1486,32 +1467,13 @@
     function renderDashboardSummary() {
       const { totalIncome, totalExpense, totalWalletBalance } = computeTotals();
 
-      // Update current month labels dynamically
-      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-      const now = new Date();
-      const currentMonthStr = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-      
-      const expDateLabel = document.getElementById('expenseDateRangeLabel');
-      if (expDateLabel) expDateLabel.innerText = currentMonthStr;
-
-      const incDateLabel = document.getElementById('incomeDateRangeLabel');
-      if (incDateLabel) incDateLabel.innerText = currentMonthStr;
-
-      const analyticsDateRange = document.getElementById('analyticsDateRange');
-      if (analyticsDateRange) analyticsDateRange.innerText = currentMonthStr;
-
-      // Large Total Balance (Uangku)
       document.getElementById('totalBalanceDisplay').innerText = formatAmount(totalWalletBalance);
-
-      // Keuanganku Cards Summary
       document.getElementById('totalExpenseSummaryDisplay').innerText = formatAmount(totalExpense);
       document.getElementById('totalIncomeSummaryDisplay').innerText = formatAmount(totalIncome);
 
-      // Savings Rate calculation
       const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
       document.getElementById('savingsRateBadge').innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i>Tabungan: ${savingsRate}%`;
 
-      // Cuan Level Progression
       updateCuanLevel(totalWalletBalance);
     }
 
@@ -1520,7 +1482,7 @@
       const rankTier = document.getElementById('userRankTier');
       const progressBar = document.getElementById('cuanProgressBar');
 
-      let levelName = "Level 1: Pejuang Receh";
+      let levelName = "Level 1: Pejuang Finansial";
       let progress = 0;
 
       if (balance >= 100000000) {
@@ -1528,18 +1490,19 @@
         progress = 100;
       } else if (balance >= 50000000) {
         levelName = "Level 4: Manajer Cerdas";
-        progress = 80;
+        progress = 75;
       } else if (balance >= 20000000) {
         levelName = "Level 3: Penabung Handal";
-        progress = 60;
+        progress = 50;
       } else if (balance >= 5000000) {
         levelName = "Level 2: Hemat Mantap";
-        progress = 40;
+        progress = 25;
       } else if (balance > 0) {
-        progress = Math.min(35, Math.round((balance / 5000000) * 35));
+        levelName = "Level 1: Pejuang Finansial";
+        progress = 10;
       }
 
-      if (badge) badge.innerHTML = `<i class="fa-solid fa-trophy mr-1 text-amber-500"></i>${levelName.split(':')[0]}`;
+      badge.innerHTML = `<i class="fa-solid fa-trophy mr-1 text-amber-500"></i>${levelName.split(':')[0]}`;
       if (rankTier) rankTier.innerText = levelName;
       if (progressBar) progressBar.style.width = `${progress}%`;
     }
@@ -1597,24 +1560,21 @@
     }
 
     // ============================================
-    // MINI & MAIN CHARTS (REPLICATING SCREEN 2 & 3)
+    // MINI & MAIN CHARTS
     // ============================================
     function renderMiniCharts() {
       const { totalExpense, totalIncome } = computeTotals();
 
-      // 1. Mini Expense Donut (Real-time calculation from actual transactions)
       const ctxExpense = document.getElementById('miniExpenseDonut');
       if (ctxExpense) {
         if (miniExpenseChartInstance) miniExpenseChartInstance.destroy();
-        const hasExpenses = totalExpense > 0;
         miniExpenseChartInstance = new Chart(ctxExpense, {
           type: 'doughnut',
           data: {
             datasets: [{
-              data: hasExpenses ? [totalExpense] : [1],
-              backgroundColor: hasExpenses ? ['#f59e0b'] : ['#e2e8f0'],
-              borderWidth: 0,
-              hoverOffset: 0
+              data: totalExpense > 0 ? [totalExpense] : [1],
+              backgroundColor: totalExpense > 0 ? ['#f59e0b'] : ['#e2e8f0'],
+              borderWidth: 0
             }]
           },
           options: {
@@ -1626,17 +1586,15 @@
         });
       }
 
-      // 2. Mini Income Donut (Real-time calculation from actual transactions)
       const ctxIncome = document.getElementById('miniIncomeDonut');
       if (ctxIncome) {
         if (miniIncomeChartInstance) miniIncomeChartInstance.destroy();
-        const hasIncome = totalIncome > 0;
         miniIncomeChartInstance = new Chart(ctxIncome, {
           type: 'doughnut',
           data: {
             datasets: [{
-              data: hasIncome ? [totalIncome] : [1],
-              backgroundColor: hasIncome ? ['#10b981'] : ['#e2e8f0'],
+              data: totalIncome > 0 ? [totalIncome] : [1],
+              backgroundColor: totalIncome > 0 ? ['#10b981'] : ['#e2e8f0'],
               borderWidth: 0
             }]
           },
@@ -1655,43 +1613,34 @@
       if (!ctx) return;
       if (weeklyBarChartInstance) weeklyBarChartInstance.destroy();
 
-      // Calculate last 7 days from genuine recorded transactions
       const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-      const labels = [];
       const expenseData = [0, 0, 0, 0, 0, 0, 0];
       const incomeData = [0, 0, 0, 0, 0, 0, 0];
-      const today = new Date();
 
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(today.getDate() - i);
-        const dayStr = d.toISOString().split('T')[0];
-        const dayName = days[d.getDay()];
-        labels.push(dayName);
-
-        const dayIdx = 6 - i;
-        appState.transactions.forEach(t => {
-          if (t.date === dayStr) {
-            if (t.type === 'expense') expenseData[dayIdx] += Number(t.amount);
-            if (t.type === 'income') incomeData[dayIdx] += Number(t.amount);
-          }
-        });
-      }
+      appState.transactions.forEach(t => {
+        const d = new Date(t.date);
+        const dayIdx = isNaN(d.getDay()) ? 0 : d.getDay();
+        if (t.type === 'expense') {
+          expenseData[dayIdx] += Number(t.amount);
+        } else {
+          incomeData[dayIdx] += Number(t.amount);
+        }
+      });
 
       weeklyBarChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
           datasets: [
             {
               label: 'Pengeluaran',
-              data: expenseData,
+              data: [expenseData[1], expenseData[2], expenseData[3], expenseData[4], expenseData[5], expenseData[6], expenseData[0]],
               backgroundColor: '#f59e0b',
               borderRadius: 6
             },
             {
               label: 'Pemasukan',
-              data: incomeData,
+              data: [incomeData[1], incomeData[2], incomeData[3], incomeData[4], incomeData[5], incomeData[6], incomeData[0]],
               backgroundColor: '#10b981',
               borderRadius: 6
             }
@@ -1725,7 +1674,6 @@
       document.getElementById('analyticsTotalAmount').innerText = formatAmount(totalExpense);
       document.getElementById('donutCenterTotal').innerText = formatAmount(totalExpense);
 
-      // Group expense transactions by category
       const expenses = appState.transactions.filter(t => t.type === 'expense');
       const categoryMap = {};
 
@@ -1733,24 +1681,23 @@
         categoryMap[t.category] = (categoryMap[t.category] || 0) + Number(t.amount);
       });
 
-      const defaultColors = ['#f59e0b', '#38bdf8', '#0284c7', '#10b981', '#8b5cf6', '#ec4899'];
+      const defaultColors = ['#f59e0b', '#38bdf8', '#0284c7', '#10b981', '#8b5cf6', '#ec4899', '#f43f5e'];
       const categories = Object.keys(categoryMap);
       const values = Object.values(categoryMap);
 
       const ctxLarge = document.getElementById('largeExpenseDonut');
       if (ctxLarge) {
         if (largeExpenseChartInstance) largeExpenseChartInstance.destroy();
-        const hasData = values.length > 0;
         largeExpenseChartInstance = new Chart(ctxLarge, {
           type: 'doughnut',
           data: {
-            labels: hasData ? categories : ['Belum Ada Pengeluaran'],
+            labels: categories.length > 0 ? categories : ['Belum Ada Transaksi'],
             datasets: [{
-              data: hasData ? values : [1],
-              backgroundColor: hasData ? defaultColors.slice(0, categories.length) : ['#e2e8f0'],
+              data: values.length > 0 ? values : [1],
+              backgroundColor: values.length > 0 ? defaultColors.slice(0, categories.length) : ['#e2e8f0'],
               borderWidth: 4,
               borderColor: '#ffffff',
-              hoverOffset: hasData ? 6 : 0
+              hoverOffset: 6
             }]
           },
           options: {
@@ -1761,7 +1708,7 @@
               legend: { display: false },
               tooltip: {
                 callbacks: {
-                  label: (c) => hasData ? ` ${c.label}: ${formatAmount(c.raw)}` : ' Belum ada data transaksi'
+                  label: (c) => ` ${c.label}: ${formatAmount(c.raw)}`
                 }
               }
             }
@@ -1769,18 +1716,11 @@
         });
       }
 
-      // Render Itemized Rows
       const listContainer = document.getElementById('analyticsCategoryList');
       if (!listContainer) return;
 
       if (categories.length === 0) {
-        listContainer.innerHTML = `
-          <div class="p-6 text-center text-slate-400 bg-white rounded-2xl border border-sky-100">
-            <i class="fa-solid fa-receipt text-2xl text-slate-300 mb-2"></i>
-            <p class="text-xs font-semibold">Belum ada pengeluaran dicatat.</p>
-            <p class="text-[10px] text-slate-400 mt-1">Tambahkan transaksi pengeluaran untuk melihat persentase kategori.</p>
-          </div>
-        `;
+        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada data pengeluaran.</p>`;
         return;
       }
 
@@ -1804,7 +1744,7 @@
     }
 
     // ============================================
-    // AI INSIGHTS ENGINE (POWERED BY GEMINI)
+    // AI ADVISOR INSIGHTS (GEMINI ENGINE)
     // ============================================
     async function generateAiFinancialInsights() {
       const card = document.getElementById('aiInsightsCard');
@@ -1822,27 +1762,84 @@
         .join(', ');
 
       const promptText = `Bertindaklah sebagai penasihat keuangan pribadi cerdas untuk aplikasi "Dompet Pintar".
-Berikut data keuangan pengguna saat ini:
+Data keuangan pengguna:
 - Total Pemasukan: Rp ${totalIncome}
 - Total Pengeluaran: Rp ${totalExpense}
 - Rincian Pengeluaran Terakhir: ${expenseList || "Belum banyak transaksi"}
 
-Berikan analisis singkat, ramah, dan aplikatif dalam bahasa ${currentLang === 'id' ? 'Indonesia' : 'English'} mencakup:
+Berikan analisis ringkas, ramah, dan solutif dalam bahasa ${currentLang === 'id' ? 'Indonesia' : 'English'}:
 1. Deteksi pola pengeluaran atau kebocoran dana tersembunyi
-2. Tips cerdas berhemat berdasarkan kategori terbesar
-3. Rekomendasi target tabungan bulan berikutnya
-Gunakan format poin singkat dan bahasa santai namun profesional.`;
+2. Tips cerdas berhemat berdasarkan kebiasaan belanja
+3. Target tabungan bulan berikutnya
+Gunakan format poin padat tanpa pengantar berlebihan.`;
 
       try {
-        const responseText = await callGeminiApiWithRetry(promptText);
-        content.innerText = responseText;
+        const activeKey = getGeminiApiKey();
+        const endpoint = activeKey 
+          ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey}`
+          : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent`;
+
+        const payload = { contents: [{ parts: [{ text: promptText }] }] };
+        const res = await fetchWithRetry(endpoint, payload);
+        const reply = res.candidates?.[0]?.content?.parts?.[0]?.text || "Analisis belum tersedia.";
+        content.innerText = reply;
       } catch (err) {
-        content.innerHTML = `<span class="text-rose-500 font-medium">Maaf, layanan AI sedang sibuk. Silakan coba kembali sesaat lagi.</span>`;
+        content.innerHTML = `<span class="text-rose-500 font-medium">Layanan AI sedang sibuk. Silakan coba sesaat lagi.</span>`;
       }
     }
 
-    // Helper function to preprocess and optimize receipt image for OCR clarity
-    function compressAndPrepareImage(file) {
+    // ============================================
+    // OCR STRUK CERDAS DENGAN MEMORI SUPABASE
+    // ============================================
+    function triggerReceiptScan() {
+      document.getElementById('receiptFileInput').value = "";
+      document.getElementById('receiptFileInput').click();
+    }
+
+    async function handleReceiptImageUpload(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const overlay = document.getElementById('ocrLoadingOverlay');
+      overlay.classList.remove('hidden');
+
+      try {
+        // 1. Sinkronkan Memori Supabase terkini agar AI mengenali pola merchant pengguna
+        await loadSupabaseOcrMemory();
+
+        // 2. Kompresi gambar cepat ke resolusi ideal OCR (~150KB) berlatar putih bersih
+        const base64Data = await compressImageForOcr(file);
+
+        // 3. Scan struk dengan Gemini Vision didukung Memori Supabase
+        const result = await scanReceiptWithGeminiVision(base64Data);
+
+        overlay.classList.add('hidden');
+
+        if (result && typeof result.amount === 'number' && result.amount > 0) {
+          // 4. Catat dan amankan ke Memori Supabase
+          await saveOcrScanToSupabase(result);
+
+          // 5. Buka modal transaksi dan isi secara otomatis
+          openTransactionModal('expense');
+          document.getElementById('txAmountInput').value = result.amount;
+          if (result.title) document.getElementById('txTitleInput').value = result.title;
+          if (result.category) document.getElementById('txCategorySelect').value = result.category;
+          if (result.date) document.getElementById('txDateInput').value = result.date;
+
+          showToast(`Struk terbaca & disimpan ke Memori Supabase: Rp ${result.amount.toLocaleString('id-ID')} (${result.title || 'Transaksi'})`, "success");
+        } else {
+          openTransactionModal('expense');
+          showToast("Nominal tidak terbaca jelas. Form dibuka untuk verifikasi manual.", "info");
+        }
+      } catch (err) {
+        overlay.classList.add('hidden');
+        openTransactionModal('expense');
+        showToast("Scan otomatis terkendala koneksi. Silakan ketik nominal manual di form.", "info");
+      }
+    }
+
+    // Kompresi Kanvas Gambar HP untuk transmisi instan & kejelasan teks struk
+    function compressImageForOcr(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = reject;
@@ -1850,47 +1847,33 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
           const img = new Image();
           img.onerror = reject;
           img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            // High-detail resolution: 1920px retains sharp rendering of thermal numbers & dots
-            const maxDim = 1920;
+            const maxDim = 1280;
+            let w = img.width;
+            let h = img.height;
 
-            if (width > maxDim || height > maxDim) {
-              if (width > height) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
               } else {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
               }
             }
 
-            canvas.width = width;
-            canvas.height = height;
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Background putih bersih mencegah struk termal hitam/gelap
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
 
-            // Enhance contrast and sharpness for faded thermal paper
-            try {
-              const imgData = ctx.getImageData(0, 0, width, height);
-              const d = imgData.data;
-              const contrastFactor = 1.15; // Mild contrast boost for thermal print
-              for (let i = 0; i < d.length; i += 4) {
-                d[i] = Math.min(255, Math.max(0, (d[i] - 128) * contrastFactor + 128));
-                d[i + 1] = Math.min(255, Math.max(0, (d[i + 1] - 128) * contrastFactor + 128));
-                d[i + 2] = Math.min(255, Math.max(0, (d[i + 2] - 128) * contrastFactor + 128));
-              }
-              ctx.putImageData(imgData, 0, 0);
-            } catch (ignore) {
-              // Canvas tainted or cross-origin safe fallback
-            }
-
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-            const base64Data = dataUrl.split(',')[1];
-            resolve({ dataUrl, base64Data, mimeType: 'image/jpeg' });
+            // Export JPEG kualitas 0.85
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            resolve(dataUrl.split(',')[1]);
           };
           img.src = e.target.result;
         };
@@ -1898,368 +1881,111 @@ Gunakan format poin singkat dan bahasa santai namun profesional.`;
       });
     }
 
-    function triggerReceiptScan() {
-      const input = document.getElementById('receiptFileInput');
-      if (input) {
-        input.value = ''; // Reset input to allow re-uploading the same file
-        input.click();
-      }
-    }
+    // Pemindai Struk Berbasis Gemini Vision + Memori Supabase
+    async function scanReceiptWithGeminiVision(base64Data) {
+      // Ambil daftar merchant unik dari Memori Supabase
+      const knownMerchants = [...new Set(
+        supabaseOcrMemories
+          .map(m => m.extracted_merchant)
+          .filter(Boolean)
+      )].slice(0, 15);
 
-    async function handleReceiptImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+      const memoryContext = knownMerchants.length > 0 
+        ? `\nMEMORI DATABASE SUPABASE PENGGUNA (Gunakan referensi ini jika merchant cocok): [${knownMerchants.join(', ')}].`
+        : '';
 
-      showToast("Sedang memindai struk dengan akurasi tinggi...", "info");
+      const prompt = `Anda adalah sistem OCR ahli struk dan bukti pembayaran di Indonesia untuk aplikasi Dompet Pintar.
+Tugas Anda: Ekstrak TOTAL TRANSAKSI AKHIR, NAMA TOKO/MERCHANT, KATEGORI, dan TANGGAL dari gambar struk atau bukti transfer ini.
+${memoryContext}
+
+ATURAN KETAT EKSTRAKSI NOMINAL (AMOUNT) AGAR AKURAT:
+1. TOTAL AKHIR (GRAND TOTAL):
+   - Ambil angka pada label TOTAL, TOTAL BELANJA, GRAND TOTAL, JUMLAH AKHIR, TAGIHAN, TOTAL HARGA, atau TOTAL TRANSAKSI.
+   - PERINGATAN KERAS: JANGAN mengambil nilai TUNAI / CASH / BAYAR / DIBAYAR (itu uang yang diserahkan pembeli, bukan harga barang).
+   - JANGAN mengambil label KEMBALI / KEMBALIAN / CHANGE.
+   - JANGAN mengambil NOMOR STRUK, NOMOR TRANSAKSI, NOMOR KARTU, NOMOR REKENING, KODE REFERENSI, TANGGAL, atau JAM.
+2. BUKTI TRANSFER PERBANKAN & E-WALLET (BCA, Mandiri Livin, BRImo, BNI, BSI, DANA, GoPay, OVO, ShopeePay):
+   - Ambil Total Transfer / Total Debet (Nominal + Biaya Admin).
+   - JANGAN mengambil Nomor Rekening Tujuan atau Nomor Referensi.
+3. STRUK SPBU (Pertamina / Shell):
+   - Ambil Total Rupiah / Rupiah Penjualan, BUKAN jumlah Liter atau harga per liter.
+4. FORMAT ANGKA INDONESIA:
+   - Titik (.) adalah pemisah ribuan (contoh: 48.500 berarti 48500).
+   - Koma (,) adalah desimal (contoh: 48.500,00 berarti 48500).
+   - Kembalikan amount murni sebagai angka bulat (NUMBER) tanpa simbol.
+5. KATEGORI:
+   Pilih salah satu: "Makanan & Minuman", "Belanja", "Transportasi", "Tagihan & Utilitas", "Biaya dan pajak", "Top up wallet", "Hiburan", "Belum terkategori".
+6. TANGGAL: Format YYYY-MM-DD sesuai struk, atau gunakan tanggal hari ini jika tidak terbaca.`;
+
+      const activeKey = getGeminiApiKey();
+      const endpoint = activeKey 
+        ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey}`
+        : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent`;
+      
+      const payload = {
+        contents: [{
+          role: "user",
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+          ]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING", description: "Nama toko, merchant, atau ringkasan transaksi" },
+              amount: { type: "NUMBER", description: "Total nominal akhir belanja tanpa simbol" },
+              category: { type: "STRING", description: "Kategori pengeluaran yang sesuai" },
+              date: { type: "STRING", description: "Tanggal struk format YYYY-MM-DD" }
+            },
+            required: ["title", "amount", "category"]
+          }
+        }
+      };
+
+      const res = await fetchWithRetry(endpoint, payload);
+      const text = res.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) return null;
 
       try {
-        // Step 1: Preprocess receipt photo
-        const { dataUrl, base64Data, mimeType } = await compressAndPrepareImage(file);
-
-        let extracted = null;
-
-        // Step 2: Advanced Gemini Vision OCR Engine
-        try {
-          extracted = await scanReceiptWithGeminiVision(base64Data, mimeType);
-        } catch (geminiErr) {
-          console.warn("Gemini Vision API encountered an issue, running local OCR fallback:", geminiErr);
-        }
-
-        // Step 3: Local Heuristic & Tesseract Fallback if Gemini Vision is unavailable
-        if (!extracted || !extracted.amount || extracted.amount <= 0) {
-          showToast("Menganalisis teks struk secara lokal...", "info");
-          const fallbackData = await scanReceiptWithTesseractFallback(dataUrl);
-          if (fallbackData) {
-            extracted = {
-              title: extracted?.title || fallbackData.title || "Struk Pembelian",
-              amount: fallbackData.amount || extracted?.amount || 0,
-              category: extracted?.category || fallbackData.category || "Belanja",
-              date: extracted?.date || fallbackData.date || new Date().toISOString().split('T')[0]
-            };
-          }
-        }
-
-        // Step 4: Populate Transaction Modal with verified data
-        openTransactionModal('expense');
-        
-        if (extracted) {
-          if (extracted.amount && extracted.amount > 0) {
-            document.getElementById('txAmountInput').value = extracted.amount;
-          }
-          if (extracted.title) {
-            document.getElementById('txTitleInput').value = extracted.title;
-          }
-          if (extracted.category) {
-            document.getElementById('txCategorySelect').value = extracted.category;
-          }
-          if (extracted.date) {
-            document.getElementById('txDateInput').value = extracted.date;
-          }
-          
-          if (extracted.amount && extracted.amount > 0) {
-            showToast(`Struk terbaca: ${extracted.title || 'Transaksi'} (${formatAmount(extracted.amount)})`, "success");
-          } else {
-            document.getElementById('txAmountInput').focus();
-            showToast(`Struk ${extracted.title || 'terdeteksi'}. Silakan masukkan nominal pembayaran.`, "info");
-          }
-        } else {
-          showToast("Struk berhasil dibuka. Silakan masukkan nominal belanja Anda.", "info");
-        }
-      } catch (err) {
-        console.error("OCR Processing error:", err);
-        openTransactionModal('expense');
-        showToast("Struk terbuka. Silakan masukkan nominal pembayaran.", "info");
-      }
-    }
-
-    async function scanReceiptWithGeminiVision(base64Image, mimeType) {
-      const prompt = `Anda adalah sistem OCR paling akurat untuk membaca struk kasir, nota belanja, dan bukti pembayaran digital di INDONESIA.
-Tugas utama Anda: Temukan TOTAL NOMINAL AKHIR yang sebenarnya dibayarkan oleh pengguna.
-
-ATURAN STRUK INDONESIA (PENTING):
-1. Format Angka Indonesia: Tanda titik (.) adalah pemisah ribuan (contoh: 48.500 artinya 48500 rupiah, 1.250.000 artinya 1250000 rupiah). Tanda koma (,) adalah desimal (contoh: 48.500,00 jadikan 48500).
-2. Struk Minimarket/Supermarket (Indomaret, Alfamart, Superindo, Hypermart, dll.):
-   - Temukan baris: "TOTAL BELANJA", "TOTAL AKHIR", "TOTAL HARGA", "HARGA JUAL", "GRAND TOTAL", "TAGIHAN", atau "TOTAL Rp".
-   - JANGAN mengambil "TUNAI" / "CASH" / "BAYAR" (itu uang yang diserahkan pembeli, bukan harga barang).
-   - JANGAN mengambil "KEMBALI" / "KEMBALIAN" / "CHANGE".
-   - JANGAN mengambil "PPN", "DISKON", "HEMAT", atau "SUBTOTAL".
-3. Bukti Transfer & E-Wallet (BCA, Mandiri Livin, BRImo, BNI, BSI, DANA, GoPay, OVO, ShopeePay, QRIS):
-   - Temukan: "Total Transaksi", "Jumlah Transfer", "Total Pembayaran", "Nominal", "Total Bayar". Jika ada biaya admin, ambil total keseluruhan.
-4. Struk SPBU Pertamina/Shell & Restoran:
-   - Ambil nominal total akhir sebelum baris tunai/kembalian.
-
-Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
-{
-  "title": "Nama Toko / Merchant / Deskripsi",
-  "amount": 48500,
-  "category": "Makanan & Minuman" | "Belanja" | "Transportasi" | "Tagihan & Utilitas" | "Biaya dan pajak" | "Top up wallet" | "Investasi" | "Hiburan" | "Belum terkategori",
-  "date": "YYYY-MM-DD"
-}`;
-
-      const modelsToTry = [
-        "gemini-3-flash-preview",
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
-      ];
-
-      // Try user key and platform auto-injected key
-      const keysToTry = [
-        apiKey || DEFAULT_GEMINI_API_KEY,
-        "" // Canvas automatic runtime injection fallback
-      ];
-
-      for (const currentKey of keysToTry) {
-        for (const model of modelsToTry) {
-          try {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey}`;
-            const payload = {
-              contents: [{
-                role: "user",
-                parts: [
-                  { text: prompt },
-                  { inlineData: { mimeType: mimeType, data: base64Image } }
-                ]
-              }],
-              generationConfig: {
-                temperature: 0.1
-              }
-            };
-
-            const res = await fetch(endpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-              const data = await res.json();
-              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (text) {
-                const parsed = cleanAndParseReceiptJson(text);
-                if (parsed && parsed.amount > 0) {
-                  return parsed;
-                }
-              }
-            }
-          } catch (e) {
-            // continue to next model/key combination
-          }
-        }
-      }
-      return null;
-    }
-
-    function cleanAndParseReceiptJson(rawText) {
-      if (!rawText) return null;
-      try {
-        let clean = rawText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
-        const jsonMatch = clean.match(/\{[\s\S]*\}/);
-        if (jsonMatch) clean = jsonMatch[0];
-
-        const parsed = JSON.parse(clean);
-        if (!parsed) return null;
-
-        // Sanitize Amount for Indonesian Currency
-        if (parsed.amount !== undefined && parsed.amount !== null) {
-          let strVal = String(parsed.amount).trim();
-          // Remove currency markers and trailing decimal zeros e.g. ",00" or ".00"
-          strVal = strVal.replace(/[Rr][Pp]\.?\s*/g, '');
-          strVal = strVal.replace(/[,\.]00$/, '');
-          // Remove dots or commas used as thousand separators
-          strVal = strVal.replace(/[^0-9]/g, '');
-          const intVal = parseInt(strVal, 10);
-          parsed.amount = (!isNaN(intVal) && intVal > 0) ? intVal : 0;
-        }
-
-        // Sanitize Date
-        if (parsed.date) {
-          const dMatch = parsed.date.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
-          if (dMatch) {
-            parsed.date = `${dMatch[1]}-${String(dMatch[2]).padStart(2, '0')}-${String(dMatch[3]).padStart(2, '0')}`;
-          } else {
-            parsed.date = new Date().toISOString().split('T')[0];
-          }
-        } else {
-          parsed.date = new Date().toISOString().split('T')[0];
-        }
-
-        return parsed;
-      } catch (err) {
+        return JSON.parse(text);
+      } catch (e) {
         return null;
       }
     }
 
-    async function scanReceiptWithTesseractFallback(dataUrl) {
-      try {
-        if (window.Tesseract) {
-          const result = await window.Tesseract.recognize(dataUrl, 'ind+eng', {
-            logger: () => {}
-          });
-          const rawText = result?.data?.text || "";
-          if (rawText.trim().length > 0) {
-            return parseReceiptTextHeuristic(rawText);
-          }
-        }
-      } catch (err) {
-        console.warn("Tesseract OCR fallback skipped:", err);
-      }
-      return {
-        title: "Struk Pembelian",
-        amount: 0,
-        category: "Belanja",
-        date: new Date().toISOString().split('T')[0]
-      };
-    }
-
-    function parseReceiptTextHeuristic(text) {
-      if (!text) return null;
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      
-      let title = "";
-      let amount = 0;
-      let category = "Belanja";
-      let date = new Date().toISOString().split('T')[0];
-
-      // 1. Indonesian Merchant Brand Recognition
-      const merchantPatterns = [
-        { pattern: /indomaret/i, name: "Indomaret", cat: "Belanja" },
-        { pattern: /alfamart/i, name: "Alfamart", cat: "Belanja" },
-        { pattern: /alfamidi/i, name: "Alfamidi", cat: "Belanja" },
-        { pattern: /superindo/i, name: "Superindo", cat: "Belanja" },
-        { pattern: /hypermart/i, name: "Hypermart", cat: "Belanja" },
-        { pattern: /transmart|carrefour/i, name: "Transmart", cat: "Belanja" },
-        { pattern: /pertamina|spbu|bensin|solar|pertalite|pertamax/i, name: "SPBU Pertamina", cat: "Transportasi" },
-        { pattern: /shell/i, name: "SPBU Shell", cat: "Transportasi" },
-        { pattern: /starbucks/i, name: "Starbucks", cat: "Makanan & Minuman" },
-        { pattern: /kopi kenangan/i, name: "Kopi Kenangan", cat: "Makanan & Minuman" },
-        { pattern: /janji jiwa/i, name: "Kopi Janji Jiwa", cat: "Makanan & Minuman" },
-        { pattern: /mcdonald|mcd/i, name: "McDonald's", cat: "Makanan & Minuman" },
-        { pattern: /kfc/i, name: "KFC", cat: "Makanan & Minuman" },
-        { pattern: /solaria/i, name: "Solaria", cat: "Makanan & Minuman" },
-        { pattern: /hokben/i, name: "HokBen", cat: "Makanan & Minuman" },
-        { pattern: /grab|gojek|gofood|grabfood/i, name: "Transportasi Online", cat: "Transportasi" },
-        { pattern: /pln|listrik/i, name: "Tagihan Listrik PLN", cat: "Tagihan & Utilitas" },
-        { pattern: /pdam/i, name: "Tagihan PDAM", cat: "Tagihan & Utilitas" },
-        { pattern: /telkom|indihome/i, name: "Tagihan Internet", cat: "Tagihan & Utilitas" },
-        { pattern: /bca|klikbca/i, name: "Transfer Bank BCA", cat: "Biaya dan pajak" },
-        { pattern: /mandiri|livin/i, name: "Transfer Bank Mandiri", cat: "Biaya dan pajak" },
-        { pattern: /bri|brimo/i, name: "Transfer Bank BRI", cat: "Biaya dan pajak" },
-        { pattern: /bni|bni mobile/i, name: "Transfer Bank BNI", cat: "Biaya dan pajak" },
-        { pattern: /bsi|bsi mobile/i, name: "Transfer Bank BSI", cat: "Biaya dan pajak" },
-        { pattern: /gopay/i, name: "GoPay", cat: "Top up wallet" },
-        { pattern: /dana/i, name: "DANA Wallet", cat: "Top up wallet" },
-        { pattern: /ovo/i, name: "OVO", cat: "Top up wallet" },
-        { pattern: /shopeepay/i, name: "ShopeePay", cat: "Top up wallet" }
-      ];
-
-      for (const m of merchantPatterns) {
-        if (m.pattern.test(text)) {
-          title = m.name;
-          category = m.cat;
-          break;
-        }
-      }
-
-      if (!title) {
-        for (let i = 0; i < Math.min(4, lines.length); i++) {
-          const clean = lines[i].replace(/[^a-zA-Z0-9\s]/g, '').trim();
-          if (clean.length >= 3 && !/^\d+$/.test(clean) && !/jl|jalan|alamat|telp|pos|npwp/i.test(clean)) {
-            title = clean;
-            break;
-          }
-        }
-        if (!title) title = "Struk Pembelian";
-      }
-
-      // 2. Extract Total Amount candidate lines (Priority to TOTAL / GRAND TOTAL over TUNAI)
-      const primaryTotalRegex = /(?:total\s*(?:belanja|akhir|harga|bayar|tagihan|transaksi|rp)?|grand\s*total|harga\s*jual|jumlah\s*(?:transfer|bayar)?|total)\s*[:=]?\s*(?:rp\.?)?\s*([0-9\.,]+)/i;
-      const excludeKeywords = /kembali|kembalian|change|kembalian\s*rp|tunai|cash|bayar\s*tunai|ppn|pajak|diskon|hemat/i;
-
-      for (const line of lines) {
-        if (!excludeKeywords.test(line)) {
-          const match = line.match(primaryTotalRegex);
-          if (match && match[1]) {
-            let digits = match[1].replace(/[,\.]00$/, '').replace(/[^0-9]/g, '');
-            const parsedVal = parseInt(digits, 10);
-            if (parsedVal && parsedVal >= 100 && parsedVal <= 500000000) {
-              amount = parsedVal;
-              break;
-            }
-          }
-        }
-      }
-
-      // Fallback: search all lines with Rp pattern if primary regex didn't catch
-      if (amount === 0) {
-        const amountsFound = [];
-        for (const line of lines) {
-          if (!excludeKeywords.test(line)) {
-            const matches = line.match(/(?:rp\.?|idr)?\s*([0-9]{1,3}(?:[\.,][0-9]{3})+)/gi);
-            if (matches) {
-              matches.forEach(mStr => {
-                const digits = mStr.replace(/[,\.]00$/, '').replace(/[^0-9]/g, '');
-                const val = parseInt(digits, 10);
-                if (val && val >= 500 && val <= 500000000) {
-                  amountsFound.push(val);
-                }
-              });
-            }
-          }
-        }
-        if (amountsFound.length > 0) {
-          amount = Math.max(...amountsFound);
-        }
-      }
-
-      // 3. Extract date
-      const dateMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
-      if (dateMatch) {
-        let d = parseInt(dateMatch[1], 10);
-        let m = parseInt(dateMatch[2], 10);
-        let y = parseInt(dateMatch[3], 10);
-        if (y < 100) y += 2000;
-        if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
-          date = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        }
-      }
-
-      return { title, amount, category, date };
-    }
-
-    // Exponential Backoff helper as required by rules
-    async function callGeminiApiWithRetry(prompt) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey || DEFAULT_GEMINI_API_KEY}`;
-      const payload = {
-        contents: [{ parts: [{ text: prompt }] }]
-      };
-      const data = await fetchWithRetry(endpoint, payload);
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak ada respons.";
-    }
-
+    // Exponential Backoff Fetch Helper dengan Timeout Protection
     async function fetchWithRetry(url, payload, retries = 5, delays = [1000, 2000, 4000, 8000, 16000]) {
       for (let i = 0; i < retries; i++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 18000); // 18 detik timeout per percobaan
+
         try {
           const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controller.signal
           });
+          clearTimeout(timer);
           if (res.ok) {
             return await res.json();
           }
         } catch (e) {
-          // retry silently as mandated
+          clearTimeout(timer);
         }
+
         if (i < retries - 1) {
           await new Promise(r => setTimeout(r, delays[i]));
         }
       }
-      throw new Error("Gagal terhubung dengan layanan AI setelah beberapa percobaan.");
+      throw new Error("Gagal terhubung dengan layanan setelah beberapa percobaan.");
     }
 
     // ============================================
-    // TRANSACTION MANAGEMENT (ADD / EDIT / DELETE)
+    // TRANSACTION MANAGEMENT
     // ============================================
     function openTransactionModal(type = 'expense', editId = null) {
       populateWalletSelect();
@@ -2281,7 +2007,6 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
         }
       }
 
-      // Default Add Mode
       setTxType(type);
       document.getElementById('txAmountInput').value = "";
       document.getElementById('txTitleInput').value = "";
@@ -2346,7 +2071,7 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
         };
         appState.transactions.push(newTx);
 
-        // Adjust selected wallet balance
+        // Sesuaikan saldo dompet yang dipilih
         const wIndex = appState.wallets.findIndex(w => w.id === walletId);
         if (wIndex !== -1) {
           if (activeTxType === 'expense') {
@@ -2356,7 +2081,24 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
           }
         }
 
-        // Trigger confetti for positive saving
+        // Simpan juga ke tabel transactions Supabase jika terkoneksi
+        if (supabaseClient) {
+          supabaseClient
+            .from('transactions')
+            .insert([{
+              type: activeTxType,
+              amount: amount,
+              title: title,
+              category: category,
+              date: date,
+              recurring: recurring,
+              wallet_id: walletId,
+              created_at: new Date().toISOString()
+            }])
+            .then(() => {})
+            .catch(() => {});
+        }
+
         if (activeTxType === 'income' && window.confetti) {
           window.confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
         }
@@ -2485,7 +2227,6 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
     // DREAM PLANNER, CHALLENGES & GAMIFICATION
     // ============================================
     function renderCuanAndGoals() {
-      // 1. Challenges
       const chContainer = document.getElementById('challengesContainer');
       if (chContainer) {
         chContainer.innerHTML = appState.challenges.map(ch => {
@@ -2514,16 +2255,10 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
         }).join('');
       }
 
-      // 2. Goals
       const goalsContainer = document.getElementById('goalsContainer');
       if (goalsContainer) {
         if (appState.goals.length === 0) {
-          goalsContainer.innerHTML = `
-            <div class="p-5 text-center text-slate-400 bg-white rounded-2xl border border-sky-100">
-              <p class="text-xs font-semibold">Belum ada target impian.</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">Tekan tombol '+ Buat Impian' di atas untuk memulai tabungan.</p>
-            </div>
-          `;
+          goalsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada target impian dibuat.</p>`;
         } else {
           goalsContainer.innerHTML = appState.goals.map(g => {
             const pct = Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
@@ -2549,16 +2284,10 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
         }
       }
 
-      // 3. Budgets
       const budgetsContainer = document.getElementById('budgetsContainer');
       if (budgetsContainer) {
         if (appState.budgets.length === 0) {
-          budgetsContainer.innerHTML = `
-            <div class="p-5 text-center text-slate-400 bg-white rounded-2xl border border-sky-100">
-              <p class="text-xs font-semibold">Belum ada limit anggaran.</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">Tekan '+ Set Limit' untuk menentukan batas pengeluaran bulanan.</p>
-            </div>
-          `;
+          budgetsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada batas anggaran diatur.</p>`;
         } else {
           budgetsContainer.innerHTML = appState.budgets.map(b => {
             const spent = appState.transactions
@@ -2593,9 +2322,9 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
         ch.completedDays += 1;
         if (ch.completedDays === ch.targetDays && window.confetti) {
           window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-          showToast(`Selamat! Tantangan "${ch.title}" selesai! Anda naik level!`, "success");
+          showToast(`Selamat! Tantangan "${ch.title}" selesai!`, "success");
         } else {
-          showToast("Progres tantangan tercatat! Tetap konsisten!", "success");
+          showToast("Progres tantangan tercatat!", "success");
         }
         saveLocalPersistence();
         renderCuanAndGoals();
@@ -2627,7 +2356,7 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
 
       saveLocalPersistence();
       closeModal('goalModal');
-      showToast("Rencana impian baru berhasil dibuat!", "success");
+      showToast("Target impian berhasil dibuat!", "success");
       renderCuanAndGoals();
     }
 
@@ -2730,7 +2459,7 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
           deferredPwaPrompt = null;
         });
       } else {
-        showToast("Untuk mengunduh: Tekan menu browser lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).", "info");
+        showToast("Tekan menu browser lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).", "info");
       }
     }
 
@@ -2742,7 +2471,6 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
     }
 
     function confirmDeleteAccount() {
-      // Purge current user and state
       if (appState.currentUser) {
         const users = getStoredUsers().filter(u => u.username !== appState.currentUser.username);
         saveStoredUsers(users);
@@ -2750,6 +2478,8 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
       appState.currentUser = null;
       appState.transactions = [];
       appState.goals = [];
+      appState.budgets = [];
+      appState.wallets.forEach(w => w.balance = 0);
       saveLocalPersistence();
       closeModal('deleteAccountModal');
       showToast("Semua data Anda telah dihapus secara permanen.", "info");
@@ -2762,9 +2492,7 @@ Keluarkan HANYA JSON murni tanpa markdown, tanpa tanda kutip codeblock:
     function saveLocalPersistence() {
       try {
         sessionStorage.setItem("dompet_pintar_state", JSON.stringify(appState));
-      } catch (e) {
-        // storage in-memory fallback
-      }
+      } catch (e) {}
     }
 
     function loadLocalPersistence() {
