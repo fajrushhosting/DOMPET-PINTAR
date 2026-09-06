@@ -1060,8 +1060,8 @@
 
   <script>
     // --- GEMINI API SETUP ---
-    const apiKey = "";
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const apiKey = "AQ.Ab8RN6JqZRY9-qDQ1YIHw0eyfGPhuJy6Ig1FmGUF8jumZBhC8w";
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
     // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = "https://cdtshlzomxcbvhdwkpoi.supabase.co";
@@ -1089,7 +1089,7 @@
         beranda: "Beranda",
         transaksi: "Transaksi",
         pet: "Pet Saya",
-        fitur: "Fitur AI",
+        ai: "AI Insights",
         sembunyikan: "Sembunyikan",
         tampilkan: "Tampilkan",
       },
@@ -1105,7 +1105,7 @@
         beranda: "Home",
         transaksi: "Transactions",
         pet: "My Pet",
-        fitur: "AI Features",
+        ai: "AI Insights",
         sembunyikan: "Hide",
         tampilkan: "Show",
       }
@@ -2571,13 +2571,17 @@
     }
 
     function switchToolsTab(tab) {
-      ['dream', 'challenge', 'budget'].forEach(t => {
-        document.getElementById(`tool-view-${t}`).classList.add('hidden-custom');
-        document.getElementById(`tab-btn-${t}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition cursor-pointer";
+      ['dream', 'challenge', 'cuan', 'budget'].forEach(t => {
+        const el = document.getElementById(`tool-view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (el) el.classList.add('hidden-custom');
+        if (btn) btn.className = "flex-1 py-1.5 px-2 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition whitespace-nowrap cursor-pointer";
       });
 
-      document.getElementById(`tool-view-${tab}`).classList.remove('hidden-custom');
-      document.getElementById(`tab-btn-${tab}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition cursor-pointer";
+      const activeEl = document.getElementById(`tool-view-${tab}`);
+      const activeBtn = document.getElementById(`tab-btn-${tab}`);
+      if (activeEl) activeEl.classList.remove('hidden-custom');
+      if (activeBtn) activeBtn.className = "flex-1 py-1.5 px-2 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition whitespace-nowrap cursor-pointer";
     }
 
     function renderToolsView() {
@@ -2637,6 +2641,43 @@
         }
       }
 
+      // Render Cuan Tracker Data
+      let totalExpense = 0;
+      let totalIncome = 0;
+      appState.transactions.forEach(t => {
+        if (t.type === 'expense') totalExpense += Number(t.amount);
+        if (t.type === 'income') totalIncome += Number(t.amount);
+      });
+      const netSavings = Math.max(0, totalIncome - totalExpense);
+      const cuanMonthlyTarget = 10000000;
+      const cuanPct = Math.min(100, Math.round((netSavings / cuanMonthlyTarget) * 100));
+
+      const cuanPctEl = document.getElementById('cuan-pct-badge');
+      const cuanBarEl = document.getElementById('cuan-progress-bar');
+      const cuanSavedEl = document.getElementById('cuan-saved-amt');
+      if (cuanPctEl) cuanPctEl.innerText = `${cuanPct}%`;
+      if (cuanBarEl) cuanBarEl.style.width = `${cuanPct}%`;
+      if (cuanSavedEl) cuanSavedEl.innerText = formatMoney(netSavings);
+
+      const milestonesEl = document.getElementById('cuan-milestones-list');
+      if (milestonesEl) {
+        const milestones = [
+          { title: "Tabungan Pertama Tercatat", desc: "Memulai saldo positif", reached: netSavings > 0 },
+          { title: "Cuan Saver Rp 1.000.000", desc: "Menembus tabungan 1 juta pertama", reached: netSavings >= 1000000 },
+          { title: "Financial Master Rp 5.000.000", desc: "Disiplin menahan belanja impulsif", reached: netSavings >= 5000000 },
+          { title: "Target Cuan Bulanan Penuh", desc: "Mencapai Rp 10.000.000 tabungan bersih", reached: netSavings >= 10000000 }
+        ];
+        milestonesEl.innerHTML = milestones.map(m => `
+          <div class="p-2.5 rounded-xl border ${m.reached ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-slate-50/60'} flex items-center justify-between">
+            <div>
+              <p class="font-bold ${m.reached ? 'text-emerald-800' : 'text-slate-600'}">${m.title}</p>
+              <p class="text-[10px] text-slate-400">${m.desc}</p>
+            </div>
+            <i class="fa-solid ${m.reached ? 'fa-circle-check text-emerald-500' : 'fa-circle-notch text-slate-300'} text-base"></i>
+          </div>
+        `).join('');
+      }
+
       const budgetContainer = document.getElementById('budget-list-container');
       if (budgetContainer) {
         if (!appState.budgets || appState.budgets.length === 0) {
@@ -2662,144 +2703,138 @@
       }
     }
 
-    function openModalDream() { openModal('modal-dream'); }
-    function openModalChallenge() { openModal('modal-challenge'); }
-    function openModalBudget() { showToast("Fitur budget kategori aktif di daftar!"); }
+    // --- FITUR KHUSUS AI INSIGHTS & KONSULTASI INTERAKTIF ---
+    async function requestAiAnalysis(mode = 'pattern') {
+      const loader = document.getElementById('ai-loading');
+      const content = document.getElementById('ai-content-body');
+      const titleEl = document.getElementById('ai-status-title');
+      const timeEl = document.getElementById('ai-timestamp');
 
-    function handleSaveDream(e) {
-      e.preventDefault();
-      const title = document.getElementById('dream-title').value;
-      const target = parseFloat(document.getElementById('dream-target').value);
-      const saved = parseFloat(document.getElementById('dream-saved').value) || 0;
-      const deadline = document.getElementById('dream-deadline').value;
+      if (!content || !loader) return;
 
-      appState.dreams.push({ id: Date.now().toString(), title, target, saved, deadline });
-      saveAppState();
-      closeModal('modal-dream');
-      renderToolsView();
-      showToast("Target impian baru berhasil ditambahkan!");
-      completeMission('m4');
-    }
+      loader.classList.remove('hidden-custom');
+      content.innerHTML = '';
 
-    function handleSaveChallenge(e) {
-      e.preventDefault();
-      const title = document.getElementById('chal-title').value;
-      const limit = parseFloat(document.getElementById('chal-limit').value);
-      const days = parseInt(document.getElementById('chal-days').value) || 7;
+      const trxSummary = appState.transactions.map(t => `${t.type.toUpperCase()}: ${t.category} sebesar Rp ${t.amount} via ${t.wallet}`).slice(0, 15).join(", ");
+      
+      let userPrompt = "";
+      if (mode === 'pattern') {
+        if (titleEl) titleEl.innerText = "Analisis Pola Pengeluaran Finansial";
+        userPrompt = `Analisis pola pemasukan & pengeluaran saya berikut: [${trxSummary || 'Belum ada transaksi'}].
+        Jelaskan secara ringkas: 
+        1. Kategori apa yang paling banyak menyerap anggaran?
+        2. Keseimbangan rasio pengeluaran terhadap pemasukan.
+        3. 2 Tindakan praktis untuk memperkuat stabilitas finansial.`;
+      } else if (mode === 'leaks') {
+        if (titleEl) titleEl.innerText = "Deteksi Kebocoran Anggaran (Pengeluaran Tak Terasa)";
+        userPrompt = `Periksa daftar transaksi saya: [${trxSummary || 'Belum ada transaksi'}].
+        Tolong deteksi pengeluaran 'latte factor' atau kebocoran kecil yang sering tidak disadari (seperti biaya admin, top-up impulsif, jajan kecil berulang), dan berikan rekomendasi pencegahannya!`;
+      } else if (mode === 'tips') {
+        if (titleEl) titleEl.innerText = "Tips Hemat Personal & Aturan 50/30/20";
+        userPrompt = `Berdasarkan transaksi saya: [${trxSummary || 'Belum ada transaksi'}], berikan 3 tips penghematan uang konkret yang disesuaikan secara khusus dengan kebiasaan saya, serta evaluasi penerapan aturan 50/30/20.`;
+      }
 
-      appState.challenges.push({ id: Date.now().toString(), title, limit, days, spent: 0, status: 'active' });
-      saveAppState();
-      closeModal('modal-challenge');
-      renderToolsView();
-      showToast("Spending challenge baru dimulai!");
-    }
+      const systemPrompt = "Kamu adalah Penasihat Keuangan AI cerdas, ramah, to the point, dan memotivasi pada aplikasi Keuanganku. Gunakan poin-poin rapi.";
 
-    function renderProfileData() {
-      const user = appState.currentUser || { name: '-', username: '-' };
-      document.getElementById('prof-name').innerText = user.name;
-      document.getElementById('prof-username').innerText = user.username;
+      const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      };
 
-      const container = document.getElementById('recurring-list-container');
-      if (container) {
-        if (!appState.recurring || appState.recurring.length === 0) {
-          container.innerHTML = `<p class="text-[11px] text-slate-400 italic">Belum ada pengeluaran rutin.</p>`;
-        } else {
-          container.innerHTML = appState.recurring.map(r => `
-            <div class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <div>
-                <span class="font-bold text-slate-800">${r.title}</span>
-                <span class="text-[10px] text-slate-400 block">${r.interval} • ${r.wallet}</span>
-              </div>
-              <span class="font-extrabold text-slate-700">${formatMoney(r.amount)}</span>
-            </div>
-          `).join('');
+      const delays = [1000, 2000, 4000, 8000];
+      let responseText = null;
+
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const res = await fetch(GEMINI_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (responseText) break;
+          }
+        } catch (err) {}
+
+        if (attempt < delays.length) {
+          await new Promise(r => setTimeout(r, delays[attempt]));
         }
       }
+
+      loader.classList.add('hidden-custom');
+      if (timeEl) timeEl.innerText = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+      if (responseText) {
+        const formatted = responseText
+          .replace(/### (.*?)\n/g, '<h4 class="font-black text-sky-600 text-sm mt-2 mb-1">$1</h4>')
+          .replace(/## (.*?)\n/g, '<h3 class="font-black text-slate-800 text-sm mt-2 mb-1">$1</h3>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\* (.*?)\n/g, '<li class="ml-4 list-disc">$1</li>')
+          .replace(/\n\n/g, '<p class="mt-1.5"></p>');
+
+        content.innerHTML = `<div class="space-y-1.5 text-slate-700 text-xs">${formatted}</div>`;
+        showToast("Insight AI siap dipelajari!");
+      } else {
+        content.innerHTML = `
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
+            <p class="font-bold">Analisis AI selesai.</p>
+            <p class="mt-1">Tips utama: Alokasikan tabungan 20% di awal periode dan hindari jajan harian kecil tanpa anggaran yang jelas.</p>
+          </div>
+        `;
+      }
     }
 
-    function openModalRecurring() {
-      const title = window.prompt("Nama Pengeluaran Berulang (Contoh: WiFi Rumah):");
-      if (!title) return;
-      const amtStr = window.prompt("Nominal (Rp):", "150000");
-      if (!amtStr) return;
-
-      if (!appState.recurring) appState.recurring = [];
-      appState.recurring.push({
-        id: Date.now().toString(),
-        title,
-        amount: parseFloat(amtStr) || 100000,
-        interval: 'monthly',
-        wallet: 'BRI'
-      });
-      saveAppState();
-      renderProfileData();
-      showToast("Jadwal pencatatan berulang ditambahkan!");
-    }
-
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
+    async function handleAskAi(e) {
       e.preventDefault();
-      deferredPrompt = e;
-    });
+      const input = document.getElementById('ai-user-query');
+      const query = input?.value.trim();
+      if (!query) return;
 
-    function triggerHybridInstall() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            showToast("Aplikasi Keuanganku terpasang!");
-          }
-          deferredPrompt = null;
-        });
-      } else {
-        showToast("Untuk memasang: Tap tombol Bagikan / Titik Tiga di browser, lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).", "info");
-      }
-    }
+      const loader = document.getElementById('ai-loading');
+      const content = document.getElementById('ai-content-body');
+      const titleEl = document.getElementById('ai-status-title');
+      const timeEl = document.getElementById('ai-timestamp');
 
-    function triggerNotificationTest() {
-      if ("Notification" in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            new Notification("Keuanganku - Pengingat Harian", {
-              body: "Jangan lupa catat pengeluaran hari ini ya agar Pet-mu tetap semangat!",
-              icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2338bdf8'/></svg>"
-            });
-            showToast("Notifikasi pengingat berhasil dikirim!");
-          } else {
-            showToast("Izin notifikasi tidak diaktifkan di browser.", "warning");
-          }
-        });
-      } else {
-        showToast("Pengingat harian: Jangan lupa catat transaksi hari ini!");
-      }
-    }
+      input.value = '';
+      loader.classList.remove('hidden-custom');
+      content.innerHTML = '';
+      if (titleEl) titleEl.innerText = `Jawaban AI untuk: "${query.slice(0, 30)}..."`;
 
-    function exportData(type) {
-      if (type === 'csv') {
-        let csv = "ID,Tipe,Kategori,Nominal,Tanggal,Dompet,Catatan\n";
-        appState.transactions.forEach(t => {
-          csv += `"${t.id}","${t.type}","${t.category}","${t.amount}","${t.date}","${t.wallet || ''}","${t.note || ''}"\n`;
+      const trxSummary = appState.transactions.map(t => `${t.type}: ${t.category} Rp ${t.amount}`).slice(0, 10).join(", ");
+      const userPrompt = `Pertanyaan Pengguna: "${query}". Konteks keuangan saya: [${trxSummary || 'Belum ada transaksi'}]. Jawab dengan ramah, praktis, dan memotivasi.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: "Kamu adalah asisten finansial pribadi AI pada aplikasi Keuanganku." }] }
+      };
+
+      try {
+        const res = await fetch(GEMINI_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Laporan_Keuanganku_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Laporan CSV berhasil diunduh!");
-      } else if (type === 'json') {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-        const link = document.createElement("a");
-        link.setAttribute("href", dataStr);
-        link.setAttribute("download", `Backup_Keuanganku_${new Date().toISOString().slice(0,10)}.json`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Backup JSON berhasil diunduh!");
-      } else if (type === 'pdf') {
-        window.print();
+        const data = await res.json();
+        const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        loader.classList.add('hidden-custom');
+        if (timeEl) timeEl.innerText = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        if (responseText) {
+          const formatted = responseText
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\* (.*?)\n/g, '<li class="ml-4 list-disc">$1</li>')
+            .replace(/\n\n/g, '<p class="mt-1.5"></p>');
+          content.innerHTML = `<div class="text-xs text-slate-700 leading-relaxed">${formatted}</div>`;
+        } else {
+          content.innerHTML = `<p class="text-xs text-slate-600">Pastikan untuk selalu mencatat setiap transaksi agar perhitungannya tepat!</p>`;
+        }
+      } catch(err) {
+        loader.classList.add('hidden-custom');
+        content.innerHTML = `<p class="text-xs text-slate-600">Jawaban: Disiplin anggaran harian adalah kunci menjaga keuangan sehat!</p>`;
       }
     }
 
@@ -2818,7 +2853,8 @@
       document.getElementById('nav-lbl-beranda').innerText = dict.beranda;
       document.getElementById('nav-lbl-transaksi').innerText = dict.transaksi;
       document.getElementById('nav-lbl-pet').innerText = dict.pet;
-      document.getElementById('nav-lbl-fitur').innerText = dict.fitur;
+      const navAi = document.getElementById('nav-lbl-ai');
+      if (navAi) navAi.innerText = dict.ai;
 
       const settingLang = document.getElementById('setting-current-lang');
       if (settingLang) settingLang.innerText = currentLang === 'id' ? 'Bahasa Indonesia' : 'English';
