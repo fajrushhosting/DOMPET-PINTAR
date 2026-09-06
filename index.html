@@ -319,13 +319,13 @@
         <div class="flex items-center justify-between pt-1">
           <div>
             <h2 class="text-lg font-black text-slate-800 tracking-tight flex items-center gap-1.5">
-              <span>Hi, <span id="user-display-name">Alwi</span></span>
+              <span>Hi, <span id="user-display-name">-</span></span>
               <span class="text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full border border-amber-300">
                 Lv.<span id="stat-level">1</span>
               </span>
             </h2>
             <p class="text-[11px] font-medium text-slate-500">
-              <i class="fa-solid fa-fire text-orange-500 mr-0.5"></i> Streak: <span id="stat-streak" class="font-bold text-slate-700">1</span> hari
+              <i class="fa-solid fa-fire text-orange-500 mr-0.5"></i> Streak: <span id="stat-streak" class="font-bold text-slate-700">0</span> hari
             </p>
           </div>
 
@@ -348,12 +348,12 @@
             <span id="txt-uangku">Uangku</span>
           </div>
           <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
-            <span id="total-balance-display">Rp 50.000.000</span>
+            <span id="total-balance-display">Rp 0</span>
           </div>
           <!-- Pet Status Widget Mini Banner -->
           <div onclick="switchView('pet')" class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-white/70 backdrop-blur rounded-full border border-sky-200 text-[11px] font-medium text-slate-700 shadow-sm cursor-pointer hover:bg-white transition">
-            <span id="mini-pet-badge" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Pet: <strong id="mini-pet-name">NAGA</strong> (<span id="mini-pet-mood" class="text-emerald-600 font-bold">Semangat 🔥</span>)</span>
+            <span id="mini-pet-badge" class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span>Pet: <strong id="mini-pet-name">NAGA</strong> (<span id="mini-pet-mood" class="text-slate-500 font-bold">Siap Aktif</span>)</span>
             <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
           </div>
         </div>
@@ -362,23 +362,21 @@
         <div class="bg-white/95 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-sky-100/70 space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="font-extrabold text-slate-800 text-base" id="txt-keuanganku-title">Keuanganku</h3>
-            <span id="dashboard-date-range" class="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">1 Okt - 31 Okt</span>
+            <span id="dashboard-date-range" class="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">Bulan Berjalan</span>
           </div>
 
           <!-- Card 1: Pengeluaranku -->
           <div onclick="openExpenseDetails()" class="bg-[#f8fafc] hover:bg-sky-50/60 transition-all rounded-2xl p-4 border border-slate-100 flex items-center justify-between cursor-pointer group">
             <div>
               <h4 class="text-xs font-bold text-slate-600 group-hover:text-sky-600" id="txt-card-pengeluaran">Pengeluaranku</h4>
-              <p class="text-[10px] text-slate-400 mt-0.5" id="date-card-pengeluaran">1 oktober - 30 oktober</p>
-              <p class="text-base font-black text-slate-800 mt-1" id="dash-expense-amt">Rp. 20.000.000</p>
+              <p class="text-[10px] text-slate-400 mt-0.5" id="date-card-pengeluaran">Bulan ini</p>
+              <p class="text-base font-black text-slate-800 mt-1" id="dash-expense-amt">Rp 0</p>
             </div>
             <!-- Mini Donut Graphic (Expense) -->
             <div class="relative w-16 h-16 flex items-center justify-center">
               <svg class="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" stroke-width="4"></circle>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#f6a623" stroke-width="4" stroke-dasharray="35 100" stroke-dashoffset="0"></circle>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#51cdfa" stroke-width="4" stroke-dasharray="28 100" stroke-dashoffset="-35"></circle>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#a3b8c2" stroke-width="4" stroke-dasharray="37 100" stroke-dashoffset="-63"></circle>
+                <circle id="dash-mini-exp-donut" cx="18" cy="18" r="14" fill="none" stroke="#f6a623" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
               </svg>
             </div>
           </div>
@@ -387,15 +385,14 @@
           <div onclick="openIncomeDetails()" class="bg-[#f8fafc] hover:bg-emerald-50/60 transition-all rounded-2xl p-4 border border-slate-100 flex items-center justify-between cursor-pointer group">
             <div>
               <h4 class="text-xs font-bold text-slate-600 group-hover:text-emerald-600" id="txt-card-pemasukan">Pemasukanku</h4>
-              <p class="text-[10px] text-slate-400 mt-0.5" id="date-card-pemasukan">1 oktober - 30 oktober</p>
-              <p class="text-base font-black text-slate-800 mt-1" id="dash-income-amt">Rp. 10.000.000</p>
+              <p class="text-[10px] text-slate-400 mt-0.5" id="date-card-pemasukan">Bulan ini</p>
+              <p class="text-base font-black text-slate-800 mt-1" id="dash-income-amt">Rp 0</p>
             </div>
             <!-- Mini Donut Graphic (Income) -->
             <div class="relative w-16 h-16 flex items-center justify-center">
               <svg class="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" stroke-width="4"></circle>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#22c55e" stroke-width="4" stroke-dasharray="70 100" stroke-dashoffset="0"></circle>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#86efac" stroke-width="4" stroke-dasharray="30 100" stroke-dashoffset="-70"></circle>
+                <circle id="dash-mini-inc-donut" cx="18" cy="18" r="14" fill="none" stroke="#22c55e" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
               </svg>
             </div>
           </div>
@@ -501,13 +498,13 @@
             </svg>
             <div class="absolute w-28 h-28 rounded-full bg-white shadow-inner flex flex-col items-center justify-center text-center p-2">
               <span class="text-[10px] uppercase font-bold text-slate-400" id="donut-center-lbl">Total</span>
-              <span id="donut-center-amt" class="text-xs font-extrabold text-slate-800 leading-tight">Rp 20.000.000</span>
+              <span id="donut-center-amt" class="text-xs font-extrabold text-slate-800 leading-tight">Rp 0</span>
             </div>
           </div>
 
           <div class="w-full flex items-center justify-between pt-4 border-t border-slate-100 mt-2">
             <span class="text-xs font-bold text-slate-500">Total</span>
-            <span id="breakdown-total-txt" class="text-base font-black text-slate-900">Rp 20.000.000</span>
+            <span id="breakdown-total-txt" class="text-base font-black text-slate-900">Rp 0</span>
           </div>
         </div>
 
@@ -590,17 +587,17 @@
           <div class="mt-2 space-y-2">
             <h3 class="text-lg font-black text-slate-800" id="pet-display-title">Naga Keberuntungan</h3>
             <p id="pet-mood-desc" class="text-xs text-slate-500">
-              "Aku senang sekali kamu rajin mencatat pengeluaran hari ini! Ayo terus naikkan level dan berevolusi!"
+              "Ayo catat transaksi pertamamu hari ini untuk mulai menaikkan level dan mengumpulkan poin!"
             </p>
 
             <!-- Evolution & EXP Progress -->
             <div class="space-y-1 pt-2">
               <div class="flex justify-between text-[11px] font-bold text-slate-600">
                 <span>Progress EXP Menuju Evolusi Berikutnya</span>
-                <span><span id="pet-exp-current">30</span> / <span id="pet-exp-max">100</span> EXP</span>
+                <span><span id="pet-exp-current">0</span> / <span id="pet-exp-max">100</span> EXP</span>
               </div>
               <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200">
-                <div id="pet-exp-bar" class="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-300" style="width: 30%"></div>
+                <div id="pet-exp-bar" class="bg-gradient-to-r from-amber-400 to-yellow-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
               </div>
               <div class="flex justify-between text-[10px] text-slate-400 font-semibold pt-0.5">
                 <span>Fase 1 (Lv 1-2)</span>
@@ -614,7 +611,7 @@
               <div class="text-left">
                 <span class="text-[10px] uppercase font-bold text-amber-800">Saldo Poin Kamu</span>
                 <p class="text-base font-black text-amber-900 flex items-center gap-1">
-                  <i class="fa-solid fa-coins text-amber-500"></i> <span id="user-points-display">150</span> Pts
+                  <i class="fa-solid fa-coins text-amber-500"></i> <span id="user-points-display">0</span> Pts
                 </p>
               </div>
               <span class="text-[10px] text-amber-700 font-medium">+10 pts per transaksi & misi</span>
@@ -755,8 +752,8 @@
             <i class="fa-solid fa-user-astronaut"></i>
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-slate-800" id="prof-name">Alwi</h3>
-            <p class="text-xs text-slate-400">@<span id="prof-username">alwi</span></p>
+            <h3 class="text-base font-extrabold text-slate-800" id="prof-name">-</h3>
+            <p class="text-xs text-slate-400">@<span id="prof-username">-</span></p>
             <p class="text-[11px] text-sky-600 font-semibold mt-0.5">Status: Pelindung Keuangan</p>
           </div>
         </div>
@@ -1139,83 +1136,56 @@
       JPY: '¥'
     };
 
+    // SELURUH DATA DUMMY, SALDO SIMULASI, DAN AKUN DEMO DIKOSONGKAN TOTAL (BERSIH)
     const DEFAULT_APP_STATE = {
-      currentUser: {
-        username: "alwi",
-        name: "Alwi",
-        password: "password123",
-        secAnswer: "kucing",
-        level: 3,
-        exp: 65,
-        points: 450,
-        streakDays: 4,
-        lastActiveDate: new Date().toISOString().slice(0, 10),
-        activePet: 'naga', // naga | kucing | harimau | burung
-        ownedPets: ['naga'],
-        activeCostume: 'none',
-        ownedCostumes: ['none', 'sunglasses'],
-      },
-      // Daftar saldo dasar akun bank Indonesia
+      currentUser: null, // Tidak ada akun demo otomatis
       wallets: {
-        BRI: 15000000,
-        MANDIRI: 12000000,
-        BCA: 10000000,
-        SEABANK: 5000000,
-        BNI: 4000000,
-        BTN: 1000000,
-        BSI: 1500000,
-        JAGO: 1000000,
-        CIMB: 500000,
+        BRI: 0,
+        MANDIRI: 0,
+        BCA: 0,
+        SEABANK: 0,
+        BNI: 0,
+        BTN: 0,
+        BSI: 0,
+        JAGO: 0,
+        CIMB: 0,
         DANAMON: 0,
         PERMATA: 0,
-        DANA: 500000,
-        OVO: 300000,
-        GOPAY: 200000,
+        DANA: 0,
+        OVO: 0,
+        GOPAY: 0,
         SHOPEEPAY: 0,
-        CASH: 500000,
+        CASH: 0,
         LAINNYA: 0
       },
-      // Sistem Misi Keuangan Berbasis Hadiah EXP & Poin
+      // Daftar misi finansial riil awal (status belum selesai)
       missions: [
-        { id: 'm1', title: 'Catat Transaksi Hari Ini', desc: 'Mencatat pengeluaran atau pemasukan baru', rewardPts: 10, rewardExp: 20, done: true, claimed: false },
+        { id: 'm1', title: 'Catat Transaksi Pertama Hari Ini', desc: 'Mencatat pengeluaran atau pemasukan baru', rewardPts: 10, rewardExp: 20, done: false, claimed: false },
         { id: 'm2', title: 'Cek Breakdown Donut Chart', desc: 'Pelajari komposisi persentase pengeluaranmu', rewardPts: 10, rewardExp: 15, done: false, claimed: false },
-        { id: 'm3', title: 'Pertahankan Streak Pet Aktif', desc: 'Rajin login & catat transaksi harian', rewardPts: 15, rewardExp: 25, done: true, claimed: false },
+        { id: 'm3', title: 'Pertahankan Streak Pet Aktif', desc: 'Rajin login & catat transaksi harian', rewardPts: 15, rewardExp: 25, done: false, claimed: false },
         { id: 'm4', title: 'Tetapkan 1 Target Dream Planner', desc: 'Mulai rencanakan tabungan impianmu', rewardPts: 20, rewardExp: 35, done: false, claimed: false },
         { id: 'm5', title: 'Kelola Saldo Rekening Bank', desc: 'Periksa atau lakukan transfer antar rekening', rewardPts: 15, rewardExp: 20, done: false, claimed: false }
       ],
-      transactions: [
-        { id: '1', type: 'expense', category: 'Top up wallet', amount: 10000000, date: '2026-10-05', wallet: 'SEABANK', note: 'Top up digital wallet bulanan' },
-        { id: '2', type: 'expense', category: 'Biaya dan pajak', amount: 5000000, date: '2026-10-12', wallet: 'MANDIRI', note: 'Pajak & utilitas listrik' },
-        { id: '3', type: 'expense', category: 'Belum terkategori', amount: 3000000, date: '2026-10-18', wallet: 'BCA', note: 'Pengeluaran rupa-rupa' },
-        { id: '4', type: 'expense', category: 'Makanan & Kuliner', amount: 2000000, date: '2026-10-24', wallet: 'DANA', note: 'Makan bareng keluarga' },
-        { id: '5', type: 'income', category: 'Gaji Pokok', amount: 35000000, date: '2026-10-01', wallet: 'BRI', note: 'Gaji bulanan' },
-        { id: '6', type: 'income', category: 'Freelance & Bonus', amount: 15000000, date: '2026-10-15', wallet: 'BCA', note: 'Bonus proyek aplikasi' },
-      ],
-      dreams: [
-        { id: 'd1', title: 'DP Rumah Impian', target: 50000000, saved: 25000000, deadline: '2027-12-31' },
-        { id: 'd2', title: 'Liburan ke Jepang', target: 20000000, saved: 14000000, deadline: '2026-12-25' }
-      ],
-      challenges: [
-        { id: 'c1', title: 'Tantangan Hemat Kopi 7 Hari', limit: 30000, days: 7, spent: 15000, status: 'active' }
-      ],
-      recurring: [
-        { id: 'r1', title: 'WiFi & Listrik Rumah', amount: 500000, interval: 'monthly', wallet: 'BCA' }
-      ]
+      transactions: [],
+      dreams: [],
+      challenges: [],
+      recurring: [],
+      budgets: []
     };
 
     let appState = null;
     try {
-      const saved = localStorage.getItem('keuanganku_app_state_v3');
-      appState = saved ? JSON.parse(saved) : DEFAULT_APP_STATE;
-      if (!appState.wallets) appState.wallets = DEFAULT_APP_STATE.wallets;
-      if (!appState.missions) appState.missions = DEFAULT_APP_STATE.missions;
+      const saved = localStorage.getItem('keuanganku_app_clean_v4');
+      appState = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
+      if (!appState.wallets) appState.wallets = JSON.parse(JSON.stringify(DEFAULT_APP_STATE.wallets));
+      if (!appState.missions) appState.missions = JSON.parse(JSON.stringify(DEFAULT_APP_STATE.missions));
     } catch(e) {
-      appState = DEFAULT_APP_STATE;
+      appState = JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
     }
 
     function saveAppState() {
       try {
-        localStorage.setItem('keuanganku_app_state_v3', JSON.stringify(appState));
+        localStorage.setItem('keuanganku_app_clean_v4', JSON.stringify(appState));
       } catch(e) {}
     }
 
@@ -1289,9 +1259,8 @@
         if (el) el.innerText = now.toTimeString().slice(0, 5);
       }, 1000);
 
-      checkStreakAndPetMood();
-
       if (appState.currentUser && appState.currentUser.username) {
+        checkStreakAndPetMood();
         showDashboard();
       } else {
         switchView('onboarding');
@@ -1320,83 +1289,162 @@
 
       if (diffDays >= 3) {
         user.isPetHappy = false;
-        user.streakDays = Math.max(1, user.streakDays - 1);
+        user.streakDays = Math.max(0, user.streakDays - 1);
       } else {
         user.isPetHappy = true;
       }
       saveAppState();
     }
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
 
-    function switchView(viewName) {
-      const allViews = [
-        'view-onboarding', 'view-auth', 'view-dashboard',
-        'view-wallets', 'view-expense-details', 'view-transactions',
-        'view-pet', 'view-ai', 'view-tools', 'view-profile'
-      ];
-      allViews.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('hidden-custom');
-      });
+      // 1. Cek langsung ke database Supabase
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('username', u)
+            .single();
 
-      const targetEl = document.getElementById(`view-${viewName}`);
-      if (targetEl) targetEl.classList.remove('hidden-custom');
-
-      const bottomNav = document.getElementById('bottom-navbar');
-      if (viewName === 'onboarding' || viewName === 'auth') {
-        if (bottomNav) bottomNav.classList.add('hidden-custom');
-      } else {
-        if (bottomNav) bottomNav.classList.remove('hidden-custom');
+          if (data && !error) {
+            if (data.password === p) {
+              appState.currentUser = {
+                id: data.id,
+                username: data.username,
+                name: data.name,
+                password: data.password,
+                secAnswer: data.security_answer,
+                level: data.level || 1,
+                exp: data.exp || 0,
+                points: data.points || 0,
+                streakDays: data.streak_days || 0,
+                lastActiveDate: data.last_active_date || new Date().toISOString().slice(0, 10),
+                activePet: data.active_pet || 'naga',
+                ownedPets: data.owned_pets || ['naga'],
+                activeCostume: data.active_costume || 'none',
+                ownedCostumes: data.owned_costumes || ['none'],
+              };
+              await loadUserDataFromSupabase(data.id);
+              saveAppState();
+              showToast("Selamat datang kembali, " + data.name + "!");
+              showDashboard();
+              return;
+            } else {
+              showToast("Kata sandi salah! Silakan coba lagi.", "warning");
+              return;
+            }
+          }
+        } catch(err) {
+          console.warn("Supabase query fallback:", err);
+        }
       }
 
-      document.querySelectorAll('#bottom-navbar button').forEach(b => {
-        b.classList.remove('text-sky-500');
-        b.classList.add('text-slate-400');
-      });
-      const activeNavBtn = document.getElementById(`nav-btn-${viewName}`);
-      if (activeNavBtn) {
-        activeNavBtn.classList.add('text-sky-500');
-        activeNavBtn.classList.remove('text-slate-400');
+      // 2. Cek penyimpanan lokal jika offline
+      if (appState.currentUser && appState.currentUser.username.toLowerCase() === u.toLowerCase()) {
+        if (appState.currentUser.password === p) {
+          showToast("Selamat datang kembali, " + appState.currentUser.name + "!");
+          showDashboard();
+          return;
+        } else {
+          showToast("Kata sandi salah! Periksa kembali.", "warning");
+          return;
+        }
       }
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      if (viewName === 'dashboard') updateDashboardData();
-      if (viewName === 'wallets') renderWalletsManagementView();
-      if (viewName === 'pet') { renderPetStage(); renderMissionsList(); }
-      if (viewName === 'expense-details') renderBreakdownScreen();
-      if (viewName === 'tools') renderToolsView();
-      if (viewName === 'profile') renderProfileData();
+      showToast("Akun belum terdaftar! Silakan lakukan pendaftaran akun baru.", "warning");
     }
 
-    function goToAuth() {
-      switchView('auth');
-      switchAuthTab('login');
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const secAnswer = document.getElementById('reg-security-answer').value.trim();
+
+      const newUserId = crypto.randomUUID();
+      const newUser = {
+        id: newUserId,
+        name: name,
+        username: username,
+        password: password,
+        secAnswer: secAnswer,
+        level: 1,
+        exp: 0,
+        points: 0,
+        streakDays: 0,
+        lastActiveDate: new Date().toISOString().slice(0, 10),
+        activePet: 'naga',
+        ownedPets: ['naga'],
+        activeCostume: 'none',
+        ownedCostumes: ['none']
+      };
+
+      // Inisialisasi bersih tanpa saldo atau transaksi dummy
+      appState.currentUser = newUser;
+      appState.transactions = [];
+      appState.dreams = [];
+      appState.challenges = [];
+      appState.recurring = [];
+      appState.budgets = [];
+      Object.keys(appState.wallets).forEach(k => appState.wallets[k] = 0);
+
+      // Simpan ke Supabase jika tersedia
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('profiles').insert([{
+            id: newUserId,
+            name: name,
+            username: username,
+            password: password,
+            security_answer: secAnswer,
+            level: 1,
+            exp: 0,
+            points: 0,
+            streak_days: 0,
+            active_pet: 'naga',
+            owned_pets: ['naga'],
+            active_costume: 'none',
+            owned_costumes: ['none']
+          }]);
+        } catch(err) {
+          console.warn("Supabase register error:", err);
+        }
+      }
+
+      saveAppState();
+      showToast("Pendaftaran berhasil! Selamat datang di Keuanganku.");
+      showDashboard();
     }
 
-    function showDashboard() {
-      switchView('dashboard');
-      updateDashboardData();
-    }
+    async function loadUserDataFromSupabase(userId) {
+      if (!supabaseClient || !userId) return;
+      try {
+        const { data: walData } = await supabaseClient.from('wallets').select('*').eq('user_id', userId);
+        if (walData && walData.length > 0) {
+          walData.forEach(w => {
+            if (appState.wallets[w.wallet_code] !== undefined) {
+              appState.wallets[w.wallet_code] = Number(w.balance);
+            }
+          });
+        }
 
-    function switchAuthTab(tab) {
-      const formLogin = document.getElementById('form-login');
-      const formRegister = document.getElementById('form-register');
-      const formForgot = document.getElementById('form-forgot');
-      const title = document.getElementById('auth-title');
-
-      formLogin.classList.add('hidden-custom');
-      formRegister.classList.add('hidden-custom');
-      formForgot.classList.add('hidden-custom');
-
-      if (tab === 'login') {
-        formLogin.classList.remove('hidden-custom');
-        title.innerText = currentLang === 'id' ? 'Masuk Akun' : 'Sign In';
-      } else if (tab === 'register') {
-        formRegister.classList.remove('hidden-custom');
-        title.innerText = currentLang === 'id' ? 'Daftar Akun Baru' : 'Register Account';
-      } else if (tab === 'forgot') {
-        formForgot.classList.remove('hidden-custom');
-        title.innerText = currentLang === 'id' ? 'Reset Password' : 'Reset Password';
+        const { data: trxData } = await supabaseClient.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
+        if (trxData) {
+          appState.transactions = trxData.map(t => ({
+            id: t.id,
+            type: t.type,
+            category: t.category,
+            wallet: t.wallet,
+            amount: Number(t.amount),
+            date: t.date,
+            note: t.note || ''
+          }));
+        }
+      } catch(e) {
+        console.warn("Gagal memuat data dari Supabase:", e);
       }
     }
 
@@ -1550,10 +1598,10 @@
     function updateDashboardData() {
       const user = appState.currentUser;
       if (user) {
-        document.getElementById('user-display-name').innerText = user.name || 'Alwi';
-        document.getElementById('stat-level').innerText = user.level;
-        document.getElementById('stat-streak').innerText = user.streakDays;
-        document.getElementById('mini-pet-name').innerText = user.activePet.toUpperCase();
+        document.getElementById('user-display-name').innerText = user.name || '-';
+        document.getElementById('stat-level').innerText = user.level || 1;
+        document.getElementById('stat-streak').innerText = user.streakDays || 0;
+        document.getElementById('mini-pet-name').innerText = (user.activePet || 'naga').toUpperCase();
         
         const isHappy = user.isPetHappy !== false;
         const moodEl = document.getElementById('mini-pet-mood');
@@ -1578,12 +1626,12 @@
         if (t.type === 'income') totalIncome += Number(t.amount);
       });
 
-      // Hitung total dari seluruh dompet bank
+      // Hitung total dari seluruh dompet bank riil (tanpa angka dummy 50.000.000)
       const walletBalances = getComputedWalletBalances();
       let totalWalletsSum = 0;
       Object.values(walletBalances).forEach(b => totalWalletsSum += Number(b));
 
-      document.getElementById('total-balance-display').innerText = formatMoney(totalWalletsSum > 0 ? totalWalletsSum : 50000000);
+      document.getElementById('total-balance-display').innerText = formatMoney(totalWalletsSum);
       document.getElementById('dash-expense-amt').innerText = formatMoney(totalExpense);
       document.getElementById('dash-income-amt').innerText = formatMoney(totalIncome);
 
@@ -2571,252 +2619,82 @@
     function renderToolsView() {
       const dreamContainer = document.getElementById('dream-list-container');
       if (dreamContainer) {
-        dreamContainer.innerHTML = appState.dreams.map(d => {
-          const pct = Math.min(100, Math.round((d.saved / d.target) * 100));
-          return `
-            <div class="bg-white/95 rounded-2xl p-4 border border-sky-100 shadow-sm space-y-2">
-              <div class="flex justify-between items-center">
-                <h4 class="text-xs font-black text-slate-800">${d.title}</h4>
-                <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full">${pct}% Terkumpul</span>
-              </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-sky-400 h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
-              </div>
-              <div class="flex justify-between text-[10px] font-semibold text-slate-500">
-                <span>Terkumpul: ${formatMoney(d.saved)}</span>
-                <span>Target: ${formatMoney(d.target)}</span>
-              </div>
+        if (appState.dreams.length === 0) {
+          dreamContainer.innerHTML = `
+            <div class="text-center py-6 bg-white/70 rounded-2xl border border-sky-100 p-4">
+              <i class="fa-solid fa-bullseye text-2xl text-slate-300 mb-2"></i>
+              <p class="text-xs text-slate-500 font-semibold">Belum ada target impian yang dibuat.</p>
             </div>
           `;
-        }).join('');
+        } else {
+          dreamContainer.innerHTML = appState.dreams.map(d => {
+            const pct = Math.min(100, Math.round((d.saved / d.target) * 100));
+            return `
+              <div class="bg-white/95 rounded-2xl p-4 border border-sky-100 shadow-sm space-y-2">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-xs font-black text-slate-800">${d.title}</h4>
+                  <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full">${pct}% Terkumpul</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div class="bg-sky-400 h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-semibold text-slate-500">
+                  <span>Terkumpul: ${formatMoney(d.saved)}</span>
+                  <span>Target: ${formatMoney(d.target)}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       }
 
       const chalContainer = document.getElementById('challenge-list-container');
       if (chalContainer) {
-        chalContainer.innerHTML = appState.challenges.map(c => `
-          <div class="bg-white/95 rounded-2xl p-4 border border-amber-100 shadow-sm space-y-2">
-            <div class="flex justify-between items-center">
-              <h4 class="text-xs font-black text-slate-800">${c.title}</h4>
-              <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">${c.days} Hari</span>
+        if (appState.challenges.length === 0) {
+          chalContainer.innerHTML = `
+            <div class="text-center py-6 bg-white/70 rounded-2xl border border-amber-100 p-4">
+              <i class="fa-solid fa-trophy text-2xl text-slate-300 mb-2"></i>
+              <p class="text-xs text-slate-500 font-semibold">Belum ada spending challenge aktif.</p>
             </div>
-            <p class="text-[11px] text-slate-500">Batas Maksimal: <strong>${formatMoney(c.limit)}</strong></p>
-            <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-              <i class="fa-solid fa-circle-check"></i> Status: Disiplin Berjalan
+          `;
+        } else {
+          chalContainer.innerHTML = appState.challenges.map(c => `
+            <div class="bg-white/95 rounded-2xl p-4 border border-amber-100 shadow-sm space-y-2">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-black text-slate-800">${c.title}</h4>
+                <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">${c.days} Hari</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Batas Maksimal: <strong>${formatMoney(c.limit)}</strong></p>
+              <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> Status: Disiplin Berjalan
+              </div>
             </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
       }
 
       const budgetContainer = document.getElementById('budget-list-container');
       if (budgetContainer) {
-        budgetContainer.innerHTML = `
-          <div class="bg-white/95 rounded-2xl p-4 border border-sky-100 shadow-sm space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-700">Makanan & Minuman</span>
-              <span class="font-black text-slate-800">Rp 2.000.000 / Rp 3.500.000</span>
+        if (!appState.budgets || appState.budgets.length === 0) {
+          budgetContainer.innerHTML = `
+            <div class="text-center py-6 bg-white/70 rounded-2xl border border-sky-100 p-4">
+              <i class="fa-solid fa-chart-pie text-2xl text-slate-300 mb-2"></i>
+              <p class="text-xs text-slate-500 font-semibold">Belum ada anggaran yang diatur.</p>
             </div>
-            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div class="bg-emerald-400 h-full rounded-full" style="width: 57%"></div>
+          `;
+        } else {
+          budgetContainer.innerHTML = appState.budgets.map(b => `
+            <div class="bg-white/95 rounded-2xl p-4 border border-sky-100 shadow-sm space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-700">${b.category}</span>
+                <span class="font-black text-slate-800">${formatMoney(b.spent || 0)} / ${formatMoney(b.limit)}</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-400 h-full rounded-full" style="width: ${Math.min(100, Math.round(((b.spent || 0) / b.limit) * 100))}%"></div>
+              </div>
             </div>
-          </div>
-        `;
+          `).join('');
+        }
       }
     }
-
-    function openModalDream() { openModal('modal-dream'); }
-    function openModalChallenge() { openModal('modal-challenge'); }
-    function openModalBudget() { showToast("Fitur budget kategori aktif di daftar!"); }
-
-    function handleSaveDream(e) {
-      e.preventDefault();
-      const title = document.getElementById('dream-title').value;
-      const target = parseFloat(document.getElementById('dream-target').value);
-      const saved = parseFloat(document.getElementById('dream-saved').value) || 0;
-      const deadline = document.getElementById('dream-deadline').value;
-
-      appState.dreams.push({ id: Date.now().toString(), title, target, saved, deadline });
-      completeMission('m4');
-      saveAppState();
-      closeModal('modal-dream');
-      renderToolsView();
-      showToast("Target impian baru berhasil ditambahkan!");
-    }
-
-    function handleSaveChallenge(e) {
-      e.preventDefault();
-      const title = document.getElementById('chal-title').value;
-      const limit = parseFloat(document.getElementById('chal-limit').value);
-      const days = parseInt(document.getElementById('chal-days').value) || 7;
-
-      appState.challenges.push({ id: Date.now().toString(), title, limit, days, spent: 0, status: 'active' });
-      saveAppState();
-      closeModal('modal-challenge');
-      renderToolsView();
-      showToast("Spending challenge baru dimulai!");
-    }
-
-    function renderProfileData() {
-      const user = appState.currentUser;
-      if (!user) return;
-      document.getElementById('prof-name').innerText = user.name;
-      document.getElementById('prof-username').innerText = user.username;
-
-      const container = document.getElementById('recurring-list-container');
-      if (container) {
-        container.innerHTML = appState.recurring.map(r => `
-          <div class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-            <div>
-              <span class="font-bold text-slate-800">${r.title}</span>
-              <span class="text-[10px] text-slate-400 block">${r.interval} • ${r.wallet}</span>
-            </div>
-            <span class="font-extrabold text-slate-700">${formatMoney(r.amount)}</span>
-          </div>
-        `).join('');
-      }
-    }
-
-    function openModalRecurring() {
-      const title = window.prompt("Nama Pengeluaran Berulang (Contoh: Langganan WiFi / Kos):");
-      if (!title) return;
-      const amtStr = window.prompt("Nominal (Rp):", "250000");
-      if (!amtStr) return;
-
-      appState.recurring.push({
-        id: Date.now().toString(),
-        title,
-        amount: parseFloat(amtStr) || 100000,
-        interval: 'monthly',
-        wallet: 'BCA'
-      });
-      saveAppState();
-      renderProfileData();
-      showToast("Jadwal pencatatan berulang ditambahkan!");
-    }
-
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-
-    function triggerHybridInstall() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            showToast("Aplikasi Keuanganku terpasang!");
-          }
-          deferredPrompt = null;
-        });
-      } else {
-        showToast("Untuk memasang: Tap tombol Bagikan / Titik Tiga di browser HP Anda, lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).", "info");
-      }
-    }
-
-    function triggerNotificationTest() {
-      if ("Notification" in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            new Notification("Keuanganku - Pengingat Harian", {
-              body: "Jangan lupa catat pengeluaran hari ini ya agar Pet-mu tetap semangat dan berevolusi!",
-              icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2338bdf8'/></svg>"
-            });
-            showToast("Notifikasi pengingat berhasil dikirim!");
-          } else {
-            showToast("Izin notifikasi tidak diaktifkan di browser.", "warning");
-          }
-        });
-      } else {
-        showToast("Pengingat harian: Jangan lupa catat transaksi hari ini!");
-      }
-    }
-
-    function exportData(type) {
-      if (type === 'csv') {
-        let csv = "ID,Tipe,Kategori,Nominal,Tanggal,Dompet,Catatan\n";
-        appState.transactions.forEach(t => {
-          csv += `"${t.id}","${t.type}","${t.category}","${t.amount}","${t.date}","${t.wallet || ''}","${t.note || ''}"\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Laporan_Keuanganku_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Laporan CSV berhasil diunduh!");
-      } else if (type === 'json') {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-        const link = document.createElement("a");
-        link.setAttribute("href", dataStr);
-        link.setAttribute("download", `Backup_Keuanganku_${new Date().toISOString().slice(0,10)}.json`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Backup JSON berhasil diunduh!");
-      } else if (type === 'pdf') {
-        window.print();
-      }
-    }
-
-    function toggleLanguage() {
-      currentLang = currentLang === 'id' ? 'en' : 'id';
-      document.getElementById('lang-indicator').innerText = currentLang.toUpperCase();
-      
-      const dict = i18n[currentLang];
-      document.getElementById('txt-onboard-desc').innerText = dict.onboardDesc;
-      document.getElementById('txt-btn-mulai').innerText = dict.start;
-      document.getElementById('txt-uangku').innerText = dict.uangku;
-      document.getElementById('txt-keuanganku-title').innerText = dict.keuanganku;
-      document.getElementById('txt-card-pengeluaran').innerText = dict.pengeluaranku;
-      document.getElementById('txt-card-pemasukan').innerText = dict.pemasukanku;
-      document.getElementById('txt-statistik-title').innerText = dict.statistik;
-      document.getElementById('nav-lbl-beranda').innerText = dict.beranda;
-      document.getElementById('nav-lbl-transaksi').innerText = dict.transaksi;
-      document.getElementById('nav-lbl-pet').innerText = dict.pet;
-      document.getElementById('nav-lbl-fitur').innerText = dict.fitur;
-
-      const settingLang = document.getElementById('setting-current-lang');
-      if (settingLang) settingLang.innerText = currentLang === 'id' ? 'Bahasa Indonesia' : 'English';
-
-      showToast(`Bahasa diubah ke ${currentLang === 'id' ? 'Bahasa Indonesia' : 'English'}`);
-    }
-
-    function openModal(modalId) {
-      const el = document.getElementById(modalId);
-      if (el) el.classList.remove('hidden-custom');
-    }
-    function closeModal(modalId) {
-      const el = document.getElementById(modalId);
-      if (el) el.classList.add('hidden-custom');
-    }
-    function openFilterModal() {
-      showToast("Filter kategori aktif.");
-    }
-
-    let toastTimeout = null;
-    function showToast(message, type = "success") {
-      const toast = document.getElementById('app-toast');
-      const msgEl = document.getElementById('toast-message');
-      const iconEl = document.getElementById('toast-icon');
-      if (!toast || !msgEl) return;
-
-      msgEl.innerText = message;
-      if (type === "warning") {
-        iconEl.className = "fa-solid fa-triangle-exclamation text-amber-400 text-base";
-      } else if (type === "info") {
-        iconEl.className = "fa-solid fa-circle-info text-sky-400 text-base";
-      } else {
-        iconEl.className = "fa-solid fa-circle-check text-emerald-400 text-base";
-      }
-
-      toast.classList.remove('hidden-custom');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.classList.add('hidden-custom');
-      }, 3500);
-    }
-  </script>
-</body>
-</html>
+/* ... existing code ... -->
