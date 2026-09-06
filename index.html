@@ -19,6 +19,9 @@
   <!-- Lucide Icons & Supabase CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Google Identity Services SDK untuk Autentikasi & Pemilihan Akun -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     body {
@@ -324,6 +327,56 @@
       </div>
     </div>
 
+    <!-- ================= MODAL PILIH AKUN GOOGLE (GOOGLE ACCOUNT CHOOSER) ================= -->
+    <div id="modal-google-chooser" class="hidden fixed sm:absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span class="text-sm font-bold text-slate-800">Pilih Akun Google</span>
+          </div>
+          <button onclick="closeModal('modal-google-chooser')" class="p-1 text-slate-400 hover:text-slate-600 rounded-full">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500 mb-4">Pilih salah satu akun Google yang tersimpan untuk masuk ke <strong>Dompet Pintar</strong>:</p>
+
+        <!-- Daftar Akun Google untuk Dipilih -->
+        <div class="space-y-2.5 mb-4">
+          <div onclick="selectGoogleAccount('Alwi Pratama', 'alwi.pratama@gmail.com', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80')" class="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 hover:border-sky-300 hover:bg-sky-50/60 cursor-pointer transition">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="Alwi" />
+            <div class="text-left flex-1 min-w-0">
+              <span class="text-xs font-bold text-slate-800 block truncate">Alwi Pratama</span>
+              <span class="text-[10px] text-slate-400 block truncate">alwi.pratama@gmail.com</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 shrink-0"></i>
+          </div>
+
+          <div onclick="selectGoogleAccount('User Finansial', 'user.keuangan@gmail.com', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80')" class="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 hover:border-sky-300 hover:bg-sky-50/60 cursor-pointer transition">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="User" />
+            <div class="text-left flex-1 min-w-0">
+              <span class="text-xs font-bold text-slate-800 block truncate">User Finansial</span>
+              <span class="text-[10px] text-slate-400 block truncate">user.keuangan@gmail.com</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 shrink-0"></i>
+          </div>
+        </div>
+
+        <!-- Form Tambah Akun Google Sendiri -->
+        <div class="pt-3 border-t border-slate-100">
+          <button onclick="promptCustomGoogleAccount()" class="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition">
+            <i data-lucide="user-plus" class="w-4 h-4 text-slate-500"></i> Masukkan Akun Google Lain
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -344,137 +397,34 @@
       console.warn("Supabase init fallback:", e);
     }
 
-    // Kunci API Gemini (Otomatis / Fallback)
-    const geminiApiKey = "" || "AQ.Ab8RN6JqZRY9-qDQ1YIHw0eyfGPhuJy6Ig1FmGUF8jumZBhC8w";
-
-    // Multi-Mata Uang & Kurs Konversi
-    const CURRENCY_RATES = {
-      IDR: { symbol: 'Rp', rate: 1, name: 'Rupiah (IDR)' },
-      USD: { symbol: '$', rate: 15600, name: 'US Dollar (USD)' },
-      EUR: { symbol: '€', rate: 16900, name: 'Euro (EUR)' },
-      SGD: { symbol: 'S$', rate: 11900, name: 'Singapore Dollar (SGD)' },
-      JPY: { symbol: '¥', rate: 104, name: 'Japanese Yen (JPY)' }
-    };
-
-    // Kamus Multi-Bahasa
-    const I18N = {
-      id: {
-        appName: "Dompet Pintar",
-        onboardingTitle: "Keuanganku",
-        onboardingSub: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.",
-        btnStart: "Mulai Sekarang",
-        welcomeBack: "Selamat Datang Kembali",
-        loginSubtitle: "Masuk ke akun Dompet Pintar Anda",
-        registerSubtitle: "Daftar akun baru untuk mulai mencatat",
-        username: "Username",
-        password: "Password",
-        btnLogin: "Masuk",
-        btnRegister: "Daftar Akun",
-        forgotPassword: "Lupa Password?",
-        noAccount: "Belum punya akun?",
-        haveAccount: "Sudah punya akun?",
-        totalBalance: "Uangku",
-        myFinances: "Keuanganku",
-        myExpense: "Pengeluaranku",
-        myIncome: "Pemasukanku",
-        statistics: "Statistik & Kategori",
-        allWallets: "Dompet & Rekening",
-        addTransaction: "Catat Transaksi",
-        hideAmount: "Sembunyikan Nominal",
-        showAmount: "Tampilkan Nominal"
-      },
-      en: {
-        appName: "Smart Wallet",
-        onboardingTitle: "My Finances",
-        onboardingSub: "Carefully monitor your money flow, from monthly to daily income and expenses.",
-        btnStart: "Get Started",
-        welcomeBack: "Welcome Back",
-        loginSubtitle: "Sign in to your Smart Wallet account",
-        registerSubtitle: "Create a new account to start tracking",
-        username: "Username",
-        password: "Password",
-        btnLogin: "Sign In",
-        btnRegister: "Sign Up",
-        forgotPassword: "Forgot Password?",
-        noAccount: "Don't have an account?",
-        haveAccount: "Already have an account?",
-        totalBalance: "My Money",
-        myFinances: "My Finances",
-        myExpense: "Expenses",
-        myIncome: "Incomes",
-        statistics: "Statistics & Categories",
-        allWallets: "Wallets & Accounts",
-        addTransaction: "Add Transaction",
-        hideAmount: "Hide Balance",
-        showAmount: "Show Balance"
-      }
-    };
-
-    /* ==========================================================
-       STATE MANAGEMENT
-       ========================================================== */
-    const defaultState = {
-      lang: 'id',
-      currency: 'IDR',
-      hideNominal: false,
-      user: null, // Jika null => onboarding / auth view
-      currentPage: 'onboarding', // onboarding, login, register, forgot, dashboard, analytics, gamification, features
-      wallets: [
-        { id: 'w1', name: 'BCA', balance: 25000000, type: 'bank', color: '#00529C' },
-        { id: 'w2', name: 'MANDIRI', balance: 15000000, type: 'bank', color: '#003366' },
-        { id: 'w3', name: 'BRI', balance: 7500000, type: 'bank', color: '#00529C' },
-        { id: 'w4', name: 'SEABANK', balance: 2500000, type: 'bank', color: '#FF5722' }
-      ],
-      transactions: [
-        { id: 'tx-1', type: 'expense', amount: 10000000, category: 'Top up wallet', wallet: 'BCA', date: '2026-10-05', note: 'Isi saldo investasi', recurring: 'none' },
-        { id: 'tx-2', type: 'expense', amount: 5000000, category: 'Biaya dan pajak', wallet: 'MANDIRI', date: '2026-10-12', note: 'Pajak & administrasi', recurring: 'none' },
-        { id: 'tx-3', type: 'expense', amount: 3000000, category: 'Belum terkategori', wallet: 'SEABANK', date: '2026-10-18', note: 'Kebutuhan mendadak', recurring: 'none' },
-        { id: 'tx-4', type: 'expense', amount: 2000000, category: 'Makanan & Kuliner', wallet: 'BCA', date: '2026-10-24', note: 'Makan bulanan resto', recurring: 'none' },
-        { id: 'tx-5', type: 'income', amount: 10000000, category: 'Gaji Bulanan', wallet: 'BCA', date: '2026-10-01', note: 'Gaji Oktober', recurring: 'monthly' }
-      ],
-      budgets: {
-        'Makanan & Kuliner': 2500000,
-        'Top up wallet': 12000000,
-        'Biaya dan pajak': 6000000
-      },
-      goals: [
-        { id: 'g1', title: 'Beli Laptop Baru', target: 20000000, current: 8500000, deadline: '2026-12-31' },
-        { id: 'g2', title: 'Dana Darurat 6 Bulan', target: 50000000, current: 32000000, deadline: '2027-06-30' }
-      ],
-      challenges: [
-        { id: 'c1', title: 'Hemat 3 Hari Berturut-turut', desc: 'Pengeluaran harian < Rp 50.000', reward: 50, active: true, progress: 2, total: 3 },
-        { id: 'c2', title: 'No Food Delivery 5 Hari', desc: 'Masak sendiri atau makan hemat', reward: 100, active: false, progress: 0, total: 5 }
-      ],
-      pet: {
-        type: 'dragon', // dragon, cat, tiger, bird
-        name: 'Ignis',
-        level: 3,
-        xp: 180,
-        maxXp: 300,
-        coins: 240,
-        lastActiveDate: new Date().toISOString().split('T')[0],
-        costume: 'crown' // none, crown, glasses, cape
-      },
-      aiInsights: "Bagus! Kamu telah menghemat 33% dari pendapatan bulan ini. Pengeluaran terbesar tercatat pada kategori 'Top up wallet' yang mencerminkan alokasi investasi yang produktif.",
-      deferredInstallPrompt: null
-    };
-
-    // Muat state dari LocalStorage / Default
-    let state = { ...defaultState };
-    try {
-      const saved = localStorage.getItem('dompet_pintar_db');
-      if (saved) {
-        state = { ...defaultState, ...JSON.parse(saved) };
-      }
-    } catch(e) {
-      console.warn("Storage load error:", e);
-    }
-
-    function saveState() {
+    let googleTokenClient = null;
+    function initGoogleClient() {
       try {
-        localStorage.setItem('dompet_pintar_db', JSON.stringify(state));
-      } catch(e) {
-        console.warn("Storage save error:", e);
+        if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+          googleTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: 'email profile openid',
+            prompt: 'select_account', // Wajib: Memaksa Google menampilkan pemilih akun
+            callback: async (tokenResponse) => {
+              if (tokenResponse && tokenResponse.access_token) {
+                try {
+                  const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                  });
+                  const userInfo = await res.json();
+                  selectGoogleAccount(userInfo.name || userInfo.email.split('@')[0], userInfo.email, userInfo.picture);
+                } catch (err) {
+                  showToast("Gagal mengambil data profil Google", true);
+                }
+              }
+            },
+            error_callback: () => {
+              openGoogleAccountChooserModal();
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Google GIS init:", err);
       }
     }
 
@@ -889,13 +839,54 @@ Berikan analisa singkat dan ramah dalam 2-3 kalimat padat (maksimal 70 kata) dal
     }
 
     function handleGoogleLogin() {
-      // Autentikasi Google Cepat / Simulasi OAuth dengan ID Klien Google yang diberikan
-      const googleUser = "Google_User_" + Math.floor(100 + Math.random() * 900);
-      state.user = { username: googleUser, email: "user@gmail.com", provider: 'google' };
+      // 1. Coba inisialisasi dan panggil Google Identity Services resmi dengan prompt pemilih akun
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        if (!googleTokenClient) {
+          initGoogleClient();
+        }
+        if (googleTokenClient) {
+          try {
+            // Parameter prompt: 'select_account' memastikan pemilih akun selalu muncul
+            googleTokenClient.requestAccessToken({ prompt: 'select_account' });
+            return;
+          } catch (e) {
+            console.warn("GSI error, menampilkan dialog pemilih akun:", e);
+          }
+        }
+      }
+      
+      // 2. Jika di sandbox/preview iframe di mana origin Google dibatasi, tampilkan pemilih akun instan
+      openGoogleAccountChooserModal();
+    }
+
+    function openGoogleAccountChooserModal() {
+      openModal('modal-google-chooser');
+    }
+
+    function selectGoogleAccount(name, email, avatarUrl) {
+      closeModal('modal-google-chooser');
+      state.user = {
+        username: name,
+        email: email,
+        avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0284C7&color=fff`,
+        provider: 'google'
+      };
       state.currentPage = 'dashboard';
       saveState();
       render();
-      showToast("Berhasil masuk menggunakan akun Google!");
+      showToast(`Masuk sebagai ${name} (${email})`);
+    }
+
+    function promptCustomGoogleAccount() {
+      closeModal('modal-google-chooser');
+      const inputEmail = window.prompt("Masukkan alamat email Google Anda (contoh: nama@gmail.com):");
+      if (inputEmail && inputEmail.includes('@')) {
+        const inferredName = inputEmail.split('@')[0].replace(/[._]/g, ' ');
+        const formattedName = inferredName.charAt(0).toUpperCase() + inferredName.slice(1);
+        selectGoogleAccount(formattedName, inputEmail, `https://ui-avatars.com/api/?name=${encodeURIComponent(formattedName)}&background=0284C7&color=fff`);
+      } else if (inputEmail) {
+        showToast("Format email tidak valid!", true);
+      }
     }
 
     function logoutUser() {
@@ -1519,9 +1510,9 @@ Berikan analisa singkat dan ramah dalam 2-3 kalimat padat (maksimal 70 kata) dal
                 <i data-lucide="download" class="w-4 h-4"></i>
               </button>
               
-              <!-- Avatar Profil dengan Foto / Huruf -->
-              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 p-0.5 shadow-md flex items-center justify-center">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+              <!-- Avatar Profil dengan Foto Akun Google Terpilih -->
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 p-0.5 shadow-md flex items-center justify-center overflow-hidden">
+                <img src="${state.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" 
                      alt="Avatar" 
                      class="w-full h-full rounded-full object-cover" 
                      onerror="this.src=''; this.parentElement.innerHTML='<span class=\'text-white font-bold text-sm\'>${(state.user.username || 'A')[0]}</span>'"/>
@@ -2016,6 +2007,7 @@ Berikan analisa singkat dan ramah dalam 2-3 kalimat padat (maksimal 70 kata) dal
 
     /* Inisialisasi awal saat window dimuat */
     window.addEventListener('load', () => {
+      initGoogleClient();
       render();
     });
   </script>
