@@ -84,11 +84,18 @@
   <!-- Mobile Frame Wrapper (Max 480px width for authentic phone feeling, full responsive) -->
   <div id="app-container" class="w-full max-w-md min-h-screen bg-gradient-to-b from-[#caecff] via-[#e4f6ff] to-[#d8f1fe] flex flex-col relative shadow-2xl overflow-x-hidden">
 
-    <!-- TOP HEADER / STATUS BAR -->
     <header class="px-5 pt-4 pb-2 flex items-center justify-between z-20">
       <div class="flex items-center space-x-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-        <span id="app-clock" class="text-xs font-semibold text-slate-600 tracking-wider">09:41</span>
+        <span id="app-clock" class="text-xs font-semibold text-slate-600 tracking-wider">--:--</span>
+        <script>
+          // Sinkronisasi instan dengan jam perangkat lokal saat awal render
+          (function(){
+            const d = new Date();
+            const el = document.getElementById('app-clock');
+            if(el) el.innerText = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+          })();
+        </script>
       </div>
       <div class="flex items-center space-x-2 text-xs font-medium">
         <!-- Multi-Currency Selector -->
@@ -109,7 +116,6 @@
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 px-4 pb-24 overflow-y-auto">
 
-      <!-- ================= 1. ONBOARDING SCREEN (Sesuai Gambar Layar 1) ================= -->
       <div id="view-onboarding" class="flex flex-col items-center justify-between min-h-[85vh] py-6 text-center">
         <!-- Floating Illustration Section -->
         <div class="relative w-full max-w-[280px] h-72 flex items-center justify-center mt-4">
@@ -168,15 +174,14 @@
           </p>
         </div>
 
-        <!-- CTA Button -->
+        <!-- CTA Button Mulai -->
         <div class="w-full px-6 mt-6">
-          <button onclick="goToAuth()" class="w-full py-3.5 px-6 rounded-2xl bg-[#52cdf8] hover:bg-[#38bdf8] active:scale-[0.98] transition-all duration-200 text-white font-bold text-base shadow-lg shadow-sky-300/60">
+          <button id="btn-mulai-trigger" onclick="goToAuth()" class="w-full py-3.5 px-6 rounded-2xl bg-[#52cdf8] hover:bg-[#38bdf8] active:scale-[0.98] transition-all duration-200 text-white font-bold text-base shadow-lg shadow-sky-300/60 cursor-pointer">
             <span id="txt-btn-mulai">Mulai</span>
           </button>
         </div>
       </div>
 
-      <!-- ================= 2. AUTHENTICATION (LOGIN, REGISTER, LUPA PASSWORD) ================= -->
       <div id="view-auth" class="hidden-custom py-6">
         <div class="bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-sky-100 mt-2">
           
@@ -312,7 +317,6 @@
         </div>
       </div>
 
-      <!-- ================= 3. DASHBOARD UTAMA (Sesuai Gambar Layar 2) ================= -->
       <div id="view-dashboard" class="hidden-custom space-y-4 pt-2">
 
         <!-- Top Greeting Header: "Hi, [Name]" + Avatar -->
@@ -399,10 +403,10 @@
 
           <!-- Quick Action Buttons -->
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="openModalTransaction('expense')" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-100">
+            <button onclick="openModalTransaction('expense')" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-100 cursor-pointer">
               <i class="fa-solid fa-arrow-up-right-from-square"></i> + Catat Pengeluaran
             </button>
-            <button onclick="openModalTransaction('income')" class="py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-100">
+            <button onclick="openModalTransaction('income')" class="py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-100 cursor-pointer">
               <i class="fa-solid fa-arrow-down-left-and-up-right-to-center"></i> + Catat Pemasukan
             </button>
           </div>
@@ -412,7 +416,7 @@
         <div class="bg-white/95 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-sky-100/70">
           <div class="flex items-center justify-between mb-3">
             <h3 class="font-extrabold text-slate-800 text-base" id="txt-statistik-title">Statistik & Dompet</h3>
-            <button onclick="switchView('wallets')" class="text-xs font-bold text-sky-500 hover:underline">
+            <button onclick="switchView('wallets')" class="text-xs font-bold text-sky-500 hover:underline cursor-pointer">
               Kelola Dompet
             </button>
           </div>
@@ -436,17 +440,16 @@
 
       </div>
 
-      <!-- ================= 3B. SCREEN KELOLA DOMPET & REKENING (PERBAIKAN FITUR KELOLA DOMPET) ================= -->
       <div id="view-wallets" class="hidden-custom space-y-4 pt-2">
         <div class="flex items-center justify-between pt-1">
-          <button onclick="switchView('dashboard')" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm">
+          <button onclick="switchView('dashboard')" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm cursor-pointer">
             <i class="fa-solid fa-arrow-left text-sm"></i>
           </button>
           <div class="text-center">
             <h2 class="text-base font-extrabold text-slate-800">Kelola Dompet & Bank</h2>
             <p class="text-[11px] font-medium text-slate-400">Semua Rekening & Dompet Digital Indonesia</p>
           </div>
-          <button onclick="openModalTransfer()" title="Transfer Antar Rekening" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-sky-600 hover:bg-white shadow-sm">
+          <button onclick="openModalTransfer()" title="Transfer Antar Rekening" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-sky-600 hover:bg-white shadow-sm cursor-pointer">
             <i class="fa-solid fa-right-left text-sm"></i>
           </button>
         </div>
@@ -455,7 +458,7 @@
         <div class="bg-gradient-to-r from-sky-400 via-sky-500 to-indigo-500 rounded-3xl p-5 text-white shadow-lg space-y-2">
           <div class="flex justify-between items-center">
             <span class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Total Aset di Dompet</span>
-            <button onclick="openModalTransfer()" class="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-bold backdrop-blur flex items-center gap-1">
+            <button onclick="openModalTransfer()" class="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-bold backdrop-blur flex items-center gap-1 cursor-pointer">
               <i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer Saldo
             </button>
           </div>
@@ -475,17 +478,16 @@
         </div>
       </div>
 
-      <!-- ================= 4. SCREEN DETAIL PENGELUARAN / BREAKDOWN (Sesuai Gambar Layar 3) ================= -->
       <div id="view-expense-details" class="hidden-custom space-y-4 pt-2">
         <div class="flex items-center justify-between pt-1">
-          <button onclick="switchView('dashboard')" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm">
+          <button onclick="switchView('dashboard')" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm cursor-pointer">
             <i class="fa-solid fa-arrow-left text-sm"></i>
           </button>
           <div class="text-center">
             <h2 class="text-base font-extrabold text-slate-800" id="detail-page-title">Pengeluaranku</h2>
             <p class="text-[11px] font-medium text-slate-400" id="detail-page-daterange">01 Okt - 31 Okt</p>
           </div>
-          <button onclick="openFilterModal()" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm">
+          <button onclick="openFilterModal()" class="w-9 h-9 rounded-full bg-white/90 border border-sky-100 flex items-center justify-center text-slate-700 hover:bg-white shadow-sm cursor-pointer">
             <i class="fa-solid fa-bars text-sm"></i>
           </button>
         </div>
@@ -514,20 +516,19 @@
         </div>
 
         <div class="flex gap-2">
-          <button onclick="exportData('csv')" class="flex-1 py-2.5 rounded-xl bg-white border border-sky-200 text-sky-600 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm hover:bg-sky-50">
+          <button onclick="exportData('csv')" class="flex-1 py-2.5 rounded-xl bg-white border border-sky-200 text-sky-600 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm hover:bg-sky-50 cursor-pointer">
             <i class="fa-solid fa-file-csv"></i> Ekspor CSV
           </button>
-          <button onclick="exportData('pdf')" class="flex-1 py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-200 hover:bg-sky-500">
+          <button onclick="exportData('pdf')" class="flex-1 py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-200 hover:bg-sky-500 cursor-pointer">
             <i class="fa-solid fa-print"></i> Cetak Laporan
           </button>
         </div>
       </div>
 
-      <!-- ================= 5. TRANSAKSI VIEW (DAFTAR, FILTER, CRUD) ================= -->
       <div id="view-transactions" class="hidden-custom space-y-3 pt-2">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-black text-slate-800">Daftar Transaksi</h2>
-          <button onclick="openModalTransaction('expense')" class="px-3 py-1.5 rounded-xl bg-sky-400 text-white font-bold text-xs flex items-center gap-1 shadow-sm">
+          <button onclick="openModalTransaction('expense')" class="px-3 py-1.5 rounded-xl bg-sky-400 text-white font-bold text-xs flex items-center gap-1 shadow-sm cursor-pointer">
             <i class="fa-solid fa-plus"></i> Catat Baru
           </button>
         </div>
@@ -551,7 +552,6 @@
         </div>
       </div>
 
-      <!-- ================= 6. GAMIFIKASI: PET, EVOLUSI KARAKTER, MISI & TOKO KOSTUM ================= -->
       <div id="view-pet" class="hidden-custom space-y-4 pt-2">
         <div class="text-center">
           <h2 class="text-xl font-black text-slate-800">Pet Finansial & Evolusi</h2>
@@ -649,7 +649,6 @@
         </div>
       </div>
 
-      <!-- ================= 7. AI INSIGHTS (GEMINI 2.5 FLASH) ================= -->
       <div id="view-ai" class="hidden-custom space-y-4 pt-2">
         <div class="bg-gradient-to-r from-sky-400 via-indigo-400 to-purple-500 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-lg"></div>
@@ -660,7 +659,7 @@
           <p class="text-xs text-sky-100 mt-1 leading-relaxed">
             Analisis cerdas pola pengeluaran, saran penghematan, dan deteksi kebocoran anggaran keuanganmu.
           </p>
-          <button onclick="requestAiAnalysis()" id="btn-run-ai" class="mt-4 px-4 py-2.5 bg-white text-indigo-600 rounded-xl font-bold text-xs shadow-md hover:bg-sky-50 transition flex items-center gap-2">
+          <button onclick="requestAiAnalysis()" id="btn-run-ai" class="mt-4 px-4 py-2.5 bg-white text-indigo-600 rounded-xl font-bold text-xs shadow-md hover:bg-sky-50 transition flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>Analisis Keuanganku Sekarang</span>
           </button>
@@ -691,19 +690,18 @@
         </div>
       </div>
 
-      <!-- ================= 8. FITUR KEUANGAN LAINNYA (DREAM PLANNER, SPENDING CHALLENGE, BUDGET) ================= -->
       <div id="view-tools" class="hidden-custom space-y-4 pt-2">
         <h2 class="text-lg font-black text-slate-800">Fitur & Perencanaan</h2>
 
         <!-- Tab selection -->
         <div class="flex bg-white/80 p-1 rounded-2xl border border-sky-200">
-          <button onclick="switchToolsTab('dream')" id="tab-btn-dream" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition">
+          <button onclick="switchToolsTab('dream')" id="tab-btn-dream" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition cursor-pointer">
             🎯 Dream Planner
           </button>
-          <button onclick="switchToolsTab('challenge')" id="tab-btn-challenge" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition">
+          <button onclick="switchToolsTab('challenge')" id="tab-btn-challenge" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition cursor-pointer">
             🎮 Spending Challenge
           </button>
-          <button onclick="switchToolsTab('budget')" id="tab-btn-budget" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition">
+          <button onclick="switchToolsTab('budget')" id="tab-btn-budget" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition cursor-pointer">
             📊 Anggaran (Budget)
           </button>
         </div>
@@ -712,7 +710,7 @@
         <div id="tool-view-dream" class="space-y-3">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-slate-600">Daftar Impian & Target Tabungan</span>
-            <button onclick="openModalDream()" class="text-xs font-bold text-sky-500 hover:underline">+ Target Baru</button>
+            <button onclick="openModalDream()" class="text-xs font-bold text-sky-500 hover:underline cursor-pointer">+ Target Baru</button>
           </div>
           <div id="dream-list-container" class="space-y-2.5">
             <!-- Rendered by JS -->
@@ -723,7 +721,7 @@
         <div id="tool-view-challenge" class="hidden-custom space-y-3">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-slate-600">Tantangan Hemat & Disiplin</span>
-            <button onclick="openModalChallenge()" class="text-xs font-bold text-sky-500 hover:underline">+ Tantangan</button>
+            <button onclick="openModalChallenge()" class="text-xs font-bold text-sky-500 hover:underline cursor-pointer">+ Tantangan</button>
           </div>
           <div id="challenge-list-container" class="space-y-2.5">
             <!-- Rendered by JS -->
@@ -734,7 +732,7 @@
         <div id="tool-view-budget" class="hidden-custom space-y-3">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-slate-600">Batas Anggaran per Kategori</span>
-            <button onclick="openModalBudget()" class="text-xs font-bold text-sky-500 hover:underline">+ Set Budget</button>
+            <button onclick="openModalBudget()" class="text-xs font-bold text-sky-500 hover:underline cursor-pointer">+ Set Budget</button>
           </div>
           <div id="budget-list-container" class="space-y-2.5">
             <!-- Rendered by JS -->
@@ -742,7 +740,6 @@
         </div>
       </div>
 
-      <!-- ================= 9. PROFILE & SETTING (DATA AKUN, HYBRID APP, GDPR) ================= -->
       <div id="view-profile" class="hidden-custom space-y-4 pt-2">
         <h2 class="text-lg font-black text-slate-800">Profil & Pengaturan</h2>
 
@@ -765,7 +762,7 @@
             <h4 class="text-xs font-extrabold">Pasang Aplikasi Keuanganku</h4>
             <p class="text-[10px] text-sky-100">Pasang di homescreen HP untuk akses secepat aplikasi native.</p>
           </div>
-          <button onclick="triggerHybridInstall()" class="px-3 py-2 bg-white text-sky-600 font-bold text-xs rounded-xl shadow hover:bg-sky-50">
+          <button onclick="triggerHybridInstall()" class="px-3 py-2 bg-white text-sky-600 font-bold text-xs rounded-xl shadow hover:bg-sky-50 cursor-pointer">
             <i class="fa-solid fa-download mr-1"></i> Pasang
           </button>
         </div>
@@ -774,7 +771,7 @@
         <div class="bg-white/95 backdrop-blur-md rounded-3xl p-4 shadow-sm border border-sky-100 space-y-2">
           <div class="flex justify-between items-center">
             <h4 class="text-xs font-bold text-slate-700">Pencatatan Berulang (Recurring)</h4>
-            <button onclick="openModalRecurring()" class="text-xs font-bold text-sky-500">+ Jadwal</button>
+            <button onclick="openModalRecurring()" class="text-xs font-bold text-sky-500 cursor-pointer">+ Jadwal</button>
           </div>
           <div id="recurring-list-container" class="space-y-1.5 text-xs">
             <!-- Injected by JS -->
@@ -817,45 +814,42 @@
 
     </main>
 
-    <!-- ================= BOTTOM NAVIGATION BAR ================= -->
     <nav id="bottom-navbar" class="hidden-custom fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur-lg border-t border-sky-100 px-3 py-2 z-30 shadow-lg">
       <div class="flex justify-around items-center text-[10px] font-bold text-slate-400">
-        <button onclick="switchView('dashboard')" id="nav-btn-dashboard" class="flex flex-col items-center gap-1 text-sky-500 py-1 transition">
+        <button onclick="switchView('dashboard')" id="nav-btn-dashboard" class="flex flex-col items-center gap-1 text-sky-500 py-1 transition cursor-pointer">
           <i class="fa-solid fa-house text-base"></i>
           <span id="nav-lbl-beranda">Beranda</span>
         </button>
 
-        <button onclick="switchView('transactions')" id="nav-btn-transactions" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition">
+        <button onclick="switchView('transactions')" id="nav-btn-transactions" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition cursor-pointer">
           <i class="fa-solid fa-list-check text-base"></i>
           <span id="nav-lbl-transaksi">Transaksi</span>
         </button>
 
         <!-- Floating Add Button in center -->
-        <button onclick="openModalTransaction('expense')" class="-mt-5 w-12 h-12 rounded-full bg-gradient-to-tr from-sky-400 to-sky-500 hover:scale-105 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-sky-300/80 transition-all">
+        <button onclick="openModalTransaction('expense')" class="-mt-5 w-12 h-12 rounded-full bg-gradient-to-tr from-sky-400 to-sky-500 hover:scale-105 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-sky-300/80 transition-all cursor-pointer">
           <i class="fa-solid fa-plus text-lg"></i>
         </button>
 
-        <button onclick="switchView('pet')" id="nav-btn-pet" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition relative">
+        <button onclick="switchView('pet')" id="nav-btn-pet" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition relative cursor-pointer">
           <i class="fa-solid fa-dragon text-base"></i>
           <span id="nav-lbl-pet">Pet Saya</span>
           <span class="absolute top-0 right-2 w-2 h-2 rounded-full bg-amber-400"></span>
         </button>
 
-        <button onclick="switchView('tools')" id="nav-btn-tools" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition">
+        <button onclick="switchView('tools')" id="nav-btn-tools" class="flex flex-col items-center gap-1 hover:text-sky-500 py-1 transition cursor-pointer">
           <i class="fa-solid fa-compass text-base"></i>
           <span id="nav-lbl-fitur">Fitur AI</span>
         </button>
       </div>
     </nav>
 
-    <!-- ================= MODALS & POPUPS ================= -->
-
     <!-- Modal: Catat Transaksi Baru / Edit -->
     <div id="modal-transaction" class="hidden-custom fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
           <h3 id="modal-trx-title" class="font-extrabold text-slate-800 text-base">Tambah Transaksi</h3>
-          <button onclick="closeModal('modal-transaction')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+          <button onclick="closeModal('modal-transaction')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 cursor-pointer">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -864,10 +858,10 @@
           <input type="hidden" id="trx-id-edit">
 
           <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
-            <button type="button" onclick="setTrxType('expense')" id="btn-type-expense" class="py-2 rounded-lg text-xs font-bold bg-white text-rose-500 shadow-sm transition">
+            <button type="button" onclick="setTrxType('expense')" id="btn-type-expense" class="py-2 rounded-lg text-xs font-bold bg-white text-rose-500 shadow-sm transition cursor-pointer">
               Pengeluaran
             </button>
-            <button type="button" onclick="setTrxType('income')" id="btn-type-income" class="py-2 rounded-lg text-xs font-bold text-slate-500 transition">
+            <button type="button" onclick="setTrxType('income')" id="btn-type-income" class="py-2 rounded-lg text-xs font-bold text-slate-500 transition cursor-pointer">
               Pemasukan
             </button>
           </div>
@@ -919,7 +913,7 @@
           </div>
 
           <div class="pt-2">
-            <button type="submit" class="w-full py-3 rounded-xl bg-sky-400 hover:bg-sky-500 text-white font-bold text-sm shadow-md transition">
+            <button type="submit" class="w-full py-3 rounded-xl bg-sky-400 hover:bg-sky-500 text-white font-bold text-sm shadow-md transition cursor-pointer">
               Simpan Transaksi (+10 Poin)
             </button>
           </div>
@@ -927,7 +921,7 @@
       </div>
     </div>
 
-    <!-- Modal: Ubah Saldo Dasar Dompet (Fix Kelola Dompet) -->
+    <!-- Modal: Ubah Saldo Dasar Dompet -->
     <div id="modal-edit-wallet" class="hidden-custom fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3">
         <div class="flex justify-between items-center border-b pb-2">
@@ -935,7 +929,7 @@
             <i class="fa-solid fa-building-columns text-sky-500"></i>
             <span id="modal-edit-wallet-title">Atur Saldo Bank</span>
           </h3>
-          <button onclick="closeModal('modal-edit-wallet')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeModal('modal-edit-wallet')" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form onsubmit="handleSaveWalletBalance(event)" class="space-y-3">
           <input type="hidden" id="edit-wallet-key">
@@ -944,7 +938,7 @@
             <input type="number" id="edit-wallet-amount" required placeholder="0" class="w-full text-base font-bold px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-sky-400">
             <p class="text-[10px] text-slate-400 mt-1">Saldo aktual rekening akan diperbarui sesuai input ini.</p>
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 hover:bg-sky-500 text-white font-bold text-xs shadow">
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 hover:bg-sky-500 text-white font-bold text-xs shadow cursor-pointer">
             Simpan Saldo Dompet
           </button>
         </form>
@@ -959,26 +953,24 @@
             <i class="fa-solid fa-arrow-right-arrow-left text-indigo-500"></i>
             <span>Transfer Antar Rekening</span>
           </h3>
-          <button onclick="closeModal('modal-transfer-wallet')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeModal('modal-transfer-wallet')" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form onsubmit="handleExecuteTransfer(event)" class="space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Dari Rekening Asal</label>
             <select id="transfer-from-wallet" class="w-full px-3 py-2 rounded-xl border text-xs font-semibold text-slate-700 outline-none">
-              <!-- Options populated dynamically -->
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Ke Rekening Tujuan</label>
             <select id="transfer-to-wallet" class="w-full px-3 py-2 rounded-xl border text-xs font-semibold text-slate-700 outline-none">
-              <!-- Options populated dynamically -->
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Transfer (<span class="currency-label">Rp</span>)</label>
             <input type="number" id="transfer-amount" required placeholder="0" class="w-full text-base font-bold px-3 py-2 rounded-xl border outline-none">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs shadow">
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs shadow cursor-pointer">
             Kirim Transfer Saldo
           </button>
         </form>
@@ -990,7 +982,7 @@
       <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3">
         <div class="flex justify-between items-center border-b pb-2">
           <h3 class="font-bold text-slate-800 text-sm">🎯 Target Impian Baru</h3>
-          <button onclick="closeModal('modal-dream')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeModal('modal-dream')" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form onsubmit="handleSaveDream(event)" class="space-y-3">
           <div>
@@ -1009,7 +1001,7 @@
             <label class="block text-xs font-semibold text-slate-600">Target Tanggal Selesai</label>
             <input type="date" id="dream-deadline" required class="w-full px-3 py-2 rounded-xl border text-xs outline-none">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs shadow">Simpan Impian</button>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs shadow cursor-pointer">Simpan Impian</button>
         </form>
       </div>
     </div>
@@ -1019,7 +1011,7 @@
       <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3">
         <div class="flex justify-between items-center border-b pb-2">
           <h3 class="font-bold text-slate-800 text-sm">🎮 Buat Spending Challenge</h3>
-          <button onclick="closeModal('modal-challenge')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeModal('modal-challenge')" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form onsubmit="handleSaveChallenge(event)" class="space-y-3">
           <div>
@@ -1034,12 +1026,12 @@
             <label class="block text-xs font-semibold text-slate-600">Durasi (Hari)</label>
             <input type="number" id="chal-days" value="7" min="1" max="30" class="w-full px-3 py-2 rounded-xl border text-xs outline-none">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs shadow">Mulai Tantangan</button>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-sky-400 text-white font-bold text-xs shadow cursor-pointer">Mulai Tantangan</button>
         </form>
       </div>
     </div>
 
-    <!-- Modal: Konfirmasi Hapus Transaksi & Akun (Safe Custom Dialog, no browser alert) -->
+    <!-- Modal: Konfirmasi Hapus Transaksi & Akun -->
     <div id="modal-confirm" class="hidden-custom fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl space-y-3 text-center">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center text-xl">
@@ -1048,10 +1040,10 @@
         <h4 class="font-bold text-slate-800 text-sm" id="confirm-title">Konfirmasi</h4>
         <p class="text-xs text-slate-500" id="confirm-message">Apakah Anda yakin?</p>
         <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeModal('modal-confirm')" class="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs hover:bg-slate-200">
+          <button type="button" onclick="closeModal('modal-confirm')" class="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs hover:bg-slate-200 cursor-pointer">
             Batal
           </button>
-          <button type="button" id="confirm-action-btn" class="flex-1 py-2 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600">
+          <button type="button" id="confirm-action-btn" class="flex-1 py-2 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 cursor-pointer">
             Lanjutkan
           </button>
         </div>
@@ -1066,11 +1058,12 @@
 
   </div>
 
-  <!-- ================= LOGIKA JAVASCRIPT LENGKAP ================= -->
   <script>
+    // --- GEMINI API SETUP ---
     const apiKey = "";
     const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
+    // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = "https://cdtshlzomxcbvhdwkpoi.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TqdbLroelO8ioPnwdm309g_23NU3FCi";
     let supabaseClient = null;
@@ -1082,6 +1075,7 @@
       console.warn("Supabase init fallback:", e);
     }
 
+    // --- DICTIONARY MULTI-BAHASA ---
     const i18n = {
       id: {
         onboardDesc: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian",
@@ -1136,9 +1130,9 @@
       JPY: '¥'
     };
 
-    // SELURUH DATA DUMMY, SALDO SIMULASI, DAN AKUN DEMO DIKOSONGKAN TOTAL (BERSIH)
+    // --- STATE UTAMA BERSIH (TANPA DATA DUMMY / SIMULASI) ---
     const DEFAULT_APP_STATE = {
-      currentUser: null, // Tidak ada akun demo otomatis
+      currentUser: null,
       wallets: {
         BRI: 0,
         MANDIRI: 0,
@@ -1158,7 +1152,6 @@
         CASH: 0,
         LAINNYA: 0
       },
-      // Daftar misi finansial riil awal (status belum selesai)
       missions: [
         { id: 'm1', title: 'Catat Transaksi Pertama Hari Ini', desc: 'Mencatat pengeluaran atau pemasukan baru', rewardPts: 10, rewardExp: 20, done: false, claimed: false },
         { id: 'm2', title: 'Cek Breakdown Donut Chart', desc: 'Pelajari komposisi persentase pengeluaranmu', rewardPts: 10, rewardExp: 15, done: false, claimed: false },
@@ -1175,7 +1168,7 @@
 
     let appState = null;
     try {
-      const saved = localStorage.getItem('keuanganku_app_clean_v4');
+      const saved = localStorage.getItem('keuanganku_app_clean_v5');
       appState = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
       if (!appState.wallets) appState.wallets = JSON.parse(JSON.stringify(DEFAULT_APP_STATE.wallets));
       if (!appState.missions) appState.missions = JSON.parse(JSON.stringify(DEFAULT_APP_STATE.missions));
@@ -1185,11 +1178,74 @@
 
     function saveAppState() {
       try {
-        localStorage.setItem('keuanganku_app_clean_v4', JSON.stringify(appState));
+        localStorage.setItem('keuanganku_app_clean_v5', JSON.stringify(appState));
       } catch(e) {}
     }
 
-    // DAFTAR HEWAN PET & HARGA RESMI
+    // Sinkronisasi jam perangkat secara tepat & real-time
+    function updateDeviceClock() {
+      const now = new Date();
+      const el = document.getElementById('app-clock');
+      if (el) {
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        el.innerText = `${hours}:${minutes}`;
+      }
+    }
+
+    // Fungsi Navigasi Onboarding -> Auth (Fix: Memastikan tombol Mulai bekerja 100%)
+    function goToAuth() {
+      switchView('auth');
+      switchAuthTab('login');
+    }
+
+    function switchView(viewName) {
+      const allViews = [
+        'view-onboarding', 'view-auth', 'view-dashboard',
+        'view-wallets', 'view-expense-details', 'view-transactions',
+        'view-pet', 'view-ai', 'view-tools', 'view-profile'
+      ];
+      allViews.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('hidden-custom');
+      });
+
+      const targetEl = document.getElementById(`view-${viewName}`);
+      if (targetEl) targetEl.classList.remove('hidden-custom');
+
+      const bottomNav = document.getElementById('bottom-navbar');
+      if (viewName === 'onboarding' || viewName === 'auth') {
+        if (bottomNav) bottomNav.classList.add('hidden-custom');
+      } else {
+        if (bottomNav) bottomNav.classList.remove('hidden-custom');
+      }
+
+      // Update Nav Button Active Highlights
+      document.querySelectorAll('#bottom-navbar button').forEach(b => {
+        b.classList.remove('text-sky-500');
+        b.classList.add('text-slate-400');
+      });
+      const activeNavBtn = document.getElementById(`nav-btn-${viewName}`);
+      if (activeNavBtn) {
+        activeNavBtn.classList.add('text-sky-500');
+        activeNavBtn.classList.remove('text-slate-400');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (viewName === 'dashboard') updateDashboardData();
+      if (viewName === 'wallets') renderWalletsManagementView();
+      if (viewName === 'pet') renderPetStage();
+      if (viewName === 'expense-details') renderBreakdownScreen('expense');
+      if (viewName === 'tools') renderToolsView();
+      if (viewName === 'profile') renderProfileData();
+    }
+
+    function showDashboard() {
+      switchView('dashboard');
+      updateDashboardData();
+    }
+
     const PET_CATALOG = [
       { id: 'naga', name: 'Naga Keberuntungan', cost: 0, desc: 'Pelindung harta mitologi yang setia', icon: 'fa-dragon' },
       { id: 'kucing', name: 'Kucing Rezeki', cost: 300, desc: 'Membawa hoki dan kebiasaan hemat', icon: 'fa-cat' },
@@ -1197,7 +1253,6 @@
       { id: 'burung', name: 'Burung Rajawali', cost: 1000, desc: 'Terbang tinggi menuju kebebasan finansial', icon: 'fa-dove' },
     ];
 
-    // DAFTAR KOSTUM PET LENGKAP
     const COSTUME_CATALOG = [
       { id: 'none', name: 'Polos (Alami)', cost: 0, icon: 'fa-ban' },
       { id: 'sunglasses', name: 'Kacamata Hitam Kece', cost: 50, icon: 'fa-glasses' },
@@ -1253,12 +1308,11 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      setInterval(() => {
-        const now = new Date();
-        const el = document.getElementById('app-clock');
-        if (el) el.innerText = now.toTimeString().slice(0, 5);
-      }, 1000);
+      // Sinkronkan jam perangkat secara periodik
+      updateDeviceClock();
+      setInterval(updateDeviceClock, 1000);
 
+      // Cek status sesi akun
       if (appState.currentUser && appState.currentUser.username) {
         checkStreakAndPetMood();
         showDashboard();
@@ -1295,12 +1349,34 @@
       }
       saveAppState();
     }
+
+    function switchAuthTab(tab) {
+      const formLogin = document.getElementById('form-login');
+      const formRegister = document.getElementById('form-register');
+      const formForgot = document.getElementById('form-forgot');
+      const title = document.getElementById('auth-title');
+
+      if (formLogin) formLogin.classList.add('hidden-custom');
+      if (formRegister) formRegister.classList.add('hidden-custom');
+      if (formForgot) formForgot.classList.add('hidden-custom');
+
+      if (tab === 'login') {
+        if (formLogin) formLogin.classList.remove('hidden-custom');
+        if (title) title.innerText = currentLang === 'id' ? 'Masuk Akun' : 'Sign In';
+      } else if (tab === 'register') {
+        if (formRegister) formRegister.classList.remove('hidden-custom');
+        if (title) title.innerText = currentLang === 'id' ? 'Daftar Akun Baru' : 'Register Account';
+      } else if (tab === 'forgot') {
+        if (formForgot) formForgot.classList.remove('hidden-custom');
+        if (title) title.innerText = currentLang === 'id' ? 'Reset Password' : 'Reset Password';
+      }
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('login-username').value.trim();
       const p = document.getElementById('login-password').value;
 
-      // 1. Cek langsung ke database Supabase
       if (supabaseClient) {
         try {
           const { data, error } = await supabaseClient
@@ -1342,7 +1418,6 @@
         }
       }
 
-      // 2. Cek penyimpanan lokal jika offline
       if (appState.currentUser && appState.currentUser.username.toLowerCase() === u.toLowerCase()) {
         if (appState.currentUser.password === p) {
           showToast("Selamat datang kembali, " + appState.currentUser.name + "!");
@@ -1382,7 +1457,6 @@
         ownedCostumes: ['none']
       };
 
-      // Inisialisasi bersih tanpa saldo atau transaksi dummy
       appState.currentUser = newUser;
       appState.transactions = [];
       appState.dreams = [];
@@ -1391,7 +1465,6 @@
       appState.budgets = [];
       Object.keys(appState.wallets).forEach(k => appState.wallets[k] = 0);
 
-      // Simpan ke Supabase jika tersedia
       if (supabaseClient) {
         try {
           await supabaseClient.from('profiles').insert([{
@@ -1448,45 +1521,6 @@
       }
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById('login-username').value.trim();
-      const p = document.getElementById('login-password').value;
-
-      if (appState.currentUser && appState.currentUser.username.toLowerCase() === u.toLowerCase()) {
-        if (appState.currentUser.password === p) {
-          showToast("Selamat datang kembali, " + appState.currentUser.name + "!");
-          showDashboard();
-          return;
-        }
-      }
-      appState.currentUser.username = u;
-      appState.currentUser.name = u;
-      appState.currentUser.password = p;
-      saveAppState();
-      showToast("Berhasil masuk akun!");
-      showDashboard();
-    }
-
-    function handleRegister(e) {
-      e.preventDefault();
-      const name = document.getElementById('reg-name').value.trim();
-      const username = document.getElementById('reg-username').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const secAnswer = document.getElementById('reg-security-answer').value.trim();
-
-      appState.currentUser = {
-        ...DEFAULT_APP_STATE.currentUser,
-        name: name,
-        username: username,
-        password: password,
-        secAnswer: secAnswer,
-      };
-      saveAppState();
-      showToast("Pendaftaran berhasil! Selamat datang!");
-      showDashboard();
-    }
-
     function handleForgotFlow() {
       const usernameInput = document.getElementById('forgot-username').value.trim();
       const step2 = document.getElementById('forgot-step2');
@@ -1537,7 +1571,7 @@
       document.getElementById('confirm-message').innerText = "Data Anda akan dihapus secara permanen dari perangkat (GDPR compliant).";
       const btn = document.getElementById('confirm-action-btn');
       btn.onclick = () => {
-        localStorage.removeItem('keuanganku_app_state_v3');
+        localStorage.removeItem('keuanganku_app_clean_v5');
         appState = JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
         closeModal('modal-confirm');
         showToast("Data akun Anda telah berhasil dihapus sepenuhnya.");
@@ -1626,7 +1660,6 @@
         if (t.type === 'income') totalIncome += Number(t.amount);
       });
 
-      // Hitung total dari seluruh dompet bank riil (tanpa angka dummy 50.000.000)
       const walletBalances = getComputedWalletBalances();
       let totalWalletsSum = 0;
       Object.values(walletBalances).forEach(b => totalWalletsSum += Number(b));
@@ -1691,7 +1724,7 @@
                 <div class="text-xs font-black text-sky-600 mt-0.5">${formatMoney(bal)}</div>
               </div>
             </div>
-            <button onclick="openModalEditWallet('${key}', ${appState.wallets[key] || 0})" class="px-3 py-1.5 rounded-xl bg-white border border-sky-200 text-sky-600 text-xs font-bold hover:bg-sky-50 shadow-sm">
+            <button onclick="openModalEditWallet('${key}', ${appState.wallets[key] || 0})" class="px-3 py-1.5 rounded-xl bg-white border border-sky-200 text-sky-600 text-xs font-bold hover:bg-sky-50 shadow-sm cursor-pointer">
               <i class="fa-solid fa-pen-to-square mr-1"></i> Atur
             </button>
           </div>
@@ -1720,8 +1753,6 @@
       renderWalletsManagementView();
       updateDashboardData();
       showToast(`Saldo dasar dompet ${key} diperbarui!`);
-
-      // Cek misi kelola dompet
       completeMission('m5');
     }
 
@@ -1760,7 +1791,6 @@
         return;
       }
 
-      // Catat 2 entri mutasi: transfer keluar & transfer masuk
       const now = new Date().toISOString().slice(0, 10);
       appState.transactions.unshift({
         id: Date.now().toString(),
@@ -1909,7 +1939,7 @@
               <span class="text-xs font-black ${isExp ? 'text-rose-600' : 'text-emerald-600'}">
                 ${isExp ? '-' : '+'}${formatMoney(t.amount)}
               </span>
-              <button onclick="promptDeleteTransaction('${t.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1 ml-1" title="Hapus">
+              <button onclick="promptDeleteTransaction('${t.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1 ml-1 cursor-pointer" title="Hapus">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
@@ -1932,11 +1962,11 @@
       const btnInc = document.getElementById('btn-type-income');
 
       if (type === 'expense') {
-        btnExp.className = "py-2 rounded-lg text-xs font-bold bg-white text-rose-500 shadow-sm transition";
-        btnInc.className = "py-2 rounded-lg text-xs font-bold text-slate-500 transition";
+        btnExp.className = "py-2 rounded-lg text-xs font-bold bg-white text-rose-500 shadow-sm transition cursor-pointer";
+        btnInc.className = "py-2 rounded-lg text-xs font-bold text-slate-500 transition cursor-pointer";
       } else {
-        btnInc.className = "py-2 rounded-lg text-xs font-bold bg-white text-emerald-500 shadow-sm transition";
-        btnExp.className = "py-2 rounded-lg text-xs font-bold text-slate-500 transition";
+        btnInc.className = "py-2 rounded-lg text-xs font-bold bg-white text-emerald-500 shadow-sm transition cursor-pointer";
+        btnExp.className = "py-2 rounded-lg text-xs font-bold text-slate-500 transition cursor-pointer";
       }
       populateCategorySelect(type);
     }
@@ -2045,7 +2075,7 @@
             ${m.claimed ? `
               <span class="text-[10px] font-bold text-slate-400 px-2.5 py-1 bg-slate-100 rounded-full">Selesai</span>
             ` : m.done ? `
-              <button onclick="claimMission('${m.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] shadow-sm animate-bounce">
+              <button onclick="claimMission('${m.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] shadow-sm animate-bounce cursor-pointer">
                 Klaim!
               </button>
             ` : `
@@ -2096,7 +2126,6 @@
       saveAppState();
     }
 
-    // MODEL HEWAN ASLI SETUBUH (FULL-BODY REALISTIC ANATOMY)
     function getFullBodyRealPetSvg(petType, isHappy = true, costume = 'none', stage = 1) {
       const happyClass = isHappy ? 'anim-pet-happy' : 'anim-pet-sad';
       const scale = stage === 1 ? 'scale(0.85)' : stage === 2 ? 'scale(1.0)' : 'scale(1.15)';
@@ -2157,49 +2186,33 @@
         `;
       }
 
-      // Aura evolusi untuk stage 3 (Dewasa Legendaris)
       const stageAura = stage === 3 ? `
         <circle cx="95" cy="95" r="75" fill="none" stroke="#facc15" stroke-width="2" stroke-dasharray="8 6" opacity="0.75" class="animate-spin" style="animation-duration: 18s;"/>
       ` : '';
 
-      // 1. NAGA (FULL BODY SERPENTINE DRAGON DENGAN 4 KAKI & CAKAR, EKOR PANJANG BERKIBAR)
+      // 1. NAGA (FULL BODY SERPENTINE DRAGON)
       if (petType === 'naga') {
         return `
           <svg class="w-48 h-48 ${happyClass}" viewBox="0 0 190 190" fill="none" style="transform: ${scale}">
             ${stageAura}
             ${costume === 'cape' ? costumeSvg : ''}
-            <!-- Dragon Serpentine Body Curves -->
             <path d="M96 52 C72 52 58 75 66 102 C74 126 122 118 128 140 C132 154 120 168 104 168 C88 168 84 158 74 158" stroke="#0284C7" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M96 52 C72 52 58 75 66 102 C74 126 122 118 128 140 C132 154 120 168 104 168 C88 168 84 158 74 158" stroke="#38BDF8" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Ventral belly plates -->
             <path d="M94 56 C74 58 64 78 70 102 C77 124 120 118 124 138" stroke="#E0F2FE" stroke-width="8" stroke-linecap="round"/>
-            <!-- Dorsal spine spikes -->
             <path d="M78 52 L72 44 L84 50 L88 40 L96 48 L104 38 L110 48" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-            <!-- Tail Tuft Flame -->
             <path d="M74 158 C64 162 58 152 52 160 C58 168 68 170 76 164 Z" fill="#F59E0B"/>
-            
-            <!-- 4 Clawed Legs (Depan & Belakang) -->
-            <!-- Front Left Leg & Talons -->
             <path d="M68 92 L54 108 L48 116" stroke="#0284C7" stroke-width="6" stroke-linecap="round"/>
             <circle cx="47" cy="117" r="3" fill="#0F172A"/>
-            <!-- Front Right Leg -->
             <path d="M88 94 L82 112 L78 120" stroke="#0284C7" stroke-width="6" stroke-linecap="round"/>
             <circle cx="77" cy="121" r="3" fill="#0F172A"/>
-            <!-- Hind Left Leg -->
             <path d="M120 128 L134 142 L142 148" stroke="#0284C7" stroke-width="7" stroke-linecap="round"/>
             <circle cx="143" cy="149" r="3.5" fill="#0F172A"/>
-            <!-- Hind Right Leg -->
             <path d="M112 140 L118 155 L124 160" stroke="#0284C7" stroke-width="6" stroke-linecap="round"/>
             <circle cx="125" cy="161" r="3" fill="#0F172A"/>
-
-            <!-- Dragon Head (Kepala Naga Mitologi) -->
             <path d="M92 48 Q118 42 128 54 Q125 68 106 66 Q90 66 92 48 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
-            <!-- Snout & Whisker -->
             <path d="M125 58 Q140 60 148 68" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" fill="none"/>
             <path d="M122 62 Q136 68 142 76" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-            <!-- Antlers / Horns -->
             <path d="M96 44 L92 26 L100 32 L106 18" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- Eyes -->
             ${isHappy ? `
               <ellipse cx="112" cy="52" rx="3.5" ry="3.5" fill="#0F172A"/>
               <circle cx="114" cy="51" r="1" fill="#FFFFFF"/>
@@ -2211,50 +2224,32 @@
         `;
       }
 
-      // 2. KUCING (FULL BODY FELINE DENGAN BADAN LENGKAP, KAKI DEPAN & BELAKANG DUDUK, EKOR PANJANG MELENGKUNG)
+      // 2. KUCING (FULL BODY FELINE)
       if (petType === 'kucing') {
         return `
           <svg class="w-48 h-48 ${happyClass}" viewBox="0 0 190 190" fill="none" style="transform: ${scale}">
             ${stageAura}
             ${costume === 'cape' ? costumeSvg : ''}
-            <!-- Long Curved Tail -->
             <path d="M122 142 C148 140 162 118 156 94 C152 82 142 84 140 92 C138 102 146 116 128 128" stroke="#F97316" stroke-width="8" stroke-linecap="round" fill="none"/>
-            
-            <!-- Torso & Haunch (Badan Kucing Utuh Sejati) -->
-            <!-- Hindquarters / Haunch Sitting -->
             <ellipse cx="120" cy="136" rx="24" ry="20" fill="#FB923C"/>
-            <!-- Main Torso (Dada & Punggung) -->
             <path d="M84 76 Q120 84 122 134 L92 142 Q76 110 84 76 Z" fill="#FDBA74"/>
             <path d="M88 88 Q106 95 106 132 L94 136 Q84 112 88 88 Z" fill="#FFF7ED"/>
-
-            <!-- Paws / Legs (Kaki Depan Sejajar & Kaki Belakang) -->
-            <!-- Back Paw -->
             <ellipse cx="128" cy="154" rx="10" ry="6" fill="#F97316"/>
-            <!-- Front Left Leg & Paw -->
             <rect x="80" y="112" width="10" height="42" rx="5" fill="#FB923C"/>
             <ellipse cx="85" cy="154" rx="8" ry="5" fill="#FED7AA"/>
-            <!-- Front Right Leg & Paw -->
             <rect x="94" y="112" width="10" height="42" rx="5" fill="#FDBA74"/>
             <ellipse cx="99" cy="154" rx="8" ry="5" fill="#FFF7ED"/>
-
-            <!-- Neck & Head -->
             <circle cx="86" cy="62" r="22" fill="#FB923C"/>
-            <!-- Ears -->
             <polygon points="68,52 64,28 80,44" fill="#EA580C"/>
             <polygon points="70,50 67,34 78,44" fill="#FCA5A5"/>
             <polygon points="94,44 108,28 104,52" fill="#EA580C"/>
             <polygon points="96,44 105,34 102,50" fill="#FCA5A5"/>
-
-            <!-- Muzzle & Cheeks -->
             <ellipse cx="86" cy="68" rx="10" ry="7" fill="#FFF7ED"/>
             <polygon points="84,65 88,65 86,68" fill="#F43F5E"/>
-            <!-- Whiskers -->
             <line x1="72" y1="68" x2="52" y2="66" stroke="#94A3B8" stroke-width="1.8"/>
             <line x1="72" y1="72" x2="54" y2="76" stroke="#94A3B8" stroke-width="1.8"/>
             <line x1="100" y1="68" x2="118" y2="66" stroke="#94A3B8" stroke-width="1.8"/>
             <line x1="100" y1="72" x2="116" y2="76" stroke="#94A3B8" stroke-width="1.8"/>
-
-            <!-- Eyes -->
             ${isHappy ? `
               <ellipse cx="78" cy="58" rx="3.5" ry="4" fill="#15803D"/>
               <ellipse cx="94" cy="58" rx="3.5" ry="4" fill="#15803D"/>
@@ -2270,55 +2265,37 @@
         `;
       }
 
-      // 3. HARIMAU (FULL BODY MUSCULAR TIGER BERDIRI GAGAH, CORAK LORENG ASLI, 4 KAKI KOKOH, EKOR BELANG)
+      // 3. HARIMAU (FULL BODY MUSCULAR TIGER)
       if (petType === 'harimau') {
         return `
           <svg class="w-48 h-48 ${happyClass}" viewBox="0 0 190 190" fill="none" style="transform: ${scale}">
             ${stageAura}
             ${costume === 'cape' ? costumeSvg : ''}
-            <!-- Tiger Striped Tail -->
             <path d="M136 128 C158 132 170 114 164 96 C160 88 152 92 152 98 C152 108 160 120 142 122" stroke="#EA580C" stroke-width="7" stroke-linecap="round" fill="none"/>
             <path d="M158 102 L164 100" stroke="#0F172A" stroke-width="2.5"/>
             <path d="M162 112 L167 111" stroke="#0F172A" stroke-width="2.5"/>
-
-            <!-- Muscular Tiger Body (Badan Harimau Tegap & Berotot) -->
             <ellipse cx="114" cy="116" rx="36" ry="24" fill="#EA580C"/>
-            <!-- Underbelly Pale Coat -->
             <ellipse cx="112" cy="124" rx="26" ry="14" fill="#FEF08A"/>
-
-            <!-- Tiger Stripes on Body -->
             <path d="M96 102 L102 116 L94 122" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
             <path d="M112 98 L118 114 L110 122" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
             <path d="M128 102 L132 114 L126 120" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
-
-            <!-- Sturdy 4 Limbs & Paws -->
-            <!-- Front Left Leg -->
             <rect x="76" y="112" width="12" height="44" rx="6" fill="#C2410C"/>
             <ellipse cx="82" cy="156" rx="9" ry="5.5" fill="#FEF08A"/>
-            <!-- Front Right Leg -->
             <rect x="94" y="114" width="12" height="42" rx="6" fill="#EA580C"/>
             <ellipse cx="100" cy="156" rx="9" ry="5.5" fill="#FEF08A"/>
-            <!-- Hind Left Leg -->
             <path d="M130 112 Q144 124 140 152 L130 154 Q132 132 124 116 Z" fill="#C2410C"/>
             <ellipse cx="135" cy="156" rx="9" ry="5.5" fill="#FEF08A"/>
-            <!-- Hind Right Leg -->
             <rect x="118" y="122" width="11" height="34" rx="5" fill="#EA580C"/>
             <ellipse cx="123" cy="156" rx="8" ry="5" fill="#FEF08A"/>
-
-            <!-- Powerful Head & Ears -->
             <circle cx="78" cy="68" r="23" fill="#EA580C"/>
             <circle cx="62" cy="52" r="8" fill="#C2410C"/>
             <circle cx="62" cy="52" r="4" fill="#FEF08A"/>
             <circle cx="94" cy="52" r="8" fill="#C2410C"/>
             <circle cx="94" cy="52" r="4" fill="#FEF08A"/>
-
-            <!-- Forehead King/Tiger Crest & Muzzle -->
             <polygon points="78,48 75,58 81,58" fill="#1E293B"/>
             <line x1="72" y1="52" x2="84" y2="52" stroke="#1E293B" stroke-width="2.5"/>
             <ellipse cx="78" cy="74" rx="11" ry="8" fill="#FEF08A"/>
             <polygon points="75,70 81,70 78,74" fill="#BE123C"/>
-
-            <!-- Piercing Predator Eyes -->
             ${isHappy ? `
               <ellipse cx="70" cy="64" rx="3.5" ry="3.5" fill="#EAB308"/>
               <ellipse cx="86" cy="64" rx="3.5" ry="3.5" fill="#EAB308"/>
@@ -2334,39 +2311,24 @@
         `;
       }
 
-      // 4. BURUNG RAJAWALI (FULL BODY RAPTOR PERCHED, SAYAP BERBULU UTUH, PARUH TAJAM, CAKAR MENCENGKRAM DAHAN)
+      // 4. BURUNG RAJAWALI (FULL BODY RAPTOR)
       if (petType === 'burung') {
         return `
           <svg class="w-48 h-48 ${happyClass}" viewBox="0 0 190 190" fill="none" style="transform: ${scale}">
             ${stageAura}
             ${costume === 'cape' ? costumeSvg : ''}
-            <!-- Wooden Branch Perch -->
             <rect x="36" y="148" width="124" height="12" rx="6" fill="#78350F"/>
             <ellipse cx="145" cy="154" rx="6" ry="6" fill="#92400E"/>
-
-            <!-- Tail Feathers Downward -->
             <polygon points="86,134 80,172 94,178 108,172 102,134" fill="#312E81"/>
             <line x1="94" y1="138" x2="94" y2="174" stroke="#4338CA" stroke-width="2"/>
-
-            <!-- Raptor Full Body & Folded Wings -->
             <ellipse cx="94" cy="98" rx="26" ry="36" fill="#4338CA"/>
-            <!-- Front Breast Pale Feathers -->
             <ellipse cx="88" cy="104" rx="16" ry="24" fill="#E0E7FF"/>
-
-            <!-- Outer Wing with Layered Plumage -->
             <path d="M102 78 C124 90 134 122 120 150 C114 138 114 116 102 96 Z" fill="#3730A3" stroke="#312E81" stroke-width="1.5"/>
             <path d="M96 82 C116 94 122 118 112 138" stroke="#6366F1" stroke-width="2" stroke-linecap="round"/>
-
-            <!-- Raptor Talons Gripping the Branch -->
             <path d="M78 144 L76 150 L84 150 M82 144 L82 150 M86 144 L88 150" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
             <path d="M100 144 L98 150 L106 150 M104 144 L104 150 M108 144 L110 150" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-
-            <!-- Noble Bird Head & Crest -->
             <circle cx="86" cy="56" r="22" fill="#4F46E5"/>
-            <!-- Eagle Feather Crest -->
             <path d="M72 44 Q80 24 88 40 Q94 22 102 42" stroke="#4338CA" stroke-width="3" stroke-linecap="round"/>
-
-            <!-- Keen Eye -->
             ${isHappy ? `
               <circle cx="80" cy="54" r="5" fill="#FEF08A"/>
               <circle cx="80" cy="54" r="2.5" fill="#0F172A"/>
@@ -2375,8 +2337,6 @@
               <circle cx="80" cy="54" r="3" fill="#0F172A"/>
               <line x1="75" y1="51" x2="85" y2="54" stroke="#312E81" stroke-width="2"/>
             `}
-
-            <!-- Hooked Raptor Beak (Paruh Melengkung Tajam) -->
             <path d="M68 54 Q50 56 52 66 Q62 66 68 62 Z" fill="#F59E0B" stroke="#D97706" stroke-width="1.5"/>
             ${costume !== 'cape' ? costumeSvg : ''}
           </svg>
@@ -2429,7 +2389,7 @@
     function renderPetShop() {
       const container = document.getElementById('pets-shop-grid');
       if (!container) return;
-      const user = appState.currentUser;
+      const user = appState.currentUser || { ownedPets: ['naga'], activePet: 'naga' };
 
       container.innerHTML = PET_CATALOG.map(p => {
         const isOwned = user.ownedPets.includes(p.id);
@@ -2446,9 +2406,9 @@
               ${isActive ? `
                 <button disabled class="w-full py-1.5 rounded-xl bg-sky-500 text-white font-bold text-[10px]">Aktif</button>
               ` : isOwned ? `
-                <button onclick="activatePet('${p.id}')" class="w-full py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px]">Pakai</button>
+                <button onclick="activatePet('${p.id}')" class="w-full py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] cursor-pointer">Pakai</button>
               ` : `
-                <button onclick="buyPet('${p.id}', ${p.cost})" class="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[10px] flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="buyPet('${p.id}', ${p.cost})" class="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[10px] flex items-center justify-center gap-1 shadow-sm cursor-pointer">
                   <i class="fa-solid fa-coins"></i> Beli ${p.cost} Pts
                 </button>
               `}
@@ -2460,6 +2420,7 @@
 
     function buyPet(petId, cost) {
       const user = appState.currentUser;
+      if (!user) return;
       if (user.points < cost) {
         showToast(`Poin tidak cukup! Butuh ${cost} Pts (Poinmu: ${user.points} Pts). Selesaikan misi untuk dapat poin!`, "warning");
         return;
@@ -2475,6 +2436,7 @@
     }
 
     function activatePet(petId) {
+      if (!appState.currentUser) return;
       appState.currentUser.activePet = petId;
       saveAppState();
       renderPetShop();
@@ -2485,7 +2447,7 @@
     function renderCostumeShop() {
       const container = document.getElementById('costumes-shop-grid');
       if (!container) return;
-      const user = appState.currentUser;
+      const user = appState.currentUser || { ownedCostumes: ['none'], activeCostume: 'none' };
 
       container.innerHTML = COSTUME_CATALOG.map(c => {
         const isOwned = user.ownedCostumes.includes(c.id);
@@ -2501,9 +2463,9 @@
               ${isActive ? `
                 <button disabled class="w-full py-1.5 rounded-xl bg-indigo-500 text-white font-bold text-[10px]">Dipakai</button>
               ` : isOwned ? `
-                <button onclick="activateCostume('${c.id}')" class="w-full py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px]">Gunakan</button>
+                <button onclick="activateCostume('${c.id}')" class="w-full py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] cursor-pointer">Gunakan</button>
               ` : `
-                <button onclick="buyCostume('${c.id}', ${c.cost})" class="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[10px] flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="buyCostume('${c.id}', ${c.cost})" class="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-[10px] flex items-center justify-center gap-1 shadow-sm cursor-pointer">
                   <i class="fa-solid fa-coins"></i> ${c.cost} Pts
                 </button>
               `}
@@ -2515,6 +2477,7 @@
 
     function buyCostume(costumeId, cost) {
       const user = appState.currentUser;
+      if (!user) return;
       if (user.points < cost) {
         showToast(`Poin tidak cukup! Butuh ${cost} Pts (Poinmu: ${user.points} Pts).`, "warning");
         return;
@@ -2529,6 +2492,7 @@
     }
 
     function activateCostume(costumeId) {
+      if (!appState.currentUser) return;
       appState.currentUser.activeCostume = costumeId;
       saveAppState();
       renderCostumeShop();
@@ -2546,7 +2510,7 @@
       content.innerHTML = '';
 
       const trxSummary = appState.transactions.map(t => `${t.type.toUpperCase()}: ${t.category} sebesar Rp ${t.amount} (${t.wallet})`).slice(0, 15).join(", ");
-      const userPrompt = `Halo Gemini! Berikut adalah ringkasan data transaksi keuangan saya: [${trxSummary}]. 
+      const userPrompt = `Halo Gemini! Berikut adalah ringkasan data transaksi keuangan saya: [${trxSummary || 'Belum ada transaksi, akun baru'}]. 
       Tolong berikan:
       1. Ringkasan singkat pola pengeluaran saya
       2. 3 Rekomendasi konkret untuk menghemat uang
@@ -2609,11 +2573,11 @@
     function switchToolsTab(tab) {
       ['dream', 'challenge', 'budget'].forEach(t => {
         document.getElementById(`tool-view-${t}`).classList.add('hidden-custom');
-        document.getElementById(`tab-btn-${t}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition";
+        document.getElementById(`tab-btn-${t}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-500 transition cursor-pointer";
       });
 
       document.getElementById(`tool-view-${tab}`).classList.remove('hidden-custom');
-      document.getElementById(`tab-btn-${tab}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition";
+      document.getElementById(`tab-btn-${tab}`).className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-sky-400 text-white shadow-sm transition cursor-pointer";
     }
 
     function renderToolsView() {
@@ -2697,4 +2661,205 @@
         }
       }
     }
-/* ... existing code ... -->
+
+    function openModalDream() { openModal('modal-dream'); }
+    function openModalChallenge() { openModal('modal-challenge'); }
+    function openModalBudget() { showToast("Fitur budget kategori aktif di daftar!"); }
+
+    function handleSaveDream(e) {
+      e.preventDefault();
+      const title = document.getElementById('dream-title').value;
+      const target = parseFloat(document.getElementById('dream-target').value);
+      const saved = parseFloat(document.getElementById('dream-saved').value) || 0;
+      const deadline = document.getElementById('dream-deadline').value;
+
+      appState.dreams.push({ id: Date.now().toString(), title, target, saved, deadline });
+      saveAppState();
+      closeModal('modal-dream');
+      renderToolsView();
+      showToast("Target impian baru berhasil ditambahkan!");
+      completeMission('m4');
+    }
+
+    function handleSaveChallenge(e) {
+      e.preventDefault();
+      const title = document.getElementById('chal-title').value;
+      const limit = parseFloat(document.getElementById('chal-limit').value);
+      const days = parseInt(document.getElementById('chal-days').value) || 7;
+
+      appState.challenges.push({ id: Date.now().toString(), title, limit, days, spent: 0, status: 'active' });
+      saveAppState();
+      closeModal('modal-challenge');
+      renderToolsView();
+      showToast("Spending challenge baru dimulai!");
+    }
+
+    function renderProfileData() {
+      const user = appState.currentUser || { name: '-', username: '-' };
+      document.getElementById('prof-name').innerText = user.name;
+      document.getElementById('prof-username').innerText = user.username;
+
+      const container = document.getElementById('recurring-list-container');
+      if (container) {
+        if (!appState.recurring || appState.recurring.length === 0) {
+          container.innerHTML = `<p class="text-[11px] text-slate-400 italic">Belum ada pengeluaran rutin.</p>`;
+        } else {
+          container.innerHTML = appState.recurring.map(r => `
+            <div class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <div>
+                <span class="font-bold text-slate-800">${r.title}</span>
+                <span class="text-[10px] text-slate-400 block">${r.interval} • ${r.wallet}</span>
+              </div>
+              <span class="font-extrabold text-slate-700">${formatMoney(r.amount)}</span>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function openModalRecurring() {
+      const title = window.prompt("Nama Pengeluaran Berulang (Contoh: WiFi Rumah):");
+      if (!title) return;
+      const amtStr = window.prompt("Nominal (Rp):", "150000");
+      if (!amtStr) return;
+
+      if (!appState.recurring) appState.recurring = [];
+      appState.recurring.push({
+        id: Date.now().toString(),
+        title,
+        amount: parseFloat(amtStr) || 100000,
+        interval: 'monthly',
+        wallet: 'BRI'
+      });
+      saveAppState();
+      renderProfileData();
+      showToast("Jadwal pencatatan berulang ditambahkan!");
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    function triggerHybridInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast("Aplikasi Keuanganku terpasang!");
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        showToast("Untuk memasang: Tap tombol Bagikan / Titik Tiga di browser, lalu pilih 'Tambahkan ke Layar Utama' (Add to Home Screen).", "info");
+      }
+    }
+
+    function triggerNotificationTest() {
+      if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification("Keuanganku - Pengingat Harian", {
+              body: "Jangan lupa catat pengeluaran hari ini ya agar Pet-mu tetap semangat!",
+              icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2338bdf8'/></svg>"
+            });
+            showToast("Notifikasi pengingat berhasil dikirim!");
+          } else {
+            showToast("Izin notifikasi tidak diaktifkan di browser.", "warning");
+          }
+        });
+      } else {
+        showToast("Pengingat harian: Jangan lupa catat transaksi hari ini!");
+      }
+    }
+
+    function exportData(type) {
+      if (type === 'csv') {
+        let csv = "ID,Tipe,Kategori,Nominal,Tanggal,Dompet,Catatan\n";
+        appState.transactions.forEach(t => {
+          csv += `"${t.id}","${t.type}","${t.category}","${t.amount}","${t.date}","${t.wallet || ''}","${t.note || ''}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Laporan_Keuanganku_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Laporan CSV berhasil diunduh!");
+      } else if (type === 'json') {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+        const link = document.createElement("a");
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", `Backup_Keuanganku_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Backup JSON berhasil diunduh!");
+      } else if (type === 'pdf') {
+        window.print();
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'id' ? 'en' : 'id';
+      document.getElementById('lang-indicator').innerText = currentLang.toUpperCase();
+      
+      const dict = i18n[currentLang];
+      document.getElementById('txt-onboard-desc').innerText = dict.onboardDesc;
+      document.getElementById('txt-btn-mulai').innerText = dict.start;
+      document.getElementById('txt-uangku').innerText = dict.uangku;
+      document.getElementById('txt-keuanganku-title').innerText = dict.keuanganku;
+      document.getElementById('txt-card-pengeluaran').innerText = dict.pengeluaranku;
+      document.getElementById('txt-card-pemasukan').innerText = dict.pemasukanku;
+      document.getElementById('txt-statistik-title').innerText = dict.statistik;
+      document.getElementById('nav-lbl-beranda').innerText = dict.beranda;
+      document.getElementById('nav-lbl-transaksi').innerText = dict.transaksi;
+      document.getElementById('nav-lbl-pet').innerText = dict.pet;
+      document.getElementById('nav-lbl-fitur').innerText = dict.fitur;
+
+      const settingLang = document.getElementById('setting-current-lang');
+      if (settingLang) settingLang.innerText = currentLang === 'id' ? 'Bahasa Indonesia' : 'English';
+
+      showToast(`Bahasa diubah ke ${currentLang === 'id' ? 'Bahasa Indonesia' : 'English'}`);
+    }
+
+    function openModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.remove('hidden-custom');
+    }
+    function closeModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.add('hidden-custom');
+    }
+    function openFilterModal() {
+      showToast("Filter kategori aktif.");
+    }
+
+    let toastTimeout = null;
+    function showToast(message, type = "success") {
+      const toast = document.getElementById('app-toast');
+      const msgEl = document.getElementById('toast-message');
+      const iconEl = document.getElementById('toast-icon');
+      if (!toast || !msgEl) return;
+
+      msgEl.innerText = message;
+      if (type === "warning") {
+        iconEl.className = "fa-solid fa-triangle-exclamation text-amber-400 text-base";
+      } else if (type === "info") {
+        iconEl.className = "fa-solid fa-circle-info text-sky-400 text-base";
+      } else {
+        iconEl.className = "fa-solid fa-circle-check text-emerald-400 text-base";
+      }
+
+      toast.classList.remove('hidden-custom');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden-custom');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
