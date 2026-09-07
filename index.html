@@ -91,85 +91,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 1. HALAMAN ONBOARDING (Persis Screen 1 Gambar Referensi)  -->
-    <!-- ======================================================== -->
-    <section id="screenOnboarding" class="flex-1 flex flex-col justify-between p-6 fade-in">
-      <div class="flex justify-between items-center pt-2">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-brand-400 flex items-center justify-center text-white font-bold text-sm shadow">DP</div>
-          <span class="font-bold text-slate-700 tracking-tight">Dompet Pintar</span>
-        </div>
-        <button onclick="toggleLanguage()" class="text-xs bg-white/70 backdrop-blur px-3 py-1.5 rounded-full text-slate-700 font-semibold shadow-sm border border-white flex items-center gap-1.5">
-          <i class="fa-solid fa-globe text-brand-500"></i>
-          <span id="langLabelOnboard">ID</span>
-        </button>
-      </div>
-
-      <!-- Ilustrasi Keuanganku -->
-      <div class="my-auto flex flex-col items-center text-center py-6">
-        <div class="relative w-64 h-64 mb-6 flex items-center justify-center">
-          <!-- Backing glow circle -->
-          <div class="absolute w-56 h-56 bg-sky-200/60 rounded-full blur-2xl"></div>
-          
-          <!-- Vector Illustration resembling reference picture -->
-          <svg viewBox="0 0 240 240" class="w-60 h-60 drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Floating Rp Notes -->
-            <rect x="25" y="65" width="55" height="32" rx="6" fill="#38bdf8" transform="rotate(-15 25 65)"/>
-            <text x="35" y="85" fill="white" font-size="12" font-weight="bold" transform="rotate(-15 25 65)">Rp</text>
-            <rect x="150" y="45" width="55" height="32" rx="6" fill="#0ea5e9" transform="rotate(10 150 45)"/>
-            <text x="160" y="65" fill="white" font-size="12" font-weight="bold" transform="rotate(10 150 45)">Rp</text>
-
-            <!-- Floating Coins -->
-            <circle cx="45" cy="40" r="14" fill="#bae6fd" opacity="0.8"/>
-            <text x="38" y="44" fill="#0284c7" font-size="10" font-weight="bold">Rp</text>
-            <circle cx="195" cy="75" r="16" fill="#bae6fd" opacity="0.8"/>
-            <text x="187" y="79" fill="#0284c7" font-size="11" font-weight="bold">Rp</text>
-
-            <!-- Calculator -->
-            <rect x="35" y="95" width="52" height="75" rx="8" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
-            <rect x="42" y="103" width="38" height="18" rx="4" fill="#38bdf8"/>
-            <text x="46" y="116" fill="white" font-size="9" font-weight="bold">2973</text>
-            <circle cx="48" cy="132" r="3" fill="#7dd3fc"/><circle cx="61" cy="132" r="3" fill="#7dd3fc"/><circle cx="74" cy="132" r="3" fill="#7dd3fc"/>
-            <circle cx="48" cy="145" r="3" fill="#7dd3fc"/><circle cx="61" cy="145" r="3" fill="#7dd3fc"/><circle cx="74" cy="145" r="3" fill="#7dd3fc"/>
-            <circle cx="48" cy="158" r="3" fill="#7dd3fc"/><circle cx="61" cy="158" r="3" fill="#7dd3fc"/><circle cx="74" cy="158" r="3" fill="#7dd3fc"/>
-
-            <!-- Clipboard Tablet -->
-            <rect x="95" y="85" width="85" height="115" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="2.5"/>
-            <!-- Clipboard Clip -->
-            <rect x="118" y="77" width="40" height="15" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
-            <circle cx="138" cy="84" r="3" fill="#94a3b8"/>
-            <!-- Paper lines -->
-            <rect x="105" y="102" width="65" height="12" rx="2" fill="#bae6fd"/>
-            <line x1="105" y1="124" x2="170" y2="124" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="105" y1="136" x2="170" y2="136" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="105" y1="148" x2="170" y2="148" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="105" y1="160" x2="170" y2="160" stroke="#cbd5e1" stroke-width="1.5"/>
-
-            <!-- Hands -->
-            <path d="M40 185 Q65 155 85 160 Q80 185 45 200 Z" fill="#fed7aa"/>
-            <path d="M195 190 Q170 160 160 165 Q168 185 190 205 Z" fill="#fed7aa"/>
-            <!-- Pen in hand -->
-            <line x1="155" y1="155" x2="168" y2="170" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
-            <rect x="140" y="195" width="50" height="40" rx="4" fill="#38bdf8"/>
-            <rect x="40" y="195" width="45" height="40" rx="4" fill="#38bdf8"/>
-          </svg>
-        </div>
-
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-3 tracking-tight" data-i18n="onboard_title">Keuanganku</h1>
-        <p class="text-slate-600 text-sm sm:text-base max-w-xs leading-relaxed" data-i18n="onboard_desc">
-          Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.
-        </p>
-      </div>
-
-      <div class="space-y-3 pb-4">
-        <button onclick="showScreen('screenAuth')" class="w-full py-4 bg-brand-400 hover:bg-brand-500 active:scale-[0.98] transition-all text-white font-bold rounded-full shadow-lg shadow-brand-400/30 text-base" data-i18n="onboard_btn">
-          Mulai
-        </button>
-      </div>
-    </section>
-
-    <!-- ======================================================== -->
-    <!-- 2. HALAMAN AUTENTIKASI (Login, Register, Lupa Password)   -->
+    <!-- 2. HALAMAN AUTENTIKASI (Login, Register)                 -->
     <!-- ======================================================== -->
     <section id="screenAuth" class="hidden flex-1 flex flex-col justify-between p-6 fade-in">
       <div>
@@ -181,16 +103,13 @@
           <div class="w-10"></div>
         </div>
 
-        <!-- Auth Tabs -->
+        <!-- Auth Tabs (Hanya Masuk & Daftar) -->
         <div class="flex bg-white/80 p-1 rounded-2xl shadow-sm mb-6 border border-brand-100">
           <button id="tabBtnLogin" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-400 text-white shadow-sm transition-all" data-i18n="auth_login_tab">
             Masuk
           </button>
           <button id="tabBtnRegister" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all" data-i18n="auth_register_tab">
             Daftar
-          </button>
-          <button id="tabBtnForgot" onclick="switchAuthTab('forgot')" class="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all" data-i18n="auth_forgot_tab">
-            Lupa Sandi
           </button>
         </div>
 
@@ -219,12 +138,11 @@
           </div>
 
           <!-- Pilihan Remember Me Checkbox -->
-          <div class="flex items-center justify-between text-xs pt-1">
+          <div class="flex items-center text-xs pt-1">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" id="loginRememberMe" class="rounded text-brand-500 focus:ring-brand-300" checked>
               <span class="text-slate-600" data-i18n="remember_me">Remember Me</span>
             </label>
-            <button onclick="switchAuthTab('forgot')" class="text-brand-600 font-semibold hover:underline" data-i18n="forgot_link">Lupa Password?</button>
           </div>
 
           <button onclick="handleLogin()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2" data-i18n="btn_login">
@@ -248,7 +166,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir (Untuk Pemulihan Akun)</label>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir</label>
             <input type="date" id="regBirthDate" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
           </div>
 
@@ -264,41 +182,6 @@
 
           <button onclick="handleRegister()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2" data-i18n="btn_register">
             Daftar Sekarang
-          </button>
-        </div>
-
-        <!-- FORM LUPA PASSWORD (Username + Tanggal Lahir) -->
-        <div id="formForgot" class="hidden bg-white rounded-3xl p-6 shadow-sm border border-brand-50 space-y-4">
-          <h2 class="text-xl font-bold text-slate-800" data-i18n="forgot_heading">Pulihkan Kata Sandi</h2>
-          <p class="text-xs text-slate-500" data-i18n="forgot_sub">Masukkan username dan tanggal lahir terdaftar Anda untuk verifikasi identitas.</p>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username</label>
-            <input type="text" id="forgotUsername" placeholder="Masukkan username Anda..." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir Terdaftar</label>
-            <input type="date" id="forgotBirthDate" class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
-          </div>
-
-          <div id="forgotNewPasswordContainer" class="hidden space-y-3 pt-2 border-t border-slate-100">
-            <div>
-              <label class="block text-xs font-bold text-emerald-600 mb-1" data-i18n="field_new_password">Kata Sandi Baru</label>
-              <div class="relative">
-                <input type="password" id="forgotNewPassword" placeholder="Sandi baru..." class="w-full px-4 pr-10 py-3 rounded-2xl border border-emerald-300 focus:border-emerald-500 outline-none text-sm" />
-                <button type="button" onclick="togglePasswordVisibility('forgotNewPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
-            </div>
-            <button onclick="handleResetPassword()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow transition-all text-sm" data-i18n="btn_save_password">
-              Simpan Kata Sandi Baru
-            </button>
-          </div>
-
-          <button id="btnVerifyForgot" onclick="handleVerifyForgot()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md transition-all text-sm" data-i18n="btn_verify">
-            Verifikasi Tanggal Lahir
           </button>
         </div>
       </div>
@@ -1259,397 +1142,21 @@
   <!-- ======================================================== -->
   <script>
     /* -------------------------------------------------------------
-       1. KONFIGURASI SUPABASE & GEMINI API
-       ------------------------------------------------------------- */
-    const SUPABASE_URL = "https://cdtshlzomxcbvhdwkpoi.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_TqdbLroelO8ioPnwdm309g_23NU3FCi";
-    
-    // Inisialisasi Supabase Client
-    let supabaseClient = null;
-    try {
-      if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.warn("Supabase init fallback:", e);
-    }
-
-    // Gemini API Key (Sesuai aturan panduan, apiKey kosong runtime disematkan)
-    const apiKey = "";
-
-    /* -------------------------------------------------------------
-       2. KAMUS BAHASA (i18n)
-       ------------------------------------------------------------- */
-    let currentLanguage = 'id'; // 'id' atau 'en'
-
-    const translations = {
-      id: {
-        onboard_title: "Keuanganku",
-        onboard_desc: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.",
-        onboard_btn: "Mulai",
-        auth_login_tab: "Masuk",
-        auth_register_tab: "Daftar",
-        auth_forgot_tab: "Lupa Sandi",
-        login_heading: "Selamat Datang Kembali",
-        login_sub: "Masuk menggunakan username dan kata sandi Anda",
-        field_username: "Username",
-        field_password: "Kata Sandi",
-        field_fullname: "Nama Lengkap",
-        field_birthdate: "Tanggal Lahir (Untuk Pemulihan Akun)",
-        remember_me: "Remember Me",
-        forgot_link: "Lupa Password?",
-        btn_login: "Masuk ke Dompet Pintar",
-        reg_heading: "Buat Akun Baru",
-        reg_sub: "Kelola uangmu lebih teratur mulai hari ini",
-        btn_register: "Daftar Sekarang",
-        forgot_heading: "Pulihkan Kata Sandi",
-        forgot_sub: "Masukkan username dan tanggal lahir terdaftar Anda untuk verifikasi identitas.",
-        btn_verify: "Verifikasi Tanggal Lahir",
-        field_new_password: "Kata Sandi Baru",
-        btn_save_password: "Simpan Kata Sandi Baru",
-        greeting: "Hi,",
-        my_money: "Uangku",
-        btn_expense: "Keluar",
-        btn_income: "Masuk",
-        btn_transfer: "Transfer",
-        btn_export: "Ekspor",
-        section_my_finance: "Keuanganku",
-        lbl_expense: "Pengeluaranku",
-        lbl_income: "Pemasukanku",
-        section_wallets: "Akun & Dompet Bank",
-        add_wallet: "Tambah Bank",
-        section_stats: "Statistik Aliran Kas",
-        section_recent_trans: "Transaksi Terakhir",
-        see_all: "Lihat Semua",
-        title_expense_breakdown: "Pengeluaranku",
-        lbl_total_spending: "Pengeluaran",
-        lbl_total: "Total",
-        lbl_category_breakdown: "Rincian Kategori",
-        nav_home: "Beranda",
-        nav_transactions: "Transaksi",
-        nav_budget: "Rencana",
-        nav_insights: "Laporan",
-        nav_settings: "Profil",
-        add_trans: "Catat",
-        set_budget: "Set Budget",
-        monthly_budget_status: "Batas Pengeluaran Bulanan",
-        setting_lang: "Bahasa / Language",
-        setting_notif: "Notifikasi Pengingat Transaksi",
-        btn_logout: "Keluar Akun",
-      },
-      en: {
-        onboard_title: "My Finance",
-        onboard_desc: "Track your finances carefully starting from monthly to daily income and expenses.",
-        onboard_btn: "Get Started",
-        auth_login_tab: "Login",
-        auth_register_tab: "Register",
-        auth_forgot_tab: "Forgot Pass",
-        login_heading: "Welcome Back",
-        login_sub: "Login using your username and password",
-        field_username: "Username",
-        field_password: "Password",
-        field_fullname: "Full Name",
-        field_birthdate: "Birth Date (For Account Recovery)",
-        remember_me: "Remember Me",
-        forgot_link: "Forgot Password?",
-        btn_login: "Sign In to Dompet Pintar",
-        reg_heading: "Create an Account",
-        reg_sub: "Organize your money better starting today",
-        btn_register: "Register Now",
-        forgot_heading: "Recover Password",
-        forgot_sub: "Enter your registered username and birth date for identity verification.",
-        btn_verify: "Verify Birth Date",
-        field_new_password: "New Password",
-        btn_save_password: "Save New Password",
-        greeting: "Hi,",
-        my_money: "My Money",
-        btn_expense: "Expense",
-        btn_income: "Income",
-        btn_transfer: "Transfer",
-        btn_export: "Export",
-        section_my_finance: "My Finance",
-        lbl_expense: "My Expenses",
-        lbl_income: "My Incomes",
-        section_wallets: "Bank Accounts & Wallets",
-        add_wallet: "Add Bank",
-        section_stats: "Cashflow Stats",
-        section_recent_trans: "Recent Transactions",
-        see_all: "See All",
-        title_expense_breakdown: "My Expenses",
-        lbl_total_spending: "Spending",
-        lbl_total: "Total",
-        lbl_category_breakdown: "Category Breakdown",
-        nav_home: "Home",
-        nav_transactions: "Transactions",
-        nav_budget: "Plans",
-        nav_insights: "Reports",
-        nav_settings: "Profile",
-        add_trans: "Add",
-        set_budget: "Set Budget",
-        monthly_budget_status: "Monthly Spending Limits",
-        setting_lang: "Language / Bahasa",
-        setting_notif: "Daily Reminder Notification",
-        btn_logout: "Log Out",
-      }
-    };
-
-    function toggleLanguage() {
-      currentLanguage = currentLanguage === 'id' ? 'en' : 'id';
-      applyLanguage();
-      showToast(currentLanguage === 'id' ? "Bahasa diubah ke Indonesia" : "Language changed to English");
-    }
-
-    function applyLanguage() {
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[currentLanguage][key]) {
-          el.innerText = translations[currentLanguage][key];
-        }
-      });
-      document.getElementById('langLabelOnboard').innerText = currentLanguage.toUpperCase();
-      document.getElementById('currentLangDesc').innerText = currentLanguage === 'id' ? 'Bahasa Indonesia' : 'English (US)';
-    }
-
-    /* -------------------------------------------------------------
-       3. KURS MATA UANG (MULTI-CURRENCY)
-       ------------------------------------------------------------- */
-    let selectedCurrency = 'IDR';
-    const currencyRates = {
-      IDR: { symbol: 'Rp', rate: 1, decimals: 0 },
-      USD: { symbol: '$', rate: 0.000064, decimals: 2 },
-      SGD: { symbol: 'S$', rate: 0.000086, decimals: 2 },
-      EUR: { symbol: '€', rate: 0.000059, decimals: 2 },
-      JPY: { symbol: '¥', rate: 0.0098, decimals: 0 }
-    };
-
-    function formatCurrency(amountIDR) {
-      if (isHideNominal) return '••••••••';
-      const conf = currencyRates[selectedCurrency];
-      const converted = amountIDR * conf.rate;
-      if (selectedCurrency === 'IDR') {
-        return 'Rp ' + Math.round(converted).toLocaleString('id-ID');
-      }
-      return conf.symbol + ' ' + converted.toLocaleString('en-US', { minimumFractionDigits: conf.decimals, maximumFractionDigits: conf.decimals });
-    }
-
-    function changeCurrency(curr) {
-      selectedCurrency = curr;
-      document.getElementById('transCurrencyPrefix').innerText = currencyRates[curr].symbol;
-      renderAll();
-      showToast(`Mata uang diubah ke ${curr}`);
-    }
-
-    let isHideNominal = false;
-    function toggleHideNominal() {
-      isHideNominal = !isHideNominal;
-      const icon = document.getElementById('hideNominalIcon');
-      if (isHideNominal) {
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-        showToast("Nominal disembunyikan");
-      } else {
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-        showToast("Nominal ditampilkan");
-      }
-      renderAll();
-    }
-
-    /* -------------------------------------------------------------
-       4. KATEGORI & PRESET BANK INDONESIA
-       ------------------------------------------------------------- */
-    const defaultExpenseCategories = [
-      { id: 'topup', name: 'Top up wallet', color: '#06b6d4', icon: 'fa-wallet' },
-      { id: 'tax', name: 'Biaya dan pajak', color: '#f59e0b', icon: 'fa-file-invoice-dollar' },
-      { id: 'food', name: 'Makanan & Minuman', color: '#fb923c', icon: 'fa-utensils' },
-      { id: 'transport', name: 'Transportasi', color: '#38bdf8', icon: 'fa-car' },
-      { id: 'shopping', name: 'Belanja', color: '#ec4899', icon: 'fa-bag-shopping' },
-      { id: 'bills', name: 'Tagihan & Utilitas', color: '#6366f1', icon: 'fa-bolt' },
-      { id: 'entertainment', name: 'Hiburan', color: '#a855f7', icon: 'fa-film' },
-      { id: 'health', name: 'Kesehatan', color: '#ef4444', icon: 'fa-heart-pulse' },
-      { id: 'other', name: 'Belum terkategori', color: '#94a3b8', icon: 'fa-ellipsis' }
-    ];
-
-    const defaultIncomeCategories = [
-      { id: 'salary', name: 'Gaji Bulanan', color: '#22c55e', icon: 'fa-money-bill-wave' },
-      { id: 'business', name: 'Usaha & Bisnis', color: '#10b981', icon: 'fa-store' },
-      { id: 'freelance', name: 'Freelance & Side Job', color: '#14b8a6', icon: 'fa-laptop-code' },
-      { id: 'investment', name: 'Investasi & Bunga', color: '#06b6d4', icon: 'fa-chart-line' },
-      { id: 'gift', name: 'Bonus & Hadiah', color: '#eab308', icon: 'fa-gift' },
-      { id: 'inc_other', name: 'Pemasukan Lainnya', color: '#64748b', icon: 'fa-plus' }
-    ];
-
-    const bankColorMap = {
-      BCA: { bg: 'bg-blue-600', text: 'text-white', badge: 'BCA' },
-      BRI: { bg: 'bg-blue-800', text: 'text-white', badge: 'BRI' },
-      MANDIRI: { bg: 'bg-amber-500', text: 'text-white', badge: 'MANDIRI' },
-      SEABANK: { bg: 'bg-orange-500', text: 'text-white', badge: 'SEABANK' },
-      BNI: { bg: 'bg-teal-600', text: 'text-white', badge: 'BNI' },
-      BTN: { bg: 'bg-yellow-500', text: 'text-slate-900', badge: 'BTN' },
-      BSI: { bg: 'bg-emerald-700', text: 'text-white', badge: 'BSI' },
-      JAGO: { bg: 'bg-yellow-400', text: 'text-slate-900', badge: 'JAGO' },
-      DANA: { bg: 'bg-sky-500', text: 'text-white', badge: 'DANA' },
-      GOPAY: { bg: 'bg-emerald-500', text: 'text-white', badge: 'GOPAY' },
-      OVO: { bg: 'bg-purple-600', text: 'text-white', badge: 'OVO' },
-      SHOPEEPAY: { bg: 'bg-orange-600', text: 'text-white', badge: 'SHOPEEPAY' },
-      TUNAI: { bg: 'bg-slate-700', text: 'text-white', badge: 'TUNAI' },
-      CUSTOM: { bg: 'bg-slate-800', text: 'text-white', badge: 'BANK' }
-    };
-
-    /* -------------------------------------------------------------
-       5. STATE GLOBAL APLIKASI
-       ------------------------------------------------------------- */
-    let currentUser = null;
-    let transactions = [];
-    let wallets = [];
-    let budgets = [];
-    let goals = [];
-    let recurringBills = [];
-    let challenges = [];
-    let notifications = [];
-
-    // Inisialisasi Data Awal saat Pengguna Pertama Kali Masuk
-    function initializeUserData(user) {
-      currentUser = user;
-      
-      wallets = [
-        { id: 'w1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '84920192', balance: 35000000 },
-        { id: 'w2', name: 'SeaBank Tabungan', bankCode: 'SEABANK', accountNumber: '9012384', balance: 10000000 },
-        { id: 'w3', name: 'Dompet GoPay', bankCode: 'GOPAY', accountNumber: '0812345678', balance: 3000000 },
-        { id: 'w4', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', balance: 2000000 }
-      ];
-
-      // Transaksi bawaan yang menghasilkan persis Rp 20.000.000 pengeluaran seperti di screenshot
-      transactions = [
-        { id: 't1', type: 'expense', amount: 10000000, category: 'Top up wallet', walletId: 'w1', date: getTodayISO(), note: 'Top up tabungan SeaBank' },
-        { id: 't2', type: 'expense', amount: 5000000, category: 'Biaya dan pajak', walletId: 'w1', date: getTodayISO(), note: 'Pajak tahunan & administrasi' },
-        { id: 't3', type: 'expense', amount: 3000000, category: 'Belum terkategori', walletId: 'w2', date: getTodayISO(), note: 'Keperluan mendadak' },
-        { id: 't4', type: 'expense', amount: 2000000, category: 'Makanan & Minuman', walletId: 'w3', date: getTodayISO(), note: 'Katering bulanan' },
-        { id: 't5', type: 'income', amount: 10000000, category: 'Gaji Bulanan', walletId: 'w1', date: getTodayISO(), note: 'Gaji pokok bulanan' }
-      ];
-
-      budgets = [
-        { category: 'Makanan & Minuman', limit: 3000000 },
-        { category: 'Top up wallet', limit: 12000000 },
-        { category: 'Biaya dan pajak', limit: 6000000 }
-      ];
-
-      goals = [
-        { id: 'g1', title: 'Beli iPhone / Gadget', target: 20000000, current: 12500000, deadline: '2026-12-31' },
-        { id: 'g2', title: 'Dana Darurat 6 Bulan', target: 30000000, current: 18000000, deadline: '2027-06-30' }
-      ];
-
-      recurringBills = [
-        { id: 'r1', name: 'Langganan Netflix 4K', type: 'expense', amount: 186000, interval: 'monthly', category: 'Hiburan', walletId: 'w3' },
-        { id: 'r2', name: 'WiFi Fiber Rumah', type: 'expense', amount: 385000, interval: 'monthly', category: 'Tagihan & Utilitas', walletId: 'w1' }
-      ];
-
-      challenges = [
-        { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 4, xp: 50, completed: false },
-        { id: 'c2', title: 'Zero Impulse Shopping Weekend', daysTotal: 3, daysCurrent: 3, xp: 40, completed: true }
-      ];
-
-      notifications = [
-        { id: 'n1', title: 'Pengingat Transaksi', text: 'Jangan lupa catat pengeluaran harianmu hari ini.', time: 'Baru saja', read: false },
-        { id: 'n2', title: 'Budget Terpantau Baik', text: 'Pengeluaran makan masih di bawah 70% dari batas.', time: '2 jam lalu', read: false }
-      ];
-
-      saveToLocal();
-    }
-
-    function getTodayISO() {
-      const d = new Date();
-      return d.toISOString().split('T')[0];
-    }
-
-    function saveToLocal() {
-      if (!currentUser) return;
-      const data = {
-        user: currentUser,
-        transactions,
-        wallets,
-        budgets,
-        goals,
-        recurringBills,
-        challenges,
-        notifications
-      };
-      localStorage.setItem(`dompet_pintar_${currentUser.username}`, JSON.stringify(data));
-      // Bila Supabase aktif, simpan juga secara asynchronous
-      syncToSupabase(data);
-    }
-
-    function loadFromLocal(username) {
-      const raw = localStorage.getItem(`dompet_pintar_${username}`);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          currentUser = parsed.user;
-          transactions = parsed.transactions || [];
-          wallets = parsed.wallets || [];
-          budgets = parsed.budgets || [];
-          goals = parsed.goals || [];
-          recurringBills = parsed.recurringBills || [];
-          challenges = parsed.challenges || [];
-          notifications = parsed.notifications || [];
-          return true;
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      return false;
-    }
-
-    async function syncToSupabase(data) {
-      if (!supabaseClient) return;
-      try {
-        // Coba simpan ke Supabase jika tabel 'user_finance' dibuat
-        await supabaseClient.from('user_finance').upsert({
-          username: data.user.username,
-          data: data,
-          updated_at: new Date().toISOString()
-        });
-      } catch (err) {
-        // Diam tanpa mengganggu alur aplikasi utama
-      }
-    }
-
-    /* -------------------------------------------------------------
-       6. SHOW / HIDE PASSWORD HANDLERS
-       ------------------------------------------------------------- */
-    function togglePasswordVisibility(inputId, btn) {
-      const input = document.getElementById(inputId);
-      const icon = btn.querySelector('i');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
-
-    function syncPasswordVisibilityCheckbox(inputId, isChecked) {
-      const input = document.getElementById(inputId);
-      input.type = isChecked ? 'text' : 'password';
-    }
-
-    /* -------------------------------------------------------------
-       7. AUTENTIKASI: DAFTAR, LOGIN, LUPA PASSWORD
+       7. AUTENTIKASI: DAFTAR & LOGIN
        ------------------------------------------------------------- */
     function switchAuthTab(tab) {
-      const tabs = ['login', 'register', 'forgot'];
+      const tabs = ['login', 'register'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tabBtn${capitalize(t)}`);
         const form = document.getElementById(`form${capitalize(t)}`);
-        if (t === tab) {
-          btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-400 text-white shadow-sm transition-all';
-          form.classList.remove('hidden');
-        } else {
-          btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all';
-          form.classList.add('hidden');
+        if (btn && form) {
+          if (t === tab) {
+            btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-400 text-white shadow-sm transition-all';
+            form.classList.remove('hidden');
+          } else {
+            btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all';
+            form.classList.add('hidden');
+          }
         }
       });
     }
@@ -1741,49 +1248,6 @@
 
       showToast(`Berhasil masuk! Halo ${userRecord.fullname}.`);
       enterApp(userRecord);
-    }
-
-    let verifiedResetUser = null;
-    function handleVerifyForgot() {
-      const username = document.getElementById('forgotUsername').value.trim().toLowerCase();
-      const birthdate = document.getElementById('forgotBirthDate').value;
-
-      if (!username || !birthdate) {
-        showToast("Harap isi username dan tanggal lahir!", "error");
-        return;
-      }
-
-      const userRecordRaw = localStorage.getItem(`dompet_pintar_auth_${username}`);
-      if (!userRecordRaw) {
-        showToast("Username tidak terdaftar.", "error");
-        return;
-      }
-
-      const userRecord = JSON.parse(userRecordRaw);
-      if (userRecord.birthdate !== birthdate) {
-        showToast("Tanggal lahir tidak cocok dengan data pendaftaran!", "error");
-        return;
-      }
-
-      verifiedResetUser = userRecord;
-      document.getElementById('forgotNewPasswordContainer').classList.remove('hidden');
-      document.getElementById('btnVerifyForgot').classList.add('hidden');
-      showToast("Identitas terverifikasi! Silakan masukkan kata sandi baru.");
-    }
-
-    function handleResetPassword() {
-      const newPass = document.getElementById('forgotNewPassword').value;
-      if (!newPass || newPass.length < 6) {
-        showToast("Sandi baru minimal 6 karakter!", "error");
-        return;
-      }
-
-      verifiedResetUser.password = newPass;
-      localStorage.setItem(`dompet_pintar_auth_${verifiedResetUser.username}`, JSON.stringify(verifiedResetUser));
-      showToast("Kata sandi berhasil diperbarui! Silakan masuk.");
-      switchAuthTab('login');
-      document.getElementById('loginUsername').value = verifiedResetUser.username;
-      document.getElementById('loginPassword').value = '';
     }
 
     function handleLogout() {
