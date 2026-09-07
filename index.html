@@ -1155,11 +1155,6 @@
           <input type="number" id="savingsAmountInput" placeholder="0" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-lg font-bold text-slate-800 outline-none" />
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">Ambil Dari Dompet / Bank</label>
-          <select id="savingsWalletSource" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
-        </div>
-
         <button onclick="executeAddSavings()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow text-sm">
           Konfirmasi Menabung
         </button>
@@ -2805,17 +2800,19 @@
     function openAddSavingsToGoalModal(goalId) {
       const g = goals.find(x => x.id === goalId);
       if (!g) return;
+      if (g.current >= g.target) {
+        showToast("Target ini sudah 100% selesai!", "error");
+        return;
+      }
       document.getElementById('selectedGoalId').value = goalId;
       document.getElementById('addSavingsModalTitle').innerText = `Nabung untuk "${g.title}"`;
       document.getElementById('savingsAmountInput').value = '';
-      populateWalletDropdown('savingsWalletSource');
       openModal('modalAddSavingsToGoal');
     }
 
     function executeAddSavings() {
       const goalId = document.getElementById('selectedGoalId').value;
       const amount = parseFloat(document.getElementById('savingsAmountInput').value);
-      const walletId = document.getElementById('savingsWalletSource').value;
 
       if (!amount || amount <= 0) {
         showToast("Nominal tidak valid!", "error");
@@ -2825,33 +2822,39 @@
       const g = goals.find(x => x.id === goalId);
       if (!g) return;
 
+      if (g.current >= g.target) {
+        showToast("Target ini sudah 100% tercapai dan selesai!", "error");
+        closeModal('modalAddSavingsToGoal');
+        return;
+      }
+
+      // Menabung langsung nominal kustom tanpa memotong dompet/bank
       g.current += amount;
-
-      transactions.unshift({
-        id: 't_' + Date.now(),
-        type: 'expense',
-        amount: amount,
-        category: 'Top up wallet',
-        walletId: walletId,
-        date: getTodayISO(),
-        note: `Nabung impian: ${g.title}`
-      });
-
-      recalculateWalletBalances();
       addXp(20);
 
       if (g.current >= g.target) {
+        g.current = g.target;
         if (window.confetti) {
           window.confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
         }
-        showToast(`🎉 Luar biasa! Target "${g.title}" telah tercapai!`);
+        showToast(`🎉 Luar biasa! Target "${g.title}" telah tercapai 100%!`);
       } else {
         showToast(`Berhasil menambah tabungan ${formatCurrency(amount)}!`);
       }
 
       saveToLocal();
-      renderAll();
+      renderGoals();
       closeModal('modalAddSavingsToGoal');
+    }
+
+    function deleteGoal(goalId) {
+      const g = goals.find(x => x.id === goalId);
+      openConfirmModal("Hapus Target", `Yakin ingin menghapus target "${g?.title || 'ini'}"?`, () => {
+        goals = goals.filter(x => x.id !== goalId);
+        saveToLocal();
+        renderGoals();
+        showToast("Target impian berhasil dihapus.");
+      });
     }
 
     function renderGoals() {
@@ -2865,6 +2868,7 @@
       container.innerHTML = goals.map(g => {
         const percent = Math.min(100, Math.round((g.current / g.target) * 100));
         const remaining = Math.max(0, g.target - g.current);
+        const isDone = g.current >= g.target || percent >= 100;
 
         return `
           <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
@@ -2873,7 +2877,12 @@
                 <h4 class="font-bold text-sm text-slate-800">${g.title}</h4>
                 <p class="text-[11px] text-slate-400">Target s.d. ${g.deadline || '-'}</p>
               </div>
-              <span class="text-xs font-extrabold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full">${percent}%</span>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-extrabold ${isDone ? 'text-emerald-600 bg-emerald-50' : 'text-brand-600 bg-brand-50'} px-2.5 py-1 rounded-full">${percent}%</span>
+                <button onclick="deleteGoal('${g.id}')" class="w-7 h-7 rounded-full bg-slate-100 text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs transition-all" title="Hapus Target">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </div>
 
             <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
@@ -2891,9 +2900,15 @@
               </div>
             </div>
 
-            <button onclick="openAddSavingsToGoalModal('${g.id}')" class="w-full py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5">
+            ${isDone ? `
+            <button disabled class="w-full py-2.5 bg-slate-100 text-slate-400 font-bold rounded-2xl text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none">
+              <i class="fa-solid fa-circle-check text-emerald-500"></i> Target Tercapai (Selesai)
+            </button>
+            ` : `
+            <button onclick="openAddSavingsToGoalModal('${g.id}')" class="w-full py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
               <i class="fa-solid fa-piggy-bank"></i> Nabung Sekarang
             </button>
+            `}
           </div>
         `;
       }).join('');
@@ -3492,7 +3507,8 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
 
       container.innerHTML = recents.map(t => {
         const isExp = t.type === 'expense';
-        const walletName = wallets.find(w => w.id === t.walletId)?.name || 'Dompet';
+        const wObj = wallets.find(w => w.id === t.walletId);
+        const bankName = bankColorMap[wObj?.bankCode]?.badge || wObj?.bankCode || wObj?.name || 'Bank';
         return `
           <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -3501,7 +3517,7 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
               </div>
               <div>
                 <p class="text-xs font-bold text-slate-800">${t.category}</p>
-                <p class="text-[10px] text-slate-400">${walletName} • ${t.date}</p>
+                <p class="text-[10px] text-slate-400 font-semibold">${bankName} • ${t.date}</p>
               </div>
             </div>
             <div class="text-right">
@@ -3538,7 +3554,8 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
 
       container.innerHTML = filtered.map(t => {
         const isExp = t.type === 'expense';
-        const walletName = wallets.find(w => w.id === t.walletId)?.name || 'Dompet';
+        const wObj = wallets.find(w => w.id === t.walletId);
+        const bankName = bankColorMap[wObj?.bankCode]?.badge || wObj?.bankCode || wObj?.name || 'Bank';
         return `
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -3547,7 +3564,7 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
               </div>
               <div>
                 <p class="text-xs font-bold text-slate-800">${t.category}</p>
-                <p class="text-[10px] text-slate-400">${walletName} • ${t.date}</p>
+                <p class="text-[10px] text-slate-400 font-semibold">${bankName} • ${t.date}</p>
                 ${t.note ? `<p class="text-[10px] text-slate-500 italic mt-0.5">${t.note}</p>` : ''}
               </div>
             </div>
