@@ -1801,6 +1801,9 @@
         return;
       }
 
+      // Pastikan data lama dari akun terdahulu yang sudah dihapus dibersihkan tuntas
+      localStorage.removeItem(`dompet_pintar_${username}`);
+
       const userData = {
         username,
         fullname,
@@ -1880,14 +1883,41 @@
     function confirmDeleteAccount() {
       openConfirmModal(
         "Hapus Akun Permanen",
-        "Semua data transaksi, dompet, dan target akan dihapus total sesuai aturan privasi GDPR.",
-        () => {
+        "Semua data transaksi, dompet, dan target akan dihapus total sesuai aturan privasi GDPR. Username Anda akan tersedia kembali.",
+        async () => {
           if (currentUser) {
-            localStorage.removeItem(`dompet_pintar_auth_${currentUser.username}`);
-            localStorage.removeItem(`dompet_pintar_${currentUser.username}`);
+            const targetUsername = (currentUser.username || '').toLowerCase();
+
+            // 1. Hapus kredensial autentikasi agar username langsung tersedia untuk registrasi ulang
+            localStorage.removeItem(`dompet_pintar_auth_${targetUsername}`);
+            
+            // 2. Hapus seluruh data finansial lokal akun ini
+            localStorage.removeItem(`dompet_pintar_${targetUsername}`);
+            localStorage.removeItem('dompet_pintar_current_user');
+
+            // 3. Hapus data akun dari cloud database Supabase jika tersinkronisasi
+            if (supabaseClient && targetUsername) {
+              try {
+                await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
+              } catch (err) {
+                console.warn("Supabase record delete notice:", err);
+              }
+            }
+
+            // 4. Bersihkan state data aktif di memori aplikasi
+            currentUser = null;
+            transactions = [];
+            wallets = [];
+            budgets = [];
+            goals = [];
+            recurringBills = [];
+            challenges = [];
+            notifications = [];
           }
-          handleLogout();
-          showToast("Akun dan data Anda telah berhasil dihapus.");
+
+          // Kembali ke halaman onboarding awal
+          showScreen('screenOnboarding');
+          showToast("Akun berhasil dihapus permanen. Username kini dapat didaftarkan kembali.");
         }
       );
     }
