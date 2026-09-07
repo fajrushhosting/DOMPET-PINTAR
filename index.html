@@ -1346,7 +1346,8 @@
     }
 
     /* Gemini AI API configuration */
-    const apiKey = ""; // Runtime Gemini key
+    const GEMINI_API_KEY = "AQ.Ab8RN6JqZRY9-qDQ1YIHw0eyfGPhuJy6Ig1FmGUF8jumZBhC8w";
+    const apiKey = GEMINI_API_KEY;
 
     /* =========================================================================
        SISTEM APP HYBRID (PWA ENGINE & NATIVE INSTALL PROMPT)
@@ -1780,7 +1781,7 @@
       });
     }
 
-    function handleRegister() {
+    async function handleRegister() {
       const fullname = document.getElementById('regFullName').value.trim();
       const username = document.getElementById('regUsername').value.trim().toLowerCase();
       const birthdate = document.getElementById('regBirthDate').value;
@@ -1795,9 +1796,32 @@
         return;
       }
 
+      // 1. Periksa ketersediaan username di Cloud Database Supabase
+      let isTakenInCloud = false;
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_finance')
+            .select('username')
+            .eq('username', username)
+            .maybeSingle();
+          if (data && data.username) {
+            isTakenInCloud = true;
+          }
+        } catch (e) {
+          console.warn("Supabase check notice:", e);
+        }
+      }
+
+      // Jika di cloud TIDAK ADA (misal akun telah dihapus permanen), bersihkan sisa cache lokal
+      if (!isTakenInCloud) {
+        localStorage.removeItem(`dompet_pintar_auth_${username}`);
+        localStorage.removeItem(`dompet_pintar_${username}`);
+      }
+
       const existingUser = localStorage.getItem(`dompet_pintar_auth_${username}`);
-      if (existingUser) {
-        showToast("Username sudah digunakan, silakan pilih yang lain.", "error");
+      if (isTakenInCloud || existingUser) {
+        showToast("Username sudah digunakan, silakan pilih yang lain atau masuk.", "error");
         return;
       }
 
@@ -2195,6 +2219,7 @@
 
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
         return `
           <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl flex items-center justify-between transition-all">
             <div class="flex items-center gap-3 min-w-0">
@@ -2207,6 +2232,10 @@
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
+              ${accNum ? `
+              <button onclick="copyAccountNumber('${accNum}', event)" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening">
+                <i class="fa-regular fa-copy"></i>
+              </button>` : ''}
               <button onclick="openEditWalletModal('${w.id}')" class="w-8 h-8 rounded-xl bg-white text-brand-600 hover:bg-brand-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Ubah Bank">
                 <i class="fa-solid fa-pen"></i>
               </button>
@@ -2702,45 +2731,79 @@
       
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Menganalisis...</span>`;
-      box.innerHTML = `<div class="flex items-center justify-center gap-2 text-brand-200"><i class="fa-solid fa-spinner fa-spin"></i> Membaca pola pengeluaran dengan AI...</div>`;
+      box.innerHTML = `<div class="flex items-center justify-center gap-2 text-brand-200"><i class="fa-solid fa-spinner fa-spin"></i> Membaca pola pengeluaran aktual kamu dengan AI...</div>`;
 
+      // 1. Validasi: Jika transaksi masih kosong, informasikan secara jelas
+      if (!transactions || transactions.length === 0) {
+        setTimeout(() => {
+          box.innerHTML = `
+            <div class="text-left space-y-1.5 text-xs">
+              <p class="font-bold text-white">📊 Data Transaksi Belum Tersedia</p>
+              <p class="text-slate-300">AI Assistant belum menemukan catatan pengeluaran maupun pemasukan pada akun Anda.</p>
+              <p class="text-brand-300">💡 <i>Silakan catat minimal satu transaksi pengeluaran atau pemasukan agar AI dapat menganalisis data keuangan Anda secara akurat.</i></p>
+            </div>
+          `;
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> <span>Analisis AI</span>`;
+          showToast("Catat transaksi terlebih dahulu untuk dianalisis AI.", "error");
+        }, 400);
+        return;
+      }
+
+      // 2. Kumpulkan metrik aktual dari transaksi nyata
       const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
       const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const netCashflow = totalIncome - totalExpense;
+      const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
+
       const categoryMap = {};
       transactions.filter(t => t.type === 'expense').forEach(t => {
         categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
       });
 
+      const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
+      const topCategoryName = sortedCategories.length > 0 ? sortedCategories[0][0] : "Belum ada";
+      const topCategoryAmount = sortedCategories.length > 0 ? sortedCategories[0][1] : 0;
+      const topCategoryPct = totalExpense > 0 ? Math.round((topCategoryAmount / totalExpense) * 100) : 0;
+
+      const recentSamples = transactions.slice(0, 5).map(t => 
+        `- ${t.date}: [${t.type === 'expense' ? 'Keluar' : 'Masuk'}] ${t.category} sebesar ${formatCurrency(t.amount)} (${t.note || '-'})`
+      ).join('\n');
+
       const promptText = `
-Sebagai konsultan keuangan aplikasi "Dompet Pintar":
-Data Pengguna:
-- Total Pemasukan: Rp ${totalIncome.toLocaleString('id-ID')}
-- Total Pengeluaran: Rp ${totalExpense.toLocaleString('id-ID')}
-- Kategori Pengeluaran: ${JSON.stringify(categoryMap)}
-- Jumlah Rekening: ${wallets.length} rekening
+Data Keuangan Pengguna (${currentUser?.fullname || 'Pengguna'}):
+- Total Pemasukan: ${formatCurrency(totalIncome)}
+- Total Pengeluaran: ${formatCurrency(totalExpense)}
+- Saldo Arus Kas Bersih: ${formatCurrency(netCashflow)}
+- Savings Rate: ${savingsRate}%
+- Kategori Pengeluaran Terbesar: ${topCategoryName} (${formatCurrency(topCategoryAmount)} / ${topCategoryPct}% dari total)
+- Rincian Pengeluaran per Kategori: ${JSON.stringify(categoryMap)}
+- Sampel Transaksi Terkini:
+${recentSamples}
 
-Berikan audit singkat, tajam, dan solutif dalam 3 poin:
-1. 💡 Deteksi Bocor Halus
-2. 🎯 Tips Hemat Cerdas
-3. 📈 Rasio Finansial & Apresiasi
-Bahasa Indonesia santun, profesional, dan memotivasi.
-`;
+Instruksi:
+Berikan audit keuangan yang 100% SESUAI data aktual di atas dalam 3 poin:
+1. 💡 Deteksi Bocor Halus: Bahas pengeluaran kategori ${topCategoryName}.
+2. 🎯 Tips Hemat Cerdas: Saran relevan untuk menghemat pengeluaran tersebut.
+3. 📈 Rasio Finansial & Apresiasi: Bahas tabungan (${savingsRate}%) dan arus kas ${netCashflow >= 0 ? 'surplus' : 'defisit'}.
+Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
 
-      const systemPrompt = "Anda adalah penasihat keuangan digital profesional di aplikasi Dompet Pintar.";
+      const systemPrompt = "Anda adalah penasihat keuangan digital profesional di aplikasi Dompet Pintar. Analisis wajib 100% akurat terhadap data transaksi nyata pengguna.";
 
       try {
         const resultText = await callGeminiWithBackoff(promptText, systemPrompt);
         box.innerHTML = `<div class="text-left space-y-1.5">${formatMarkdown(resultText)}</div>`;
-        showToast("Analisis AI selesai diperbarui!");
+        showToast("Analisis AI selesai diperbarui sesuai transaksi Anda!");
       } catch (err) {
+        // Fallback dinamis cerdas berbasis data nyata jika koneksi API terhambat
         box.innerHTML = `
           <div class="text-left space-y-1 text-xs">
-            <p>💡 <b>Deteksi Bocor Halus:</b> Pengeluaran kategori Top Up & Makanan mendominasi pengeluaran rutin.</p>
-            <p>🎯 <b>Tips Hemat:</b> Terapkan batasan belanja harian maksimal Rp 50.000 untuk menekan pengeluaran mikro.</p>
-            <p>📈 <b>Rasio Finansial:</b> Aliran kasmu positif. Pertahankan konsistensi mencatat setiap hari!</p>
+            <p>💡 <b>Deteksi Bocor Halus:</b> Pengeluaran terbesar Anda saat ini berada pada kategori <b>${topCategoryName}</b> sebesar <b>${formatCurrency(topCategoryAmount)}</b> (${topCategoryPct}% dari total pengeluaran).</p>
+            <p>🎯 <b>Tips Hemat:</b> ${topCategoryAmount > 0 ? `Tetapkan batas anggaran bulanan untuk kategori <b>${topCategoryName}</b> agar pengeluaran tetap terkontrol.` : 'Pertahankan kedisiplinan keuangan Anda!'}</p>
+            <p>📈 <b>Rasio Finansial:</b> Savings rate Anda berada di angka <b>${savingsRate}%</b> dengan arus kas <b>${netCashflow >= 0 ? 'surplus ' + formatCurrency(netCashflow) : 'defisit ' + formatCurrency(Math.abs(netCashflow))}</b>. ${netCashflow >= 0 ? 'Kondisi kas sehat, pertahankan!' : 'Perlu evaluasi pengeluaran mikro.'}</p>
           </div>
         `;
-        showToast("Menampilkan ringkasan audit finansial berbasis data lokal.");
+        showToast("Menampilkan ringkasan audit finansial berbasis data riil Anda.");
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> <span>Analisis AI</span>`;
@@ -2992,6 +3055,7 @@ Bahasa Indonesia santun, profesional, dan memotivasi.
       if (!container) return;
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
         return `
           <div class="min-w-[150px] p-4 rounded-3xl ${style.bg} ${style.text} shadow-md flex flex-col justify-between shrink-0 transition-transform active:scale-95">
             <div class="flex justify-between items-center mb-3">
@@ -3001,10 +3065,51 @@ Bahasa Indonesia santun, profesional, dan memotivasi.
             <div>
               <p class="text-[10px] opacity-80 truncate">${w.name}</p>
               <p class="text-xs font-black tracking-tight mt-0.5">${formatCurrency(w.balance)}</p>
+              ${accNum ? `
+              <button onclick="copyAccountNumber('${accNum}', event)" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening">
+                <span class="truncate max-w-[85px]">${accNum}</span>
+                <i class="fa-regular fa-copy text-[9px]"></i>
+              </button>` : ''}
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    /* Fungsi Salin Nomor Rekening Bank */
+    function copyAccountNumber(accNumber, event) {
+      if (event) event.stopPropagation();
+      if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined') {
+        showToast("Nomor rekening belum diatur pada akun ini.", "error");
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(accNumber).then(() => {
+          showToast(`Nomor rekening ${accNumber} berhasil disalin!`);
+        }).catch(() => {
+          fallbackCopyText(accNumber);
+        });
+      } else {
+        fallbackCopyText(accNumber);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Nomor rekening ${text} berhasil disalin!`);
+      } catch (err) {
+        showToast("Gagal menyalin nomor rekening.", "error");
+      }
+      document.body.removeChild(textArea);
     }
 
     function renderDashboardSummary() {
