@@ -1365,6 +1365,7 @@
 
     let temp2FASecret = null;
     let pendingLoginUser = null;
+    let pendingRememberMe = true;
 
     /* =========================================================================
        SISTEM AUTENTIKASI 2 FAKTOR (TOTP - GOOGLE AUTHENTICATOR)
@@ -1864,11 +1865,22 @@
           return;
         }
 
+        const isRemember = document.getElementById('rememberMeCheck')?.checked ?? true;
+
         if (authUser.twoFactorEnabled && authUser.twoFactorSecret) {
           pendingLoginUser = userPayload;
+          pendingRememberMe = isRemember;
           document.getElementById('login2FaCode').value = '';
           openModal('modal2FAVerifyLogin');
           return;
+        }
+
+        if (isRemember) {
+          localStorage.setItem('dp_remember_user', username);
+          sessionStorage.removeItem('dp_session_user');
+        } else {
+          localStorage.removeItem('dp_remember_user');
+          sessionStorage.setItem('dp_session_user', username);
         }
 
         loadFromSupabaseData(userPayload);
@@ -1900,6 +1912,15 @@
       }
 
       closeModal('modal2FAVerifyLogin');
+
+      if (pendingRememberMe) {
+        localStorage.setItem('dp_remember_user', pendingLoginUser.user.username);
+        sessionStorage.removeItem('dp_session_user');
+      } else {
+        localStorage.removeItem('dp_remember_user');
+        sessionStorage.setItem('dp_session_user', pendingLoginUser.user.username);
+      }
+
       loadFromSupabaseData(pendingLoginUser);
       syncDailyChallenges();
       pendingLoginUser = null;
@@ -1908,6 +1929,8 @@
     }
 
     function handleLogout() {
+      localStorage.removeItem('dp_remember_user');
+      sessionStorage.removeItem('dp_session_user');
       currentUser = null;
       transactions = [];
       wallets = [];
@@ -1926,6 +1949,8 @@
         "Hapus Akun Permanen",
         "Semua data transaksi, dompet, dan target akan dihapus total sesuai aturan GDPR. Username dapat didaftarkan kembali setelahnya.",
         async () => {
+          localStorage.removeItem('dp_remember_user');
+          sessionStorage.removeItem('dp_session_user');
           if (currentUser && supabaseClient) {
             try {
               await supabaseClient
@@ -3689,7 +3714,29 @@ Gunakan Bahasa Indonesia yang santun, profesional, dan bernas.
     }, 30000);
 
     /* Inisialisasi awal saat window dimuat */
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      const savedUser = localStorage.getItem('dp_remember_user') || sessionStorage.getItem('dp_session_user');
+      if (savedUser) {
+        document.getElementById('screenOnboarding').classList.add('hidden');
+        if (supabaseClient) {
+          try {
+            const { data, error } = await supabaseClient
+              .from('user_finance')
+              .select('data')
+              .eq('username', savedUser)
+              .maybeSingle();
+
+            if (data && data.data && data.data.user) {
+              loadFromSupabaseData(data.data);
+              syncDailyChallenges();
+              enterApp(currentUser);
+              return;
+            }
+          } catch (err) {
+            console.warn("Auto-restore session notice:", err);
+          }
+        }
+      }
       showScreen('screenOnboarding');
     });
   </script>
