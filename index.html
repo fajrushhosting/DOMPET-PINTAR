@@ -1887,6 +1887,8 @@
       copyAccountNumber(temp2FASecret, null);
     }
 
+    let pending2FAData = null;
+
     async function confirmEnable2FA() {
       const code = document.getElementById('twoFactorVerifyInput').value;
       if (!code || code.length !== 6) {
@@ -1903,12 +1905,11 @@
       currentUser.twoFactorEnabled = true;
       currentUser.twoFactorSecret = temp2FASecret;
 
-      // Perbarui rekaman otentikasi
-      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
-      saveToLocal();
+      // Simpan langsung ke database Supabase
+      await saveData();
       update2FAStatusUI();
       closeModal('modal2FASetup');
-      showToast("🎉 Autentikasi 2 Faktor (Google Authenticator) berhasil diaktifkan!");
+      showToast("🎉 Autentikasi 2 Faktor berhasil diaktifkan & disimpan di Supabase!");
     }
 
     async function confirmDisable2FA() {
@@ -1927,11 +1928,11 @@
       currentUser.twoFactorEnabled = false;
       currentUser.twoFactorSecret = null;
 
-      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
-      saveToLocal();
+      // Perbarui status 2FA langsung di database Supabase
+      await saveData();
       update2FAStatusUI();
       closeModal('modal2FASetup');
-      showToast("Autentikasi 2 Faktor telah dinonaktifkan.");
+      showToast("Autentikasi 2 Faktor telah dinonaktifkan di database.");
     }
 
     function update2FAStatusUI() {
@@ -1952,6 +1953,7 @@
 
     function cancel2FALogin() {
       pending2FAUser = null;
+      pending2FAData = null;
       closeModal('modal2FALogin');
       showToast("Login 2FA dibatalkan.");
     }
@@ -1971,17 +1973,17 @@
       }
 
       const verifiedUser = pending2FAUser;
+      if (pending2FAData) {
+        loadFromSupabaseData(pending2FAData);
+      }
       pending2FAUser = null;
+      pending2FAData = null;
       closeModal('modal2FALogin');
 
-      if (!loadFromLocal(verifiedUser.username)) {
-        initializeUserData(verifiedUser);
-      }
-
       if (document.getElementById('loginRememberMe')?.checked) {
-        localStorage.setItem('dompet_pintar_current_user', verifiedUser.username);
+        sessionStorage.setItem('dompet_pintar_current_user', verifiedUser.username);
       } else {
-        localStorage.removeItem('dompet_pintar_current_user');
+        sessionStorage.removeItem('dompet_pintar_current_user');
       }
 
       showToast(`Verifikasi 2FA berhasil! Halo ${verifiedUser.fullname}.`);
@@ -2005,7 +2007,7 @@
       notifications = [
         { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah bank.', time: 'Baru saja', read: false }
       ];
-      saveToLocal();
+      saveData();
     }
 
     function getTodayISO() {
@@ -2013,9 +2015,10 @@
       return d.toISOString().split('T')[0];
     }
 
-    function saveToLocal() {
-      if (!currentUser) return;
-      const data = {
+    // Penyimpanan data utama langsung ke Supabase Cloud (Menggantikan localStorage)
+    async function saveData() {
+      if (!currentUser || !supabaseClient) return;
+      const dataPayload = {
         user: currentUser,
         transactions,
         wallets,
@@ -2025,50 +2028,42 @@
         challenges,
         notifications
       };
-      localStorage.setItem(`dompet_pintar_${currentUser.username}`, JSON.stringify(data));
-      syncToSupabase(data);
-    }
-
-    function loadFromLocal(username) {
-      if (!username) return false;
-      const raw = localStorage.getItem(`dompet_pintar_${username}`);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (!parsed || typeof parsed !== 'object') return false;
-          currentUser = parsed.user || null;
-          transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-          wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
-          budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
-          goals = Array.isArray(parsed.goals) ? parsed.goals : [];
-          recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
-          challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
-          notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
-
-          challenges.forEach(c => {
-            if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
-            if (c.daysCurrent < c.daysTotal) {
-              c.completed = false;
-            }
-          });
-
-          return true;
-        } catch (e) {
-          console.error("Failed to load local data:", e);
-        }
-      }
-      return false;
-    }
-
-    async function syncToSupabase(data) {
-      if (!supabaseClient || !data || !data.user) return;
       try {
         await supabaseClient.from('user_finance').upsert({
-          username: data.user.username,
-          data: data,
+          username: currentUser.username,
+          data: dataPayload,
           updated_at: new Date().toISOString()
-        });
-      } catch (err) {}
+        }, { onConflict: 'username' });
+      } catch (err) {
+        console.warn("Supabase save notice:", err);
+      }
+    }
+
+    // Kompatibilitas panggilan simpan
+    function saveToLocal() {
+      saveData();
+    }
+
+    // Memuat seluruh state data pengguna dari Supabase payload ke memori aplikasi
+    function loadFromSupabaseData(parsed) {
+      if (!parsed || typeof parsed !== 'object') return false;
+      currentUser = parsed.user || null;
+      transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
+      wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
+      budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
+      goals = Array.isArray(parsed.goals) ? parsed.goals : [];
+      recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
+      challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
+      notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+
+      challenges.forEach(c => {
+        if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
+        if (c.daysCurrent < c.daysTotal) {
+          c.completed = false;
+        }
+      });
+
+      return true;
     }
 
     function togglePasswordVisibility(inputId, btn) {
@@ -2117,66 +2112,87 @@
         return;
       }
 
-      // 1. Periksa ketersediaan username di Cloud Database Supabase
-      let isTakenInCloud = false;
-      if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('user_finance')
-            .select('username')
-            .eq('username', username)
-            .maybeSingle();
-          if (data && data.username) {
-            isTakenInCloud = true;
-          }
-        } catch (e) {
-          console.warn("Supabase check notice:", e);
-        }
-      }
-
-      // Jika di cloud TIDAK ADA (misal akun telah dihapus permanen), bersihkan sisa cache lokal
-      if (!isTakenInCloud) {
-        localStorage.removeItem(`dompet_pintar_auth_${username}`);
-        localStorage.removeItem(`dompet_pintar_${username}`);
-      }
-
-      const existingUser = localStorage.getItem(`dompet_pintar_auth_${username}`);
-      if (isTakenInCloud || existingUser) {
-        showToast("Username sudah digunakan, silakan pilih yang lain atau masuk.", "error");
+      if (!supabaseClient) {
+        showToast("Menghubungkan ke database Supabase, coba sesaat lagi...", "error");
         return;
       }
 
-      // Pastikan data lama dari akun terdahulu yang sudah dihapus dibersihkan tuntas
-      localStorage.removeItem(`dompet_pintar_${username}`);
+      showToast("Memeriksa ketersediaan akun di Supabase...");
 
-      const userData = {
-        username,
-        fullname,
-        birthdate,
-        password,
-        level: 1,
-        xp: 0,
-        streak: 1,
-        joinedDate: getTodayISO()
-      };
+      try {
+        // 1. Periksa langsung ke Supabase apakah username sudah digunakan
+        const { data: existingRecord, error: checkError } = await supabaseClient
+          .from('user_finance')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle();
 
-      localStorage.setItem(`dompet_pintar_auth_${username}`, JSON.stringify(userData));
-      initializeUserData(userData);
+        if (existingRecord && existingRecord.username) {
+          showToast("Username sudah digunakan, silakan pilih yang lain atau masuk.", "error");
+          return;
+        }
 
-      document.getElementById('regFullName').value = '';
-      document.getElementById('regUsername').value = '';
-      document.getElementById('regBirthDate').value = '';
-      document.getElementById('regPassword').value = '';
+        const userData = {
+          username,
+          fullname,
+          birthdate,
+          password,
+          level: 1,
+          xp: 0,
+          streak: 1,
+          joinedDate: getTodayISO()
+        };
 
-      switchAuthTab('login');
-      document.getElementById('loginUsername').value = username;
-      document.getElementById('loginPassword').value = '';
-      document.getElementById('loginPassword').focus();
+        const initialPayload = {
+          user: userData,
+          transactions: [],
+          wallets: [
+            { id: 'w_' + Date.now() + '_1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '-', initialBalance: 0, balance: 0 },
+            { id: 'w_' + Date.now() + '_2', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', initialBalance: 0, balance: 0 }
+          ],
+          budgets: [],
+          goals: [],
+          recurringBills: [],
+          challenges: [
+            { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 0, xp: 50, completed: false, lastCheckIn: null },
+            { id: 'c2', title: 'Weekend Bebas Belanja Online', daysTotal: 3, daysCurrent: 0, xp: 40, completed: false, lastCheckIn: null }
+          ],
+          notifications: [
+            { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah bank.', time: 'Baru saja', read: false }
+          ]
+        };
 
-      showToast("Akun berhasil dibuat! Silakan masuk menggunakan kata sandi Anda.");
+        // 2. Simpan akun baru langsung ke database Supabase
+        const { error: insertError } = await supabaseClient
+          .from('user_finance')
+          .upsert({
+            username: username,
+            data: initialPayload,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'username' });
+
+        if (insertError) {
+          showToast("Gagal menyimpan ke Supabase: " + insertError.message, "error");
+          return;
+        }
+
+        document.getElementById('regFullName').value = '';
+        document.getElementById('regUsername').value = '';
+        document.getElementById('regBirthDate').value = '';
+        document.getElementById('regPassword').value = '';
+
+        switchAuthTab('login');
+        document.getElementById('loginUsername').value = username;
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginPassword').focus();
+
+        showToast("Akun berhasil dibuat di database Supabase! Silakan masuk.");
+      } catch (err) {
+        showToast("Terjadi kesalahan pendaftaran: " + err.message, "error");
+      }
     }
 
-    function handleLogin() {
+    async function handleLogin() {
       const username = document.getElementById('loginUsername').value.trim().toLowerCase();
       const password = document.getElementById('loginPassword').value;
 
@@ -2185,53 +2201,69 @@
         return;
       }
 
-      const userRecordRaw = localStorage.getItem(`dompet_pintar_auth_${username}`);
-      if (!userRecordRaw) {
-        showToast("Username tidak terdaftar! Silakan daftar akun baru.", "error");
+      if (!supabaseClient) {
+        showToast("Koneksi Supabase belum siap, periksa jaringan internet Anda!", "error");
         return;
       }
 
-      let userRecord = null;
+      showToast("Memeriksa akun di database Supabase...");
+
       try {
-        userRecord = JSON.parse(userRecordRaw);
-      } catch (e) {
-        showToast("Data otentikasi bermasalah, silakan daftar ulang.", "error");
-        return;
-      }
+        // Ambil data akun murni dari database cloud Supabase
+        const { data, error } = await supabaseClient
+          .from('user_finance')
+          .select('data')
+          .eq('username', username)
+          .maybeSingle();
 
-      if (userRecord.password !== password) {
-        showToast("Kata sandi salah!", "error");
-        return;
-      }
+        if (error) {
+          showToast("Gagal membaca database Supabase: " + error.message, "error");
+          return;
+        }
 
-      // Cek jika akun mengaktifkan 2FA Google Authenticator
-      if (userRecord.twoFactorEnabled && userRecord.twoFactorSecret) {
-        pending2FAUser = userRecord;
-        document.getElementById('twoFactorLoginInput').value = '';
-        openModal('modal2FALogin');
-        setTimeout(() => {
-          document.getElementById('twoFactorLoginInput')?.focus();
-        }, 300);
-        return;
-      }
+        if (!data || !data.data || !data.data.user) {
+          showToast("Username tidak terdaftar di database! Silakan daftar akun baru.", "error");
+          return;
+        }
 
-      if (!loadFromLocal(username)) {
-        initializeUserData(userRecord);
-      }
+        const userRecord = data.data.user;
 
-      if (document.getElementById('loginRememberMe')?.checked) {
-        localStorage.setItem('dompet_pintar_current_user', username);
-      } else {
-        localStorage.removeItem('dompet_pintar_current_user');
-      }
+        if (userRecord.password !== password) {
+          showToast("Kata sandi salah!", "error");
+          return;
+        }
 
-      showToast(`Berhasil masuk! Halo ${userRecord.fullname}.`);
-      enterApp(userRecord);
+        // Cek jika akun mengaktifkan 2FA Google Authenticator
+        if (userRecord.twoFactorEnabled && userRecord.twoFactorSecret) {
+          pending2FAUser = userRecord;
+          pending2FAData = data.data;
+          document.getElementById('twoFactorLoginInput').value = '';
+          openModal('modal2FALogin');
+          setTimeout(() => {
+            document.getElementById('twoFactorLoginInput')?.focus();
+          }, 300);
+          return;
+        }
+
+        // Muat data langsung dari payload Supabase
+        loadFromSupabaseData(data.data);
+
+        if (document.getElementById('loginRememberMe')?.checked) {
+          sessionStorage.setItem('dompet_pintar_current_user', username);
+        } else {
+          sessionStorage.removeItem('dompet_pintar_current_user');
+        }
+
+        showToast(`Berhasil masuk! Halo ${userRecord.fullname}.`);
+        enterApp(userRecord);
+      } catch (err) {
+        showToast("Gagal masuk: " + err.message, "error");
+      }
     }
 
     function handleLogout() {
       currentUser = null;
-      localStorage.removeItem('dompet_pintar_current_user');
+      sessionStorage.removeItem('dompet_pintar_current_user');
       showScreen('screenOnboarding');
       showToast("Anda telah keluar akun.");
     }
@@ -2239,41 +2271,29 @@
     function confirmDeleteAccount() {
       openConfirmModal(
         "Hapus Akun Permanen",
-        "Semua data transaksi, dompet, dan target akan dihapus total sesuai aturan privasi GDPR. Username Anda akan tersedia kembali.",
+        "Semua data transaksi, dompet, dan target akan dihapus total dari database Supabase. Username Anda akan tersedia kembali.",
         async () => {
-          if (currentUser) {
+          if (currentUser && supabaseClient) {
             const targetUsername = (currentUser.username || '').toLowerCase();
-
-            // 1. Hapus kredensial autentikasi agar username langsung tersedia untuk registrasi ulang
-            localStorage.removeItem(`dompet_pintar_auth_${targetUsername}`);
-            
-            // 2. Hapus seluruh data finansial lokal akun ini
-            localStorage.removeItem(`dompet_pintar_${targetUsername}`);
-            localStorage.removeItem('dompet_pintar_current_user');
-
-            // 3. Hapus data akun dari cloud database Supabase jika tersinkronisasi
-            if (supabaseClient && targetUsername) {
-              try {
-                await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
-              } catch (err) {
-                console.warn("Supabase record delete notice:", err);
-              }
+            try {
+              await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
+            } catch (err) {
+              console.warn("Supabase record delete notice:", err);
             }
-
-            // 4. Bersihkan state data aktif di memori aplikasi
-            currentUser = null;
-            transactions = [];
-            wallets = [];
-            budgets = [];
-            goals = [];
-            recurringBills = [];
-            challenges = [];
-            notifications = [];
           }
 
-          // Kembali ke halaman onboarding awal
+          currentUser = null;
+          transactions = [];
+          wallets = [];
+          budgets = [];
+          goals = [];
+          recurringBills = [];
+          challenges = [];
+          notifications = [];
+          sessionStorage.removeItem('dompet_pintar_current_user');
+
           showScreen('screenOnboarding');
-          showToast("Akun berhasil dihapus permanen. Username kini dapat didaftarkan kembali.");
+          showToast("Akun berhasil dihapus permanen dari Supabase. Username kini dapat didaftarkan kembali.");
         }
       );
     }
@@ -3049,7 +3069,7 @@
         showToast(`🌟 NAIK LEVEL! Sekarang kamu Level ${currentUser.level}!`);
       }
       updateLevelUI(currentUser);
-      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+      saveData();
     }
 
     function renderChallenges() {
@@ -3774,14 +3794,23 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       try {
-        const activeUsername = localStorage.getItem('dompet_pintar_current_user');
-        if (activeUsername && loadFromLocal(activeUsername) && currentUser) {
-          enterApp(currentUser);
-        } else {
-          showScreen('screenOnboarding');
+        const activeUsername = sessionStorage.getItem('dompet_pintar_current_user');
+        if (activeUsername && supabaseClient) {
+          const { data } = await supabaseClient
+            .from('user_finance')
+            .select('data')
+            .eq('username', activeUsername)
+            .maybeSingle();
+
+          if (data && data.data && data.data.user) {
+            loadFromSupabaseData(data.data);
+            enterApp(currentUser);
+            return;
+          }
         }
+        showScreen('screenOnboarding');
       } catch (e) {
         console.error("Initialization error:", e);
         showScreen('screenOnboarding');
