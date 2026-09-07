@@ -3417,6 +3417,7 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
     let mainCashflowChartInst = null;
 
     function renderAll() {
+      syncDailyChallenges();
       renderWallets();
       renderDashboardSummary();
       renderRecentTransactions();
@@ -3815,6 +3816,13 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
         console.error("Initialization error:", e);
         showScreen('screenOnboarding');
       }
+
+      // Pemeriksa otomatis setiap 30 detik untuk mendeteksi pergantian waktu tepat jam 00:00 WIB
+      setInterval(() => {
+        if (currentUser) {
+          syncDailyChallenges();
+        }
+      }, 30000);
     });
   </script>
 </body>
