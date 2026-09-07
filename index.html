@@ -758,6 +758,20 @@
               <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
             </div>
 
+            <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
+            <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Autentikasi 2 Faktor (2FA)</p>
+                  <p class="text-[10px] text-slate-400" id="twoFactorStatusDesc">Google Authenticator (Nonaktif)</p>
+                </div>
+              </div>
+              <span id="twoFactorBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Nonaktif</span>
+            </div>
+
             <!-- Backup & Export JSON -->
             <div onclick="exportFullJSONBackup()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
@@ -1329,6 +1343,103 @@
       </div>
     </div>
 
+    <!-- 14. MODAL 2FA SETUP (GOOGLE AUTHENTICATOR) -->
+    <div id="modal2FASetup" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">Google Authenticator (2FA)</h3>
+              <p class="text-[10px] text-slate-400">Keamanan akun lapis ganda</p>
+            </div>
+          </div>
+          <button onclick="closeModal('modal2FASetup')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Tampilan Jika 2FA Belum Aktif -->
+        <div id="twoFactorSetupView" class="space-y-4">
+          <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl text-xs text-indigo-900 leading-relaxed">
+            <p class="font-bold mb-1"><i class="fa-solid fa-circle-info text-indigo-500"></i> Cara Aktivasi:</p>
+            <ol class="list-decimal list-inside space-y-1 text-[11px] text-indigo-800">
+              <li>Buka aplikasi <b>Google Authenticator</b> di HP Anda.</li>
+              <li>Pindai QR Code di bawah atau salin kunci manual.</li>
+              <li>Masukkan 6 digit kode yang muncul di aplikasi untuk verifikasi.</li>
+            </ol>
+          </div>
+
+          <!-- QR Code Container -->
+          <div class="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <img id="twoFactorQrImg" src="" alt="2FA QR Code" class="w-44 h-44 rounded-xl shadow-sm bg-white p-2 border border-slate-200" />
+            <div class="mt-2.5 flex items-center gap-2">
+              <span class="text-[11px] text-slate-500 font-mono font-bold" id="twoFactorSecretText">------</span>
+              <button onclick="copy2FASecret()" class="text-indigo-600 bg-white border border-slate-200 hover:bg-indigo-50 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i> Salin Kunci
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kode 6-Digit Google Authenticator</label>
+            <input type="text" id="twoFactorVerifyInput" maxlength="6" inputmode="numeric" placeholder="Contoh: 123456" class="w-full text-center tracking-[0.3em] px-4 py-3 rounded-2xl border border-slate-200 text-lg font-black text-slate-800 focus:border-indigo-400 outline-none" />
+          </div>
+
+          <button onclick="confirmEnable2FA()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md text-sm transition-all">
+            Aktifkan 2FA Sekarang
+          </button>
+        </div>
+
+        <!-- Tampilan Jika 2FA Sudah Aktif -->
+        <div id="twoFactorActiveView" class="hidden space-y-4 py-2 text-center">
+          <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto shadow-sm">
+            <i class="fa-solid fa-shield-check"></i>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-slate-800">2FA Sedang Aktif</h4>
+            <p class="text-xs text-slate-500 mt-1">Akun Anda terlindungi dengan verifikasi Google Authenticator saat login.</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2">
+            <label class="block text-xs font-bold text-slate-700">Masukkan 6 Digit untuk Nonaktifkan:</label>
+            <input type="text" id="twoFactorDisableInput" maxlength="6" inputmode="numeric" placeholder="123456" class="w-full text-center tracking-[0.25em] px-4 py-2.5 rounded-xl border border-slate-200 text-base font-bold text-slate-800 outline-none" />
+            <button onclick="confirmDisable2FA()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs transition-all">
+              Nonaktifkan 2FA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. MODAL 2FA VERIFICATION SAAT LOGIN -->
+    <div id="modal2FALogin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl space-y-4 text-center fade-in">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 mx-auto flex items-center justify-center text-xl shadow-sm">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-800 text-base">Verifikasi 2FA</h4>
+          <p class="text-xs text-slate-500 mt-1">Buka aplikasi <b>Google Authenticator</b> dan masukkan 6 digit kode login akun Anda.</p>
+        </div>
+
+        <div>
+          <input type="text" id="twoFactorLoginInput" maxlength="6" inputmode="numeric" placeholder="000000" class="w-full text-center tracking-[0.3em] px-4 py-3 rounded-2xl border border-slate-200 text-xl font-black text-slate-800 focus:border-indigo-400 outline-none" autofocus />
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="cancel2FALogin()" class="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200">
+            Batal
+          </button>
+          <button onclick="verify2FALogin()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow">
+            Verifikasi
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -1667,6 +1778,221 @@
     let challenges = [];
     let notifications = [];
 
+    /* =========================================================================
+       SISTEM AUTENTIKASI 2 FAKTOR (TOTP - GOOGLE AUTHENTICATOR)
+       ========================================================================= */
+    let temp2FASecret = '';
+    let pending2FAUser = null;
+
+    function base32Decode(base32) {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let clean = (base32 || '').toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
+      let bits = '';
+      for (let i = 0; i < clean.length; i++) {
+        const val = alphabet.indexOf(clean.charAt(i));
+        if (val === -1) continue;
+        bits += val.toString(2).padStart(5, '0');
+      }
+      const bytes = new Uint8Array(Math.floor(bits.length / 8));
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+      }
+      return bytes;
+    }
+
+    function generateBase32Secret(length = 16) {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let secret = '';
+      const randomValues = new Uint8Array(length);
+      window.crypto.getRandomValues(randomValues);
+      for (let i = 0; i < length; i++) {
+        secret += alphabet[randomValues[i] % 32];
+      }
+      return secret;
+    }
+
+    async function verifyTOTPCode(secret, token) {
+      if (!secret || !token) return false;
+      const cleanToken = token.toString().trim().replace(/\s/g, '');
+      if (cleanToken.length !== 6) return false;
+
+      try {
+        const keyBytes = base32Decode(secret);
+        const cryptoKey = await window.crypto.subtle.importKey(
+          'raw',
+          keyBytes,
+          { name: 'HMAC', hash: 'SHA-1' },
+          false,
+          ['sign']
+        );
+
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        const currentStep = Math.floor(currentEpoch / 30);
+
+        // Toleransi window drift [-1, 0, +1] (rentang waktu 30 detik)
+        for (let stepOffset = -1; stepOffset <= 1; stepOffset++) {
+          const step = currentStep + stepOffset;
+          const counterBytes = new Uint8Array(8);
+          let temp = step;
+          for (let i = 7; i >= 0; i--) {
+            counterBytes[i] = temp & 0xff;
+            temp = Math.floor(temp / 256);
+          }
+
+          const signature = await window.crypto.subtle.sign('HMAC', cryptoKey, counterBytes);
+          const hash = new Uint8Array(signature);
+          const offset = hash[hash.length - 1] & 0x0f;
+          const binary =
+            ((hash[offset] & 0x7f) << 24) |
+            ((hash[offset + 1] & 0xff) << 16) |
+            ((hash[offset + 2] & 0xff) << 8) |
+            (hash[offset + 3] & 0xff);
+
+          const otp = (binary % 1000000).toString().padStart(6, '0');
+          if (otp === cleanToken) {
+            return true;
+          }
+        }
+      } catch (err) {
+        console.error("TOTP verification error:", err);
+      }
+      return false;
+    }
+
+    function open2FAModal() {
+      if (!currentUser) return;
+      const setupView = document.getElementById('twoFactorSetupView');
+      const activeView = document.getElementById('twoFactorActiveView');
+
+      if (currentUser.twoFactorEnabled) {
+        setupView.classList.add('hidden');
+        activeView.classList.remove('hidden');
+        document.getElementById('twoFactorDisableInput').value = '';
+      } else {
+        activeView.classList.add('hidden');
+        setupView.classList.remove('hidden');
+
+        temp2FASecret = generateBase32Secret(16);
+        document.getElementById('twoFactorSecretText').innerText = temp2FASecret;
+        document.getElementById('twoFactorVerifyInput').value = '';
+
+        // Generate otpauth URL dan QR Code
+        const appTitle = encodeURIComponent("Dompet Pintar");
+        const accountLabel = encodeURIComponent(currentUser.username || 'user');
+        const otpauthUrl = `otpauth://totp/${appTitle}:${accountLabel}?secret=${temp2FASecret}&issuer=${appTitle}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
+        document.getElementById('twoFactorQrImg').src = qrUrl;
+      }
+
+      openModal('modal2FASetup');
+    }
+
+    function copy2FASecret() {
+      if (!temp2FASecret) return;
+      copyAccountNumber(temp2FASecret, null);
+    }
+
+    async function confirmEnable2FA() {
+      const code = document.getElementById('twoFactorVerifyInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode verifikasi!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(temp2FASecret, code);
+      if (!isValid) {
+        showToast("Kode verifikasi salah atau kedaluwarsa. Coba lagi.", "error");
+        return;
+      }
+
+      currentUser.twoFactorEnabled = true;
+      currentUser.twoFactorSecret = temp2FASecret;
+
+      // Perbarui rekaman otentikasi
+      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+      saveToLocal();
+      update2FAStatusUI();
+      closeModal('modal2FASetup');
+      showToast("🎉 Autentikasi 2 Faktor (Google Authenticator) berhasil diaktifkan!");
+    }
+
+    async function confirmDisable2FA() {
+      const code = document.getElementById('twoFactorDisableInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode verifikasi!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(currentUser.twoFactorSecret, code);
+      if (!isValid) {
+        showToast("Kode verifikasi salah!", "error");
+        return;
+      }
+
+      currentUser.twoFactorEnabled = false;
+      currentUser.twoFactorSecret = null;
+
+      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+      saveToLocal();
+      update2FAStatusUI();
+      closeModal('modal2FASetup');
+      showToast("Autentikasi 2 Faktor telah dinonaktifkan.");
+    }
+
+    function update2FAStatusUI() {
+      const desc = document.getElementById('twoFactorStatusDesc');
+      const badge = document.getElementById('twoFactorBadge');
+      if (!desc || !badge) return;
+
+      if (currentUser && currentUser.twoFactorEnabled) {
+        desc.innerText = "Google Authenticator (Aktif & Terlindungi)";
+        badge.innerText = "Aktif";
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+      } else {
+        desc.innerText = "Google Authenticator (Nonaktif)";
+        badge.innerText = "Nonaktif";
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600";
+      }
+    }
+
+    function cancel2FALogin() {
+      pending2FAUser = null;
+      closeModal('modal2FALogin');
+      showToast("Login 2FA dibatalkan.");
+    }
+
+    async function verify2FALogin() {
+      if (!pending2FAUser) return;
+      const code = document.getElementById('twoFactorLoginInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode Google Authenticator!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(pending2FAUser.twoFactorSecret, code);
+      if (!isValid) {
+        showToast("Kode 2FA tidak valid atau sudah kedaluwarsa!", "error");
+        return;
+      }
+
+      const verifiedUser = pending2FAUser;
+      pending2FAUser = null;
+      closeModal('modal2FALogin');
+
+      if (!loadFromLocal(verifiedUser.username)) {
+        initializeUserData(verifiedUser);
+      }
+
+      if (document.getElementById('loginRememberMe')?.checked) {
+        localStorage.setItem('dompet_pintar_current_user', verifiedUser.username);
+      } else {
+        localStorage.removeItem('dompet_pintar_current_user');
+      }
+
+      showToast(`Verifikasi 2FA berhasil! Halo ${verifiedUser.fullname}.`);
+      enterApp(verifiedUser);
+    }
+
     function initializeUserData(user) {
       currentUser = user;
       wallets = [
@@ -1883,6 +2209,17 @@
         return;
       }
 
+      // Cek jika akun mengaktifkan 2FA Google Authenticator
+      if (userRecord.twoFactorEnabled && userRecord.twoFactorSecret) {
+        pending2FAUser = userRecord;
+        document.getElementById('twoFactorLoginInput').value = '';
+        openModal('modal2FALogin');
+        setTimeout(() => {
+          document.getElementById('twoFactorLoginInput')?.focus();
+        }, 300);
+        return;
+      }
+
       if (!loadFromLocal(username)) {
         initializeUserData(userRecord);
       }
@@ -1955,6 +2292,7 @@
       document.getElementById('streakCount').innerText = user.streak || 1;
 
       updateLevelUI(user);
+      update2FAStatusUI();
       renderAll();
     }
 
@@ -2355,7 +2693,12 @@
     function populateWalletDropdown(selectId) {
       const sel = document.getElementById(selectId);
       if (!sel) return;
-      sel.innerHTML = wallets.map(w => `<option value="${w.id}">${w.name} (${formatCurrency(w.balance)})</option>`).join('');
+      sel.innerHTML = wallets.map(w => {
+        const bankName = bankColorMap[w.bankCode]?.badge || w.bankCode || 'Bank';
+        // Menampilkan nama bank secara eksplisit dan jelas di awal pilihan
+        const displayName = `${bankName} - ${w.name}`;
+        return `<option value="${w.id}">${displayName} (${formatCurrency(w.balance)})</option>`;
+      }).join('');
     }
 
     function openAddBudgetModal() {
