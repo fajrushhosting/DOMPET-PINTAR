@@ -1401,69 +1401,25 @@
     let challenges = [];
     let notifications = [];
 
-    function initializeUserData(user, isNewUser = false) {
+    function initializeUserData(user) {
       currentUser = user;
       
-      if (isNewUser) {
-        // PENGGUNA BARU: SEMUA SALDO 0, TIDAK ADA TRANSAKSI DUMMY
-        wallets = [
-          { id: 'w_' + Date.now() + '_1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '-', initialBalance: 0, balance: 0 },
-          { id: 'w_' + Date.now() + '_2', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', initialBalance: 0, balance: 0 }
-        ];
-        transactions = [];
-        budgets = [];
-        goals = [];
-        recurringBills = [];
-        challenges = [
-          { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 0, xp: 50, completed: false },
-          { id: 'c2', title: 'Weekend Bebas Belanja Online', daysTotal: 3, daysCurrent: 0, xp: 40, completed: false }
-        ];
-        notifications = [
-          { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah bank.', time: 'Baru saja', read: false }
-        ];
-      } else {
-        // Akun Demo Bawaan
-        wallets = [
-          { id: 'w1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '84920192', initialBalance: 35000000, balance: 35000000 },
-          { id: 'w2', name: 'SeaBank Tabungan', bankCode: 'SEABANK', accountNumber: '9012384', initialBalance: 10000000, balance: 10000000 },
-          { id: 'w3', name: 'Dompet GoPay', bankCode: 'GOPAY', accountNumber: '0812345678', initialBalance: 3000000, balance: 3000000 },
-          { id: 'w4', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', initialBalance: 2000000, balance: 2000000 }
-        ];
-
-        transactions = [
-          { id: 't1', type: 'expense', amount: 10000000, category: 'Top up wallet', walletId: 'w1', date: getTodayISO(), note: 'Top up Seabank' },
-          { id: 't2', type: 'expense', amount: 5000000, category: 'Biaya dan pajak', walletId: 'w1', date: getTodayISO(), note: 'Pajak & Administrasi' },
-          { id: 't3', type: 'expense', amount: 3000000, category: 'Belum terkategori', walletId: 'w2', date: getTodayISO(), note: 'Keperluan mendadak' },
-          { id: 't4', type: 'expense', amount: 2000000, category: 'Makanan & Minuman', walletId: 'w3', date: getTodayISO(), note: 'Katering bulanan' },
-          { id: 't5', type: 'income', amount: 10000000, category: 'Gaji Bulanan', walletId: 'w1', date: getTodayISO(), note: 'Gaji pokok' }
-        ];
-
-        budgets = [
-          { category: 'Top up wallet', limit: 12000000 },
-          { category: 'Biaya dan pajak', limit: 6000000 },
-          { category: 'Makanan & Minuman', limit: 3000000 }
-        ];
-
-        goals = [
-          { id: 'g1', title: 'Beli Gadget / MacBook', target: 20000000, current: 12500000, deadline: '2026-12-31' },
-          { id: 'g2', title: 'Dana Darurat 6 Bulan', target: 30000000, current: 18000000, deadline: '2027-06-30' }
-        ];
-
-        recurringBills = [
-          { id: 'r1', name: 'Langganan Netflix 4K', type: 'expense', amount: 186000, interval: 'monthly', category: 'Hiburan', walletId: 'w3' },
-          { id: 'r2', name: 'WiFi Fiber Rumah', type: 'expense', amount: 385000, interval: 'monthly', category: 'Tagihan & Utilitas', walletId: 'w1' }
-        ];
-
-        challenges = [
-          { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 4, xp: 50, completed: false },
-          { id: 'c2', title: 'Weekend Bebas Belanja Online', daysTotal: 3, daysCurrent: 3, xp: 40, completed: true }
-        ];
-
-        notifications = [
-          { id: 'n1', title: 'Pengingat Transaksi', text: 'Jangan lupa mencatat pengeluaran harianmu.', time: 'Baru saja', read: false },
-          { id: 'n2', title: 'Status Anggaran', text: 'Pengeluaran bulan ini dalam kendali sehat.', time: '2 jam lalu', read: false }
-        ];
-      }
+      // Data bersih murni untuk pengguna baru (saldo Rp 0, tanpa transaksi palsu)
+      wallets = [
+        { id: 'w_' + Date.now() + '_1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '-', initialBalance: 0, balance: 0 },
+        { id: 'w_' + Date.now() + '_2', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', initialBalance: 0, balance: 0 }
+      ];
+      transactions = [];
+      budgets = [];
+      goals = [];
+      recurringBills = [];
+      challenges = [
+        { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 0, xp: 50, completed: false },
+        { id: 'c2', title: 'Weekend Bebas Belanja Online', daysTotal: 3, daysCurrent: 0, xp: 40, completed: false }
+      ];
+      notifications = [
+        { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah bank.', time: 'Baru saja', read: false }
+      ];
 
       saveToLocal();
     }
@@ -1502,6 +1458,15 @@
           recurringBills = parsed.recurringBills || [];
           challenges = parsed.challenges || [];
           notifications = parsed.notifications || [];
+
+          // Perbaikan bug: Pastikan tantangan yang belum memenuhi jumlah hari target tidak berstatus selesai
+          challenges.forEach(c => {
+            if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
+            if (c.daysCurrent < c.daysTotal) {
+              c.completed = false;
+            }
+          });
+
           return true;
         } catch (e) {
           console.error(e);
@@ -1585,16 +1550,15 @@
         birthdate,
         password,
         level: 1,
-        xp: 30,
+        xp: 0,
         streak: 1,
         joinedDate: getTodayISO()
       };
 
       localStorage.setItem(`dompet_pintar_auth_${username}`, JSON.stringify(userData));
       localStorage.setItem('dompet_pintar_current_user', username);
-      // Buat akun baru dengan saldo 0 dan tanpa riwayat transaksi
-      initializeUserData(userData, true);
-      showToast(`Pendaftaran berhasil! Akun baru siap digunakan.`);
+      initializeUserData(userData);
+      showToast(`Pendaftaran berhasil! Selamat datang, ${fullname}.`);
       enterApp(userData);
     }
 
@@ -1607,23 +1571,9 @@
         return;
       }
 
-      if (username === 'alwi' && !localStorage.getItem('dompet_pintar_auth_alwi')) {
-        const defaultUser = {
-          username: 'alwi',
-          fullname: 'Muhammad Alwi',
-          birthdate: '2000-01-01',
-          password: 'password',
-          level: 2,
-          xp: 65,
-          streak: 5,
-          joinedDate: '2026-01-01'
-        };
-        localStorage.setItem('dompet_pintar_auth_alwi', JSON.stringify(defaultUser));
-      }
-
       const userRecordRaw = localStorage.getItem(`dompet_pintar_auth_${username}`);
       if (!userRecordRaw) {
-        showToast("Username tidak ditemukan!", "error");
+        showToast("Username tidak terdaftar! Silakan daftar akun baru terlebih dahulu.", "error");
         return;
       }
 
@@ -2368,33 +2318,47 @@
        ------------------------------------------------------------- */
     function openNewChallengeModal() {
       const challengeIdeas = [
-        "Hemat Jajan Boba & Kopi 7 Hari",
-        "Masak di Rumah Selama 5 Hari Berturut-turut",
-        "Weekend Tanpa Belanja Online (0 Rupiah)",
-        "Bawa Bekal Makan Siang ke Kantor Seminggu"
+        { title: "Hemat Jajan Boba & Kopi 7 Hari", days: 7, xp: 50 },
+        { title: "Masak di Rumah Selama 5 Hari Berturut-turut", days: 5, xp: 40 },
+        { title: "Weekend Bebas Belanja Online (3 Hari)", days: 3, xp: 30 },
+        { title: "Bawa Bekal Makan Siang ke Kantor Seminggu", days: 7, xp: 50 }
       ];
-      const randomIdea = challengeIdeas[Math.floor(Math.random() * challengeIdeas.length)];
+      const selected = challengeIdeas[Math.floor(Math.random() * challengeIdeas.length)];
       
+      // Progres hari baru selalu dimulai dari 0 hari dan belum selesai
       challenges.push({
         id: 'c_' + Date.now(),
-        title: randomIdea,
-        daysTotal: 7,
-        daysCurrent: 1,
-        xp: 60,
-        completed: false
+        title: selected.title,
+        daysTotal: selected.days,
+        daysCurrent: 0,
+        xp: selected.xp,
+        completed: false,
+        lastCheckIn: null
       });
 
       saveToLocal();
       renderChallenges();
-      showToast(`Tantangan baru "${randomIdea}" diaktifkan!`);
+      showToast(`Tantangan baru "${selected.title}" diaktifkan!`);
     }
 
     function checkInChallenge(id) {
       const c = challenges.find(x => x.id === id);
       if (!c || c.completed) return;
 
-      c.daysCurrent += 1;
+      const today = getTodayISO();
+
+      // Cegah check-in lebih dari 1 kali di hari yang sama agar misi tidak langsung selesai instan
+      if (c.lastCheckIn === today) {
+        showToast("Kamu sudah melakukan check-in hari ini! Lanjutkan besok ya.", "error");
+        return;
+      }
+
+      c.daysCurrent = (c.daysCurrent || 0) + 1;
+      c.lastCheckIn = today;
+
+      // Hanya tandai selesai jika hari berjalan BENAR-BENAR telah mencapai target total hari
       if (c.daysCurrent >= c.daysTotal) {
+        c.daysCurrent = c.daysTotal;
         c.completed = true;
         addXp(c.xp);
         confetti({ particleCount: 100, spread: 60 });
@@ -2403,6 +2367,7 @@
         addXp(10);
         showToast(`Check-in berhasil! Hari ke-${c.daysCurrent} dari ${c.daysTotal}.`);
       }
+
       saveToLocal();
       renderChallenges();
     }
@@ -2427,18 +2392,27 @@
         return;
       }
 
-      container.innerHTML = challenges.map(c => `
-        <div class="p-3.5 rounded-2xl ${c.completed ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'} border flex items-center justify-between">
-          <div>
-            <p class="font-bold text-xs text-slate-800 mb-0.5">${c.title}</p>
-            <p class="text-[10px] text-slate-400">Progres: ${c.daysCurrent}/${c.daysTotal} hari • +${c.xp} XP</p>
+      const today = getTodayISO();
+
+      container.innerHTML = challenges.map(c => {
+        const isDoneToday = c.lastCheckIn === today;
+        const currentDays = c.daysCurrent || 0;
+
+        return `
+          <div class="p-3.5 rounded-2xl ${c.completed ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'} border flex items-center justify-between">
+            <div>
+              <p class="font-bold text-xs text-slate-800 mb-0.5">${c.title}</p>
+              <p class="text-[10px] text-slate-400">Progres: ${currentDays}/${c.daysTotal} hari • +${c.xp} XP</p>
+            </div>
+            ${c.completed 
+              ? `<span class="text-xs font-bold text-emerald-600 flex items-center gap-1"><i class="fa-solid fa-check"></i> Selesai</span>`
+              : isDoneToday
+                ? `<span class="text-xs font-semibold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-xl flex items-center gap-1"><i class="fa-solid fa-circle-check text-xs"></i> Hari Ini Sudah</span>`
+                : `<button onclick="checkInChallenge('${c.id}')" class="px-3 py-1.5 bg-brand-400 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition-all">Check-in</button>`
+            }
           </div>
-          ${c.completed 
-            ? `<span class="text-xs font-bold text-emerald-600 flex items-center gap-1"><i class="fa-solid fa-check"></i> Selesai</span>`
-            : `<button onclick="checkInChallenge('${c.id}')" class="px-3 py-1.5 bg-brand-400 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-sm">Check-in</button>`
-          }
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     /* -------------------------------------------------------------
@@ -3062,46 +3036,17 @@ Bahasa Indonesia santun, profesional, dan memotivasi.
     }
 
     /* -------------------------------------------------------------
-       20. BOOTSTRAP INISIALISASI HALAMAN (MENCEGAH BLANK SCREEN)
+       20. BOOTSTRAP INISIALISASI HALAMAN
        ------------------------------------------------------------- */
     window.addEventListener('DOMContentLoaded', () => {
-      let activeUsername = localStorage.getItem('dompet_pintar_current_user');
+      const activeUsername = localStorage.getItem('dompet_pintar_current_user');
       
-      // Jika belum ada user aktif, otomatis inisialisasi akun demo 'alwi' agar dashboard langsung tampil
-      if (!activeUsername) {
-        activeUsername = 'alwi';
-        localStorage.setItem('dompet_pintar_current_user', 'alwi');
+      // Tidak ada akun demo otomatis: jika ada sesi login aktif yang sah, buka app. Jika tidak, arahkan ke Onboarding.
+      if (activeUsername && loadFromLocal(activeUsername)) {
+        enterApp(currentUser);
+      } else {
+        showScreen('screenOnboarding');
       }
-
-      if (!localStorage.getItem('dompet_pintar_auth_alwi')) {
-        const defaultProfile = {
-          username: 'alwi',
-          fullname: 'Muhammad Alwi',
-          birthdate: '2000-01-01',
-          password: 'password',
-          level: 2,
-          xp: 65,
-          streak: 5,
-          joinedDate: '2026-01-01'
-        };
-        localStorage.setItem('dompet_pintar_auth_alwi', JSON.stringify(defaultProfile));
-      }
-
-      if (!loadFromLocal(activeUsername)) {
-        const userRecordRaw = localStorage.getItem(`dompet_pintar_auth_${activeUsername}`);
-        const userRecord = userRecordRaw ? JSON.parse(userRecordRaw) : {
-          username: 'alwi',
-          fullname: 'Muhammad Alwi',
-          birthdate: '2000-01-01',
-          password: 'password',
-          level: 2,
-          xp: 65,
-          streak: 5
-        };
-        initializeUserData(userRecord);
-      }
-
-      enterApp(currentUser);
     });
   </script>
 </body>
