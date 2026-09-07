@@ -1330,6 +1330,38 @@
       </div>
     </div>
 
+    <!-- MODAL PANDUAN INSTALASI APP HYBRID -->
+    <div id="modalInstallApp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sky-50 text-brand-500 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-base">Pasang App Hybrid</h3>
+          </div>
+          <button onclick="closeModal('modalInstallApp')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="installAppPromptSection" class="space-y-3">
+          <div id="installInstructions" class="p-4 rounded-2xl bg-sky-50/70 border border-sky-100 space-y-2.5 text-xs text-slate-700">
+            <!-- Populated by JS according to iOS / Android / Chrome -->
+          </div>
+        </div>
+
+        <div class="pt-1 flex gap-2">
+          <button onclick="closeModal('modalInstallApp')" class="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl text-xs hover:bg-slate-200">
+            Tutup
+          </button>
+          <button id="btnModalTriggerPrompt" onclick="triggerNativeInstallPrompt()" class="flex-1 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl text-xs shadow transition-all flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-download"></i> <span>Pasang Langsung</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -3296,24 +3328,169 @@ Gunakan Bahasa Indonesia yang santun, profesional, dan bernas.
        18. HYBRID APP & SMART NOTIFIKASI
        ========================================================================= */
     let deferredPrompt = null;
+
+    function setupDynamicManifest() {
+      try {
+        const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+          <rect width="512" height="512" rx="128" fill="#38bdf8"/>
+          <path d="M128 192h256v192a32 32 0 01-32 32H160a32 32 0 01-32-32V192z" fill="#0284c7"/>
+          <path d="M96 160h320a32 32 0 0132 32v32H64v-32a32 32 0 0132-32z" fill="#bae6fd"/>
+          <circle cx="352" cy="288" r="28" fill="#fb923c"/>
+          <text x="340" y="297" fill="#ffffff" font-size="24" font-weight="bold">Rp</text>
+        </svg>`;
+        const iconDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+
+        const manifest = {
+          name: "Dompet Pintar",
+          short_name: "DompetPintar",
+          description: "Aplikasi Pengelola Keuangan Modern & Pintar",
+          start_url: window.location.href,
+          scope: "/",
+          display: "standalone",
+          background_color: "#cbefff",
+          theme_color: "#38bdf8",
+          icons: [
+            {
+              src: iconDataUrl,
+              sizes: "192x192 512x512",
+              type: "image/svg+xml",
+              purpose: "any maskable"
+            }
+          ]
+        };
+
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(blob);
+        
+        let link = document.querySelector('link[rel="manifest"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'manifest';
+          document.head.appendChild(link);
+        }
+        link.href = manifestURL;
+      } catch (err) {
+        console.warn("Manifest injection fallback:", err);
+      }
+    }
+
+    function isAppInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       const btn = document.getElementById('btnInstallPWA');
-      if (btn) btn.innerText = "Pasang Sekarang";
+      if (btn && !isAppInstalled()) {
+        btn.innerText = "Pasang Sekarang";
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      const btn = document.getElementById('btnInstallPWA');
+      if (btn) btn.innerText = "Terpasang";
+      showToast("🎉 Dompet Pintar berhasil dipasang di layar utama!");
     });
 
     function installHybridApp() {
+      if (isAppInstalled()) {
+        showToast("Aplikasi sudah terpasang di layar utama Anda!");
+        return;
+      }
+
       if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            showToast("Aplikasi berhasil dipasang di layar utama!");
+            showToast("🎉 Aplikasi berhasil dipasang di layar utama!");
+            const btn = document.getElementById('btnInstallPWA');
+            if (btn) btn.innerText = "Terpasang";
+            if (window.confetti) window.confetti({ particleCount: 100, spread: 60 });
           }
           deferredPrompt = null;
         });
+        return;
+      }
+
+      renderInstallGuide();
+      openModal('modalInstallApp');
+    }
+
+    function renderInstallGuide() {
+      const container = document.getElementById('installInstructions');
+      const btnPrompt = document.getElementById('btnModalTriggerPrompt');
+      if (!container) return;
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+      if (deferredPrompt) {
+        if (btnPrompt) btnPrompt.classList.remove('hidden');
+        container.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-check text-brand-500 text-base mt-0.5"></i>
+            <div>
+              <p class="font-bold text-slate-800">Perangkat Siap Pasang</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Ketuk tombol <b>"Pasang Langsung"</b> di bawah untuk mengunduh aplikasi ke layar utama Anda secara instan.</p>
+            </div>
+          </div>
+        `;
+      } else if (isIOS) {
+        if (btnPrompt) btnPrompt.classList.add('hidden');
+        container.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 font-bold text-slate-800">
+              <i class="fa-brands fa-apple text-sm text-slate-700"></i>
+              <span>Cara Pasang di iPhone / iPad (Safari)</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
+              <li>Ketuk tombol <b>Bagikan (Share)</b> <i class="fa-solid fa-arrow-up-from-bracket text-brand-500"></i> di bilah bawah peramban Safari.</li>
+              <li>Geser ke bawah lalu pilih <b>"Tambahkan ke Layar Utama"</b> (<i>Add to Home Screen</i>) <i class="fa-regular fa-square-plus text-brand-500"></i>.</li>
+              <li>Ketuk <b>"Tambah"</b> di sudut kanan atas. Ikon Dompet Pintar akan langsung muncul di layar ponsel Anda!</li>
+            </ol>
+          </div>
+        `;
       } else {
-        showToast("Untuk memasang versi Hybrid: Buka menu peramban (ikon titik 3 atau Share) lalu pilih 'Tambahkan ke Layar Utama' / 'Install App'.");
+        if (btnPrompt) btnPrompt.classList.add('hidden');
+        container.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 font-bold text-slate-800">
+              <i class="fa-brands fa-android text-sm text-emerald-600"></i>
+              <span>Cara Pasang di Android / Chrome</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
+              <li>Ketuk menu titik tiga (<b>⋮</b>) di pojok kanan atas peramban Anda.</li>
+              <li>Pilih opsi <b>"Tambahkan ke Layar Utama"</b> atau <b>"Install Aplikasi"</b>.</li>
+              <li>Konfirmasi dengan menekan <b>"Pasang" / "Install"</b>. Aplikasi siap dibuka seperti aplikasi native!</li>
+            </ol>
+          </div>
+        `;
+      }
+    }
+
+    function triggerNativeInstallPrompt() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast("🎉 Aplikasi berhasil dipasang di layar utama!");
+            const btn = document.getElementById('btnInstallPWA');
+            if (btn) btn.innerText = "Terpasang";
+            if (window.confetti) window.confetti({ particleCount: 100, spread: 60 });
+          }
+          deferredPrompt = null;
+          closeModal('modalInstallApp');
+        });
+      } else {
+        closeModal('modalInstallApp');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          showToast("Gunakan menu 'Share' di Safari lalu 'Add to Home Screen'.");
+        } else {
+          showToast("Buka menu titik 3 browser lalu pilih 'Tambahkan ke Layar Utama'.");
+        }
       }
     }
 
@@ -3715,6 +3892,12 @@ Gunakan Bahasa Indonesia yang santun, profesional, dan bernas.
 
     /* Inisialisasi awal saat window dimuat */
     window.addEventListener('DOMContentLoaded', async () => {
+      setupDynamicManifest();
+      if (isAppInstalled()) {
+        const btn = document.getElementById('btnInstallPWA');
+        if (btn) btn.innerText = "Terpasang";
+      }
+
       const savedUser = localStorage.getItem('dp_remember_user') || sessionStorage.getItem('dp_session_user');
       if (savedUser) {
         document.getElementById('screenOnboarding').classList.add('hidden');
