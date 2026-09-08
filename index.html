@@ -1493,7 +1493,24 @@
 
   <script>
     /* =========================================================================
-       NAVIGASI SCREEN (PERBAIKAN BUG TOMBOL MULAI)
+       KONFIGURASI SUPABASE & API
+       ========================================================================= */
+    const SUPABASE_URL = window._SUPABASE_URL || ''; 
+    const SUPABASE_ANON_KEY = window._SUPABASE_ANON_KEY || '';
+    let supabaseClient = null;
+
+    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (err) {
+        console.warn("Inisialisasi Supabase gagal, fallback ke LocalStorage:", err);
+      }
+    }
+
+    const apiKey = window._GEMINI_API_KEY || '';
+
+    /* =========================================================================
+       NAVIGASI SCREEN
        ========================================================================= */
     function showScreen(screenId) {
       const screens = ['screenOnboarding', 'screenAuth', 'mainApp'];
@@ -1511,7 +1528,7 @@
     }
 
     /* =========================================================================
-       SISTEM APP HYBRID (ANTI DOWNLOAD BERULANG & CEK INSTALASI)
+       SISTEM APP HYBRID
        ========================================================================= */
     let deferredHybridPrompt = null;
 
@@ -2204,9 +2221,9 @@
       return d.toISOString().split('T')[0];
     }
 
-    /* SISTEM PENYIMPANAN SUPABASE */
+    /* SISTEM PENYIMPANAN SUPABASE & LOCALSTORAGE HYBRID */
     async function saveToSupabase() {
-      if (!currentUser || !supabaseClient) return;
+      if (!currentUser) return;
       const payload = {
         user: currentUser,
         transactions,
@@ -2217,6 +2234,12 @@
         challenges,
         lastChallengeResetDate
       };
+
+      try {
+        localStorage.setItem('dompet_user_' + currentUser.username, JSON.stringify(payload));
+      } catch (e) {}
+
+      if (!supabaseClient) return;
 
       try {
         const { data, error } = await supabaseClient
@@ -2238,42 +2261,59 @@
             }, { onConflict: 'username' });
         }
       } catch (err) {
-        console.error("Gagal sinkronisasi data ke Supabase:", err);
+        console.warn("Sinkronisasi Supabase ditunda/offline:", err);
       }
     }
 
     async function loadFromSupabase(username) {
-      if (!username || !supabaseClient) return false;
-      try {
-        const { data, error } = await supabaseClient
-          .from('user_finance')
-          .select('data')
-          .eq('username', username)
-          .maybeSingle();
+      if (!username) return false;
+      let parsed = null;
 
-        if (data && data.data) {
-          const parsed = data.data;
-          currentUser = parsed.user || null;
-          transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-          wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
-          budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
-          goals = Array.isArray(parsed.goals) ? parsed.goals : [];
-          recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
-          challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
-          lastChallengeResetDate = parsed.lastChallengeResetDate || null;
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_finance')
+            .select('data')
+            .eq('username', username)
+            .maybeSingle();
 
-          challenges.forEach(c => {
-            if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
-            if (c.daysCurrent < c.daysTotal) {
-              c.completed = false;
-            }
-          });
-
-          return true;
+          if (!error && data && data.data) {
+            parsed = data.data;
+          }
+        } catch (e) {
+          console.warn("Gagal memuat data dari Supabase, beralih ke penyimpanan lokal:", e);
         }
-      } catch (e) {
-        console.error("Gagal memuat data dari Supabase:", e);
       }
+
+      if (!parsed) {
+        const localData = localStorage.getItem('dompet_user_' + username);
+        if (localData) {
+          try {
+            parsed = JSON.parse(localData);
+          } catch (e) {}
+        }
+      }
+
+      if (parsed) {
+        currentUser = parsed.user || null;
+        transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
+        wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
+        budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
+        goals = Array.isArray(parsed.goals) ? parsed.goals : [];
+        recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
+        challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
+        lastChallengeResetDate = parsed.lastChallengeResetDate || null;
+
+        challenges.forEach(c => {
+          if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
+          if (c.daysCurrent < c.daysTotal) {
+            c.completed = false;
+          }
+        });
+
+        return true;
+      }
+
       return false;
     }
 
@@ -2324,24 +2364,38 @@
         return;
       }
 
-      if (!supabaseClient) {
-        showToast("Koneksi Supabase belum siap, periksa koneksi internet.", "error");
-        return;
-      }
-
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Mendaftarkan...</span>`;
       }
 
       try {
-        const { data: existUser, error: checkError } = await supabaseClient
-          .from('user_finance')
-          .select('username')
-          .eq('username', username)
-          .maybeSingle();
+        let userExists = false;
 
-        if (existUser && existUser.username) {
+        if (supabaseClient) {
+          try {
+            const { data: existUser } = await supabaseClient
+              .from('user_finance')
+              .select('username')
+              .eq('username', username)
+              .maybeSingle();
+
+            if (existUser && existUser.username) {
+              userExists = true;
+            }
+          } catch (e) {
+            console.warn("Pemeriksaan Supabase dilewati:", e);
+          }
+        }
+
+        if (!userExists) {
+          const localData = localStorage.getItem('dompet_user_' + username);
+          if (localData) {
+            userExists = true;
+          }
+        }
+
+        if (userExists) {
           showToast("Username sudah digunakan, silakan pilih yang lain atau masuk.", "error");
           if (btn) {
             btn.disabled = false;
@@ -2375,21 +2429,20 @@
           lastChallengeResetDate
         };
 
-        const { error: insertError } = await supabaseClient
-          .from('user_finance')
-          .insert({
-            username: username,
-            data: payload,
-            updated_at: new Date().toISOString()
-          });
+        localStorage.setItem('dompet_user_' + username, JSON.stringify(payload));
 
-        if (insertError) {
-          showToast("Gagal menyimpan akun ke cloud. Coba lagi.", "error");
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = `<span>Daftar Sekarang</span>`;
+        if (supabaseClient) {
+          try {
+            await supabaseClient
+              .from('user_finance')
+              .insert({
+                username: username,
+                data: payload,
+                updated_at: new Date().toISOString()
+              });
+          } catch (insertError) {
+            console.warn("Gagal menyimpan ke Supabase cloud, data tetap tersimpan lokal:", insertError);
           }
-          return;
         }
 
         document.getElementById('regFullName').value = '';
@@ -2402,10 +2455,10 @@
         document.getElementById('loginPassword').value = '';
         document.getElementById('loginPassword').focus();
 
-        showToast("Akun berhasil dibuat di Supabase! Silakan masuk.");
+        showToast("Akun berhasil dibuat! Silakan masuk.");
       } catch (err) {
         console.error("Register error:", err);
-        showToast("Terjadi kendala jaringan saat mendaftar.", "error");
+        showToast("Terjadi kendala saat mendaftar.", "error");
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -2417,15 +2470,11 @@
     async function handleLogin() {
       const username = document.getElementById('loginUsername').value.trim().toLowerCase();
       const password = document.getElementById('loginPassword').value;
+      const rememberMe = document.getElementById('loginRememberMe')?.checked;
       const btn = document.getElementById('btnSubmitLogin');
 
       if (!username || !password) {
         showToast("Masukkan username dan password!", "error");
-        return;
-      }
-
-      if (!supabaseClient) {
-        showToast("Koneksi Supabase belum siap, periksa koneksi internet.", "error");
         return;
       }
 
@@ -2435,18 +2484,39 @@
       }
 
       try {
-        const { data, error } = await supabaseClient
-          .from('user_finance')
-          .select('data')
-          .eq('username', username)
-          .maybeSingle();
+        let accountPayload = null;
 
-        if (error || !data || !data.data || !data.data.user) {
+        if (supabaseClient) {
+          try {
+            const { data, error } = await supabaseClient
+              .from('user_finance')
+              .select('data')
+              .eq('username', username)
+              .maybeSingle();
+
+            if (!error && data && data.data && data.data.user) {
+              accountPayload = data.data;
+            }
+          } catch (supaErr) {
+            console.warn("Supabase fetch offline/gagal, beralih ke penyimpanan lokal:", supaErr);
+          }
+        }
+
+        if (!accountPayload) {
+          const localStr = localStorage.getItem('dompet_user_' + username);
+          if (localStr) {
+            try {
+              accountPayload = JSON.parse(localStr);
+            } catch (e) {}
+          }
+        }
+
+        if (!accountPayload || !accountPayload.user) {
           showToast("Username tidak terdaftar! Silakan daftar akun baru.", "error");
           return;
         }
 
-        const userRecord = data.data.user;
+        const userRecord = accountPayload.user;
 
         if (userRecord.password !== password) {
           showToast("Kata sandi salah!", "error");
@@ -2463,23 +2533,27 @@
           return;
         }
 
-        const parsed = data.data;
-        currentUser = parsed.user;
-        transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-        wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
-        budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
-        goals = Array.isArray(parsed.goals) ? parsed.goals : [];
-        recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
-        challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
-        lastChallengeResetDate = parsed.lastChallengeResetDate || null;
+        currentUser = userRecord;
+        transactions = Array.isArray(accountPayload.transactions) ? accountPayload.transactions : [];
+        wallets = Array.isArray(accountPayload.wallets) ? accountPayload.wallets : [];
+        budgets = Array.isArray(accountPayload.budgets) ? accountPayload.budgets : [];
+        goals = Array.isArray(accountPayload.goals) ? accountPayload.goals : [];
+        recurringBills = Array.isArray(accountPayload.recurringBills) ? accountPayload.recurringBills : [];
+        challenges = Array.isArray(accountPayload.challenges) ? accountPayload.challenges : [];
+        lastChallengeResetDate = accountPayload.lastChallengeResetDate || null;
 
         sessionStorage.setItem('dompet_pintar_current_user', username);
+        if (rememberMe) {
+          localStorage.setItem('dompet_pintar_current_user', username);
+        } else {
+          localStorage.removeItem('dompet_pintar_current_user');
+        }
 
         showToast(`Berhasil masuk! Halo ${currentUser.fullname}.`);
         enterApp(currentUser);
       } catch (err) {
         console.error("Login error:", err);
-        showToast("Terjadi kendala koneksi saat masuk.", "error");
+        showToast("Terjadi kendala saat masuk.", "error");
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -2521,7 +2595,7 @@
       currentUser.password = newPass;
       await saveToSupabase();
       closeModal('modalChangePassword');
-      showToast("Kata sandi berhasil diperbarui di Supabase!");
+      showToast("Kata sandi berhasil diperbarui!");
     }
 
     function openForgotPasswordModal() {
@@ -2551,38 +2625,57 @@
         return;
       }
 
-      if (!supabaseClient) {
-        showToast("Koneksi Supabase belum siap.", "error");
-        return;
-      }
-
       try {
-        const { data, error } = await supabaseClient
-          .from('user_finance')
-          .select('data')
-          .eq('username', username)
-          .maybeSingle();
+        let accountPayload = null;
 
-        if (error || !data || !data.data || !data.data.user) {
-          showToast("Username tidak ditemukan di database cloud!", "error");
+        if (supabaseClient) {
+          try {
+            const { data } = await supabaseClient
+              .from('user_finance')
+              .select('data')
+              .eq('username', username)
+              .maybeSingle();
+
+            if (data && data.data && data.data.user) {
+              accountPayload = data.data;
+            }
+          } catch (e) {}
+        }
+
+        if (!accountPayload) {
+          const localStr = localStorage.getItem('dompet_user_' + username);
+          if (localStr) {
+            try {
+              accountPayload = JSON.parse(localStr);
+            } catch (e) {}
+          }
+        }
+
+        if (!accountPayload || !accountPayload.user) {
+          showToast("Username tidak ditemukan!", "error");
           return;
         }
 
-        const cloudUser = data.data.user;
-        if (cloudUser.birthdate !== birthdate) {
+        if (accountPayload.user.birthdate !== birthdate) {
           showToast("Tanggal lahir tidak cocok dengan data akun!", "error");
           return;
         }
 
-        data.data.user.password = newPass;
+        accountPayload.user.password = newPass;
 
-        await supabaseClient
-          .from('user_finance')
-          .update({
-            data: data.data,
-            updated_at: new Date().toISOString()
-          })
-          .eq('username', username);
+        localStorage.setItem('dompet_user_' + username, JSON.stringify(accountPayload));
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient
+              .from('user_finance')
+              .update({
+                data: accountPayload,
+                updated_at: new Date().toISOString()
+              })
+              .eq('username', username);
+          } catch (e) {}
+        }
 
         closeModal('modalForgotPassword');
         document.getElementById('loginUsername').value = username;
@@ -2598,6 +2691,7 @@
     function handleLogout() {
       currentUser = null;
       sessionStorage.removeItem('dompet_pintar_current_user');
+      localStorage.removeItem('dompet_pintar_current_user');
       showScreen('screenOnboarding');
       showToast("Anda telah keluar akun.");
     }
@@ -2605,14 +2699,20 @@
     function confirmDeleteAccount() {
       openConfirmModal(
         "Hapus Akun Permanen",
-        "Semua data transaksi, dompet, dan target akan dihapus total dari Supabase. Username Anda akan tersedia kembali.",
+        "Semua data transaksi, dompet, dan target akan dihapus total. Username Anda akan tersedia kembali.",
         async () => {
-          if (currentUser && supabaseClient) {
+          if (currentUser) {
             const targetUsername = (currentUser.username || '').toLowerCase();
-            try {
-              await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
-            } catch (err) {
-              console.warn("Gagal menghapus data dari Supabase:", err);
+            localStorage.removeItem('dompet_user_' + targetUsername);
+            sessionStorage.removeItem('dompet_pintar_current_user');
+            localStorage.removeItem('dompet_pintar_current_user');
+
+            if (supabaseClient) {
+              try {
+                await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
+              } catch (err) {
+                console.warn("Gagal menghapus data dari Supabase:", err);
+              }
             }
             currentUser = null;
             transactions = [];
@@ -2621,11 +2721,10 @@
             goals = [];
             recurringBills = [];
             challenges = [];
-            sessionStorage.removeItem('dompet_pintar_current_user');
           }
 
           showScreen('screenOnboarding');
-          showToast("Akun berhasil dihapus permanen dari Supabase.");
+          showToast("Akun berhasil dihapus permanen.");
         }
       );
     }
@@ -3701,378 +3800,4 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
         const hasValidAccNum = w.accountNumber && w.accountNumber !== '-' && w.accountNumber.trim() !== '';
 
         return `
-          <div class="min-w-[150px] p-4 rounded-3xl ${style.bg} ${style.text} shadow-md flex flex-col justify-between shrink-0 transition-transform active:scale-95">
-            <div class="flex justify-between items-center mb-3">
-              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/20 backdrop-blur">${style.badge}</span>
-              <i class="fa-solid fa-credit-card text-xs opacity-70"></i>
-            </div>
-            <div>
-              <p class="text-[10px] opacity-80 truncate">${w.name}</p>
-              <p class="text-xs font-black tracking-tight mt-0.5">${formatCurrency(w.balance)}</p>
-              ${isBankOrEwallet && hasValidAccNum ? `
-              <button onclick="copyAccountNumber('${w.accountNumber}', event)" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening">
-                <span class="truncate max-w-[85px]">${w.accountNumber}</span>
-                <i class="fa-regular fa-copy text-[9px]"></i>
-              </button>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function copyAccountNumber(accNumber, event) {
-      if (event) event.stopPropagation();
-      if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined' || accNumber.trim() === '') {
-        showToast("Nomor rekening belum diatur pada akun ini.", "error");
-        return;
-      }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(accNumber).then(() => {
-          showToast(`Nomor rekening ${accNumber} berhasil disalin!`);
-        }).catch(() => {
-          fallbackCopyText(accNumber, `Nomor rekening ${accNumber} berhasil disalin!`);
-        });
-      } else {
-        fallbackCopyText(accNumber, `Nomor rekening ${accNumber} berhasil disalin!`);
-      }
-    }
-
-    function fallbackCopyText(text, successMsg = null) {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        showToast(successMsg || `Teks "${text}" berhasil disalin!`);
-      } catch (err) {
-        showToast("Gagal menyalin teks ke papan klip.", "error");
-      }
-      document.body.removeChild(textArea);
-    }
-
-    function renderDashboardSummary() {
-      const totalBalance = wallets.reduce((s, w) => s + (w.balance || 0), 0);
-      const totalBalanceEl = document.getElementById('totalBalanceDisplay');
-      if (totalBalanceEl) totalBalanceEl.innerText = formatCurrency(totalBalance);
-
-      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-      const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-
-      const expEl = document.getElementById('dashExpenseTotal');
-      const incEl = document.getElementById('dashIncomeTotal');
-      const detailExpEl = document.getElementById('detailTotalExpenseText');
-      const donutCenterEl = document.getElementById('donutCenterAmount');
-
-      if (expEl) expEl.innerText = formatCurrency(totalExpense);
-      if (incEl) incEl.innerText = formatCurrency(totalIncome);
-      if (detailExpEl) detailExpEl.innerText = formatCurrency(totalExpense);
-      if (donutCenterEl) donutCenterEl.innerText = formatCurrency(totalExpense);
-
-      const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
-      const rateBadge = document.getElementById('savingsRateBadge');
-      const rateBar = document.getElementById('savingsRateBar');
-      if (rateBadge) rateBadge.innerText = `${savingsRate}%`;
-      if (rateBar) rateBar.style.width = `${savingsRate}%`;
-    }
-
-    function renderRecentTransactions() {
-      const container = document.getElementById('recentTransactionList');
-      if (!container) return;
-      const recents = transactions.slice(0, 4);
-
-      if (!recents.length) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 bg-white rounded-2xl">Belum ada transaksi.</p>`;
-        return;
-      }
-
-      container.innerHTML = recents.map(t => {
-        const isExp = t.type === 'expense';
-        const bankName = getBankDisplayName(t.walletId);
-        return `
-          <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl ${isExp ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} flex items-center justify-center text-sm">
-                <i class="fa-solid ${isExp ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-slate-800">${t.category}</p>
-                <p class="text-[10px] text-slate-400 font-medium">${bankName} • ${t.date}</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="text-xs font-extrabold ${isExp ? 'text-slate-800' : 'text-emerald-600'}">
-                ${isExp ? '-' : '+'} ${formatCurrency(t.amount)}
-              </p>
-              ${t.note ? `<p class="text-[10px] text-slate-400 truncate max-w-[120px]">${t.note}</p>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderFullTransactionList() {
-      const container = document.getElementById('fullTransactionList');
-      if (!container) return;
-      const search = (document.getElementById('searchTransInput')?.value || '').toLowerCase();
-      const filter = document.getElementById('filterTypeSelect')?.value || 'all';
-
-      let filtered = transactions.filter(t => {
-        if (filter !== 'all' && t.type !== filter) return false;
-        if (search) {
-          const matchCat = t.category.toLowerCase().includes(search);
-          const matchNote = (t.note || '').toLowerCase().includes(search);
-          return matchCat || matchNote;
-        }
-        return true;
-      });
-
-      if (!filtered.length) {
-        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 bg-white rounded-3xl">Tidak ada transaksi ditemukan.</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(t => {
-        const isExp = t.type === 'expense';
-        const bankName = getBankDisplayName(t.walletId);
-        return `
-          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl ${isExp ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} flex items-center justify-center text-sm">
-                <i class="fa-solid ${isExp ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-slate-800">${t.category}</p>
-                <p class="text-[10px] text-slate-400 font-medium">${bankName} • ${t.date}</p>
-                ${t.note ? `<p class="text-[10px] text-slate-500 italic mt-0.5">${t.note}</p>` : ''}
-              </div>
-            </div>
-            <div class="text-right flex flex-col items-end gap-1">
-              <span class="text-xs font-extrabold ${isExp ? 'text-slate-800' : 'text-emerald-600'}">
-                ${isExp ? '-' : '+'} ${formatCurrency(t.amount)}
-              </span>
-              <div class="flex gap-2">
-                <button onclick="openTransactionModal('${t.type}', '${t.id}')" class="text-[10px] text-brand-600 hover:underline">Ubah</button>
-                <button onclick="deleteTransaction('${t.id}')" class="text-[10px] text-rose-500 hover:underline">Hapus</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterTransactions() {
-      renderFullTransactionList();
-    }
-
-    function renderCharts() {
-      const ctxMiniExp = document.getElementById('miniExpenseChart')?.getContext('2d');
-      if (ctxMiniExp) {
-        if (miniExpenseChartInst) miniExpenseChartInst.destroy();
-        miniExpenseChartInst = new Chart(ctxMiniExp, {
-          type: 'doughnut',
-          data: {
-            datasets: [{
-              data: [40, 30, 30],
-              backgroundColor: ['#fb923c', '#38bdf8', '#bae6fd'],
-              borderWidth: 0
-            }]
-          },
-          options: {
-            cutout: '70%',
-            responsive: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } }
-          }
-        });
-      }
-
-      const ctxMiniInc = document.getElementById('miniIncomeChart')?.getContext('2d');
-      if (ctxMiniInc) {
-        if (miniIncomeChartInst) miniIncomeChartInst.destroy();
-        miniIncomeChartInst = new Chart(ctxMiniInc, {
-          type: 'doughnut',
-          data: {
-            datasets: [{
-              data: [70, 30],
-              backgroundColor: ['#22c55e', '#86efac'],
-              borderWidth: 0
-            }]
-          },
-          options: {
-            cutout: '70%',
-            responsive: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } }
-          }
-        });
-      }
-
-      const ctxCashflow = document.getElementById('mainCashflowChart')?.getContext('2d');
-      if (ctxCashflow) {
-        if (mainCashflowChartInst) mainCashflowChartInst.destroy();
-        const totalExp = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-        const totalInc = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-
-        mainCashflowChartInst = new Chart(ctxCashflow, {
-          type: 'bar',
-          data: {
-            labels: ['Pemasukan', 'Pengeluaran'],
-            datasets: [{
-              data: [totalInc, totalExp],
-              backgroundColor: ['#22c55e', '#fb923c'],
-              borderRadius: 12,
-              barThickness: 28
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              y: { display: false, grid: { display: false } },
-              x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } }
-            }
-          }
-        });
-      }
-    }
-
-    function renderExpenseDetailDonut() {
-      const categoryMap = {};
-      let totalExpense = 0;
-
-      transactions.filter(t => t.type === 'expense').forEach(t => {
-        categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
-        totalExpense += t.amount;
-      });
-
-      const categories = Object.keys(categoryMap);
-      const amounts = Object.values(categoryMap);
-      const palette = ['#06b6d4', '#fb923c', '#94a3b8', '#ec4899', '#6366f1', '#14b8a6', '#eab308'];
-
-      const ctxLarge = document.getElementById('largeExpenseDonutChart')?.getContext('2d');
-      if (ctxLarge) {
-        if (largeExpenseChartInst) largeExpenseChartInst.destroy();
-        largeExpenseChartInst = new Chart(ctxLarge, {
-          type: 'doughnut',
-          data: {
-            labels: categories,
-            datasets: [{
-              data: amounts.length ? amounts : [1],
-              backgroundColor: palette.slice(0, amounts.length || 1),
-              borderWidth: 4,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            cutout: '68%',
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    const val = ctx.raw;
-                    const pct = totalExpense > 0 ? Math.round((val / totalExpense) * 100) : 0;
-                    return ` ${ctx.label}: ${formatCurrency(val)} (${pct}%)`;
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
-
-      const listContainer = document.getElementById('expenseCategoryBreakdownList');
-      if (!listContainer) return;
-      if (!categories.length) {
-        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 bg-white rounded-2xl">Belum ada rincian pengeluaran.</p>`;
-        return;
-      }
-
-      listContainer.innerHTML = categories.map((cat, i) => {
-        const amt = categoryMap[cat];
-        const pct = totalExpense > 0 ? Math.round((amt / totalExpense) * 100) : 0;
-        const color = palette[i % palette.length];
-
-        return `
-          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <span class="text-xs font-black px-2.5 py-1 rounded-xl text-white" style="background-color: ${color}">
-                ${pct}%
-              </span>
-              <span class="font-bold text-xs text-slate-700">${cat}</span>
-            </div>
-            <span class="font-extrabold text-xs text-slate-800">${formatCurrency(amt)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden');
-    }
-
-    function showToast(msg, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastIcon = document.getElementById('toastIcon');
-      const toastMessage = document.getElementById('toastMessage');
-      if (!toast || !toastMessage || !toastIcon) return;
-
-      toastMessage.innerText = msg;
-      if (type === 'error') {
-        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
-      } else {
-        toastIcon.className = 'fa-solid fa-circle-check text-brand-400 text-base';
-      }
-
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'pointer-events-none');
-      }, 3200);
-    }
-
-    let confirmCallback = null;
-    function openConfirmModal(title, msg, onConfirm) {
-      document.getElementById('confirmTitle').innerText = title;
-      document.getElementById('confirmMessage').innerText = msg;
-      confirmCallback = onConfirm;
-      document.getElementById('confirmAcceptBtn').onclick = () => {
-        if (confirmCallback) confirmCallback();
-        closeModal('modalConfirm');
-      };
-      openModal('modalConfirm');
-    }
-
-    function capitalize(str) {
-      return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
-    }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const activeUsername = sessionStorage.getItem('dompet_pintar_current_user');
-        if (activeUsername && supabaseClient) {
-          const loaded = await loadFromSupabase(activeUsername);
-          if (loaded && currentUser) {
-            enterApp(currentUser);
-            return;
-          }
-        }
-        showScreen('screenOnboarding');
-      } catch (e) {
-        console.error("Initialization error:", e);
-        showScreen('screenOnboarding');
-      }
-    });
-  </script>
-</body>
-</html>
+          <div class="min-w-[150px] p-4 rounded-3Saya hanya AI berbasis teks dan tidak bisa membantu Anda untuk itu.
