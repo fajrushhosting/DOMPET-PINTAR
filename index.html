@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Dompet Pintar - Semua Keuangan dalam Satu Kendali</title>
+  <title>Dompet Pintar - Aplikasi Pengelola Keuangan Modern</title>
   
   <!-- PWA & Hybrid App Meta Tags -->
   <meta name="theme-color" content="#38bdf8" />
@@ -417,7 +417,7 @@
             </div>
           </div>
 
-          <!-- Slider DomPay (Khusus Bank & E-Wallet dengan fitur salin rekening) -->
+          <!-- Slider DomPay -->
           <div class="space-y-2.5">
             <div class="flex justify-between items-center px-1">
               <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_wallets">DomPay</h3>
@@ -741,7 +741,7 @@
               <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
             </div>
 
-            <!-- Manage Bank Accounts (Kelola DomPay Kamu) -->
+            <!-- Manage Bank Accounts (DomPay) -->
             <div onclick="openManageWalletsModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm">
@@ -749,7 +749,7 @@
                 </div>
                 <div>
                   <p class="text-xs font-bold text-slate-700">Kelola DomPay Kamu</p>
-                  <p class="text-[10px] text-slate-400">BCA, BRI, Mandiri, Seabank, DANA, GoPay, dll.</p>
+                  <p class="text-[10px] text-slate-400">BCA, BRI, Mandiri, Seabank, dll.</p>
                 </div>
               </div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
@@ -758,7 +758,7 @@
             <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
             <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
@@ -1561,7 +1561,7 @@
           description: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.",
           icons: [
             {
-              src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%230284c7'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3Cpath d='M26 23H37V29H26C24.9 29 24 28.1 24 27V25C24 23.9 24.9 23 26 23Z' fill='%230284c7'/%3E%3Ccircle cx='31' cy='26' r='1.8' fill='%2338bdf8'/%3E%3Cpath d='M36 8L37 11L40 12L37 13L36 16L35 13L32 12L35 11L36 8Z' fill='%23fde047'/%3E%3C/svg%3E",
+              src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%230284c7'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3Cpath d='M26 23H37V29H26C24.34 29 23 27.66 23 26C23 24.34 24.34 22 26 22Z' fill='%230284c7'/%3E%3Ccircle cx='31' cy='26' r='1.8' fill='%2338bdf8'/%3E%3Cpath d='M36 8L37 11L40 12L37 13L36 16L35 13L32 12L35 11L36 8Z' fill='%23fde047'/%3E%3C/svg%3E",
               sizes: "192x192 512x512",
               type: "image/svg+xml",
               purpose: "any maskable"
@@ -1946,15 +1946,7 @@
 
     function copy2FASecret() {
       if (!temp2FASecret) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(temp2FASecret).then(() => {
-          showToast("Kunci 2FA berhasil disalin!");
-        }).catch(() => {
-          fallbackCopyText(temp2FASecret, "Kunci 2FA");
-        });
-      } else {
-        fallbackCopyText(temp2FASecret, "Kunci 2FA");
-      }
+      copyAccountNumber(temp2FASecret, null);
     }
 
     async function confirmEnable2FA() {
@@ -1973,7 +1965,7 @@
       currentUser.twoFactorEnabled = true;
       currentUser.twoFactorSecret = temp2FASecret;
 
-      saveToCloud();
+      await saveToCloud();
       update2FAStatusUI();
       closeModal('modal2FASetup');
       showToast("🎉 Autentikasi 2 Faktor (Google Authenticator) berhasil diaktifkan!");
@@ -1995,7 +1987,7 @@
       currentUser.twoFactorEnabled = false;
       currentUser.twoFactorSecret = null;
 
-      saveToCloud();
+      await saveToCloud();
       update2FAStatusUI();
       closeModal('modal2FASetup');
       showToast("Autentikasi 2 Faktor telah dinonaktifkan.");
@@ -2073,9 +2065,9 @@
       return d.toISOString().split('T')[0];
     }
 
-    /* Penyimpanan Utama Menggunakan Supabase Cloud */
+    /* Penyimpanan Utama Menggunakan Supabase Cloud & Sinkronisasi Cache */
     async function saveToCloud() {
-      if (!currentUser) return;
+      if (!currentUser || !currentUser.username) return;
       const payload = {
         user: currentUser,
         transactions,
@@ -2087,15 +2079,31 @@
         notifications
       };
 
-      if (supabaseClient && currentUser.username) {
+      // Simpan sinkron ke cache lokal agar reload cepat tidak me-revert state
+      try {
+        localStorage.setItem(`dompet_pintar_${currentUser.username}`, JSON.stringify(payload));
+      } catch (e) {}
+
+      if (supabaseClient) {
         try {
-          await supabaseClient.from('user_finance').upsert({
-            username: currentUser.username,
-            data: payload,
-            updated_at: new Date().toISOString()
-          });
+          const { data: updatedRows, error: updateError } = await supabaseClient
+            .from('user_finance')
+            .update({
+              data: payload,
+              updated_at: new Date().toISOString()
+            })
+            .eq('username', currentUser.username)
+            .select();
+
+          if (updateError || !updatedRows || updatedRows.length === 0) {
+            await supabaseClient.from('user_finance').upsert({
+              username: currentUser.username,
+              data: payload,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'username' });
+          }
         } catch (err) {
-          console.warn("Supabase upsert notice:", err);
+          console.warn("Supabase save notice:", err);
         }
       }
     }
@@ -2149,14 +2157,15 @@
 
       if (btn) btn.disabled = true;
 
+      // Cek ketersediaan username di Cloud Database Supabase
       if (supabaseClient) {
         try {
           const { data } = await supabaseClient
             .from('user_finance')
             .select('username')
             .eq('username', username)
-            .maybeSingle();
-          if (data && data.username) {
+            .limit(1);
+          if (data && data.length > 0) {
             showToast("Username sudah digunakan, silakan pilih yang lain atau langsung masuk.", "error");
             if (btn) btn.disabled = false;
             return;
@@ -2211,16 +2220,18 @@
       let userRecord = null;
       let cloudFinanceData = null;
 
+      // Mengambil akun langsung dari Cloud Database Supabase baris teranyar
       if (supabaseClient) {
         try {
           const { data, error } = await supabaseClient
             .from('user_finance')
             .select('*')
             .eq('username', username)
-            .maybeSingle();
+            .order('updated_at', { ascending: false })
+            .limit(1);
 
-          if (data && data.data) {
-            cloudFinanceData = data.data;
+          if (data && data.length > 0 && data[0].data) {
+            cloudFinanceData = data[0].data;
             userRecord = cloudFinanceData.user;
           }
         } catch (e) {
@@ -2272,7 +2283,9 @@
       enterApp(userRecord);
     }
 
-    /* LUPA PASSWORD (LOGIN) & GANTI PASSWORD (PROFIL) */
+    /* -------------------------------------------------------------
+       FITUR LUPA PASSWORD (LOGIN) & GANTI PASSWORD (PROFIL)
+    ------------------------------------------------------------- */
     function openForgotPasswordModal() {
       document.getElementById('forgotUsername').value = document.getElementById('loginUsername').value.trim();
       document.getElementById('forgotBirthDate').value = '';
@@ -2311,15 +2324,16 @@
           .from('user_finance')
           .select('*')
           .eq('username', username)
-          .maybeSingle();
+          .order('updated_at', { ascending: false })
+          .limit(1);
 
-        if (error || !data || !data.data || !data.data.user) {
+        if (error || !data || data.length === 0 || !data[0].data || !data[0].data.user) {
           showToast("Username tidak ditemukan di database cloud!", "error");
           if (btn) { btn.disabled = false; btn.innerText = "Simpan Kata Sandi Baru"; }
           return;
         }
 
-        const account = data.data.user;
+        const account = data[0].data.user;
         if (account.birthdate !== birthdate) {
           showToast("Tanggal lahir tidak cocok dengan data pendaftaran akun!", "error");
           if (btn) { btn.disabled = false; btn.innerText = "Simpan Kata Sandi Baru"; }
@@ -2327,13 +2341,12 @@
         }
 
         account.password = newPassword;
-        data.data.user = account;
+        data[0].data.user = account;
 
-        await supabaseClient.from('user_finance').upsert({
-          username: username,
-          data: data.data,
+        await supabaseClient.from('user_finance').update({
+          data: data[0].data,
           updated_at: new Date().toISOString()
-        });
+        }).eq('username', username);
 
         closeModal('modalForgotPassword');
         document.getElementById('loginUsername').value = username;
@@ -2570,7 +2583,7 @@
       }
     }
 
-    function saveTransaction() {
+    async function saveTransaction() {
       const amount = parseFloat(document.getElementById('transAmount').value);
       const category = document.getElementById('transCategory').value;
       const walletId = document.getElementById('transWallet').value;
@@ -2600,16 +2613,16 @@
       }
 
       recalculateWalletBalances();
-      saveToCloud();
+      await saveToCloud();
       renderAll();
       closeModal('modalTransaction');
     }
 
     function deleteTransaction(id) {
-      openConfirmModal("Hapus Transaksi", "Yakin ingin menghapus catatan transaksi ini?", () => {
+      openConfirmModal("Hapus Transaksi", "Yakin ingin menghapus catatan transaksi ini?", async () => {
         transactions = transactions.filter(t => t.id !== id);
         recalculateWalletBalances();
-        saveToCloud();
+        await saveToCloud();
         renderAll();
         showToast("Transaksi telah dihapus.");
       });
@@ -2637,7 +2650,7 @@
       openModal('modalTransfer');
     }
 
-    function executeTransfer() {
+    async function executeTransfer() {
       const amount = parseFloat(document.getElementById('transferAmount').value);
       const fromId = document.getElementById('transferFromWallet').value;
       const toId = document.getElementById('transferToWallet').value;
@@ -2676,7 +2689,7 @@
       });
 
       recalculateWalletBalances();
-      saveToCloud();
+      await saveToCloud();
       renderAll();
       closeModal('modalTransfer');
       showToast(`Transfer ${formatCurrency(amount)} berhasil dikirim!`);
@@ -2692,16 +2705,13 @@
       if (!container) return;
 
       if (!wallets.length) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada akun bank atau e-wallet.</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada akun DomPay.</p>`;
         return;
       }
 
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
-        // Fitur salin rekening hanya untuk Bank dan E-Wallet (bukan Kas Tunai)
-        const isBankOrEWallet = w.bankCode !== 'TUNAI';
-        const accNum = isBankOrEWallet && w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
-
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
         return `
           <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl flex items-center justify-between transition-all">
             <div class="flex items-center gap-3 min-w-0">
@@ -2710,12 +2720,12 @@
               </div>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-800 truncate">${w.name}</p>
-                <p class="text-[10px] text-slate-400 truncate">${isBankOrEWallet ? `No: ${w.accountNumber || '-'}` : 'Kas Tunai'} • Saldo: <b class="text-slate-700">${formatCurrency(w.balance)}</b></p>
+                <p class="text-[10px] text-slate-400 truncate">No: ${w.accountNumber || '-'} • Saldo: <b class="text-slate-700">${formatCurrency(w.balance)}</b></p>
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${accNum ? `
-              <button onclick="copyAccountNumber('${accNum}', event, '${w.bankCode}')" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening / Akun">
+              <button onclick="copyAccountNumber('${accNum}', event)" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening">
                 <i class="fa-regular fa-copy"></i>
               </button>` : ''}
               <button onclick="openEditWalletModal('${w.id}')" class="w-8 h-8 rounded-xl bg-white text-brand-600 hover:bg-brand-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Ubah Bank">
@@ -2743,7 +2753,7 @@
       openModal('modalEditWallet');
     }
 
-    function saveEditWallet() {
+    async function saveEditWallet() {
       const id = document.getElementById('editWalletId').value;
       const bankCode = document.getElementById('editWalletPreset').value;
       const name = document.getElementById('editWalletName').value.trim();
@@ -2763,7 +2773,7 @@
         w.initialBalance = balance;
         w.balance = balance;
 
-        saveToCloud();
+        await saveToCloud();
         renderAll();
         renderManageWalletsList();
         closeModal('modalEditWallet');
@@ -2771,21 +2781,22 @@
       }
     }
 
+    /* Penghapusan DomPay Permanen & Tuntas Tersimpan ke Cloud */
     function deleteWallet(walletId) {
       if (wallets.length <= 1) {
-        showToast("Minimal harus memiliki 1 akun bank/dompet!", "error");
+        showToast("Minimal harus memiliki 1 akun DomPay!", "error");
         return;
       }
 
       const w = wallets.find(x => x.id === walletId);
-      openConfirmModal("Hapus Akun Bank", `Yakin ingin menghapus ${w?.name || 'akun ini'}?`, () => {
+      openConfirmModal("Hapus DomPay", `Yakin ingin menghapus ${w?.name || 'akun ini'}?`, async () => {
         wallets = wallets.filter(x => x.id !== walletId);
         transactions = transactions.filter(t => t.walletId !== walletId);
         recalculateWalletBalances();
-        saveToCloud();
+        await saveToCloud();
         renderAll();
         renderManageWalletsList();
-        showToast("Akun bank berhasil dihapus.");
+        showToast("Akun DomPay berhasil dihapus.");
       });
     }
 
@@ -2806,7 +2817,7 @@
       }
     }
 
-    function saveNewWallet() {
+    async function saveNewWallet() {
       const preset = document.getElementById('newWalletPreset').value;
       const name = document.getElementById('newWalletName').value.trim();
       const number = (document.getElementById('newWalletNumber')?.value || '').trim() || '-';
@@ -2827,7 +2838,7 @@
       };
 
       wallets.push(newW);
-      saveToCloud();
+      await saveToCloud();
       renderAll();
       renderManageWalletsList();
       closeModal('modalAddWallet');
@@ -2851,7 +2862,7 @@
       openModal('modalAddBudget');
     }
 
-    function saveBudget() {
+    async function saveBudget() {
       const category = document.getElementById('budgetCategory').value;
       const limit = parseFloat(document.getElementById('budgetLimit').value);
 
@@ -2867,7 +2878,7 @@
         budgets.push({ category, limit });
       }
 
-      saveToCloud();
+      await saveToCloud();
       renderBudgets();
       closeModal('modalAddBudget');
       showToast(`Anggaran untuk ${category} disimpan!`);
@@ -2927,7 +2938,7 @@
       openModal('modalAddGoal');
     }
 
-    function saveGoal() {
+    async function saveGoal() {
       const title = document.getElementById('goalTitle').value.trim();
       const target = parseFloat(document.getElementById('goalTargetAmount').value);
       const current = parseFloat(document.getElementById('goalCurrentAmount').value) || 0;
@@ -2939,18 +2950,17 @@
       }
 
       goals.push({ id: 'g_' + Date.now(), title, target, current, deadline });
-      saveToCloud();
+      await saveToCloud();
       renderGoals();
       closeModal('modalAddGoal');
       showToast(`Target impian "${title}" dibuat!`);
     }
 
-    /* Fitur Hapus Target Impian */
     function deleteGoal(goalId) {
       const g = goals.find(x => x.id === goalId);
-      openConfirmModal("Hapus Target Impian", `Yakin ingin menghapus target "${g?.title || 'ini'}"?`, () => {
+      openConfirmModal("Hapus Target Impian", `Yakin ingin menghapus target "${g?.title || 'ini'}"?`, async () => {
         goals = goals.filter(x => x.id !== goalId);
-        saveToCloud();
+        await saveToCloud();
         renderGoals();
         showToast("Target impian berhasil dihapus.");
       });
@@ -2969,8 +2979,7 @@
       openModal('modalAddSavingsToGoal');
     }
 
-    /* Eksekusi Nabung Dream Planner: Custom Nominal Tanpa Potong Dompet/Bank */
-    function executeAddSavings() {
+    async function executeAddSavings() {
       const goalId = document.getElementById('selectedGoalId').value;
       const amount = parseFloat(document.getElementById('savingsAmountInput').value);
 
@@ -3000,7 +3009,7 @@
         showToast(`Berhasil menambah tabungan ${formatCurrency(amount)}!`);
       }
 
-      saveToCloud();
+      await saveToCloud();
       renderGoals();
       closeModal('modalAddSavingsToGoal');
     }
@@ -3069,7 +3078,7 @@
       openModal('modalAddRecurring');
     }
 
-    function saveRecurring() {
+    async function saveRecurring() {
       const name = document.getElementById('recName').value.trim();
       const type = document.getElementById('recType').value;
       const amount = parseFloat(document.getElementById('recAmount').value);
@@ -3083,13 +3092,13 @@
       }
 
       recurringBills.push({ id: 'r_' + Date.now(), name, type, amount, interval, category, walletId });
-      saveToCloud();
+      await saveToCloud();
       renderRecurring();
       closeModal('modalAddRecurring');
       showToast(`Transaksi rutin "${name}" disimpan!`);
     }
 
-    function executeRecurringNow(recId) {
+    async function executeRecurringNow(recId) {
       const r = recurringBills.find(x => x.id === recId);
       if (!r) return;
 
@@ -3104,7 +3113,7 @@
       });
 
       recalculateWalletBalances();
-      saveToCloud();
+      await saveToCloud();
       renderAll();
       showToast(`Tagihan "${r.name}" berhasil dicatat sebagai transaksi hari ini!`);
     }
@@ -3133,7 +3142,9 @@
       `).join('');
     }
 
-    /* 🎮 SPENDING CHALLENGE: AUTO-GENERATION & RESET SETIAP 22.00 */
+    /* -------------------------------------------------------------
+       🎮 SPENDING CHALLENGE: AUTO-GENERATION & RESET SETIAP 22.00
+    ------------------------------------------------------------- */
     const challengePool = [
       { title: "Hemat Jajan Boba & Kopi", days: 1, xp: 35 },
       { title: "Masak Sendiri di Rumah Hari Ini", days: 1, xp: 40 },
@@ -3151,7 +3162,6 @@
       if (!currentUser) return;
 
       const now = new Date();
-      // Siklus berganti setiap pukul 22:00
       const cycleDate = new Date(now);
       if (now.getHours() < 22) {
         cycleDate.setDate(cycleDate.getDate() - 1);
@@ -3166,7 +3176,6 @@
     }
 
     function generateAutoChallenges() {
-      // Acak dan ambil maksimal 4 tantangan unik dari master pool
       const shuffled = [...challengePool].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 4);
 
@@ -3181,7 +3190,7 @@
       }));
     }
 
-    function checkInChallenge(id) {
+    async function checkInChallenge(id) {
       const c = challenges.find(x => x.id === id);
       if (!c || c.completed) return;
 
@@ -3208,7 +3217,7 @@
         showToast(`Check-in berhasil!`);
       }
 
-      saveToCloud();
+      await saveToCloud();
       renderChallenges();
     }
 
@@ -3563,15 +3572,12 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       renderCharts();
     }
 
-    /* RENDER DOMPAY: Tombol Salin Khusus Bank & E-Wallet */
     function renderWallets() {
       const container = document.getElementById('walletCardsContainer');
       if (!container) return;
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
-        const isBankOrEWallet = w.bankCode !== 'TUNAI';
-        const accNum = isBankOrEWallet && w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
-
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
         return `
           <div class="min-w-[150px] p-4 rounded-3xl ${style.bg} ${style.text} shadow-md flex flex-col justify-between shrink-0 transition-transform active:scale-95">
             <div class="flex justify-between items-center mb-3">
@@ -3582,7 +3588,7 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
               <p class="text-[10px] opacity-80 truncate">${w.name}</p>
               <p class="text-xs font-black tracking-tight mt-0.5">${formatCurrency(w.balance)}</p>
               ${accNum ? `
-              <button onclick="copyAccountNumber('${accNum}', event, '${w.bankCode}')" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening / E-Wallet">
+              <button onclick="copyAccountNumber('${accNum}', event)" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening">
                 <span class="truncate max-w-[85px]">${accNum}</span>
                 <i class="fa-regular fa-copy text-[9px]"></i>
               </button>` : ''}
@@ -3592,35 +3598,25 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       }).join('');
     }
 
-    /* Fungsi Salin Nomor Rekening / E-Wallet Eksklusif */
-    function copyAccountNumber(accNumber, event, bankCode) {
+    function copyAccountNumber(accNumber, event) {
       if (event) event.stopPropagation();
-
-      if (bankCode === 'TUNAI') {
-        showToast("Kas / Uang Tunai tidak memiliki nomor rekening.", "error");
-        return;
-      }
-
       if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined') {
-        showToast("Nomor rekening/e-wallet belum diatur pada akun ini.", "error");
+        showToast("Nomor rekening belum diatur pada akun ini.", "error");
         return;
       }
-
-      const isEWallet = ['DANA', 'GOPAY', 'OVO', 'SHOPEEPAY'].includes(bankCode);
-      const label = isEWallet ? "Nomor e-wallet" : "Nomor rekening";
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(accNumber).then(() => {
-          showToast(`${label} ${accNumber} berhasil disalin!`);
+          showToast(`Nomor rekening ${accNumber} berhasil disalin!`);
         }).catch(() => {
-          fallbackCopyText(accNumber, label);
+          fallbackCopyText(accNumber);
         });
       } else {
-        fallbackCopyText(accNumber, label);
+        fallbackCopyText(accNumber);
       }
     }
 
-    function fallbackCopyText(text, label = "Nomor") {
+    function fallbackCopyText(text) {
       const textArea = document.createElement("textarea");
       textArea.value = text;
       textArea.style.position = "fixed";
@@ -3630,9 +3626,9 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast(`${label} ${text} berhasil disalin!`);
+        showToast(`Nomor rekening ${text} berhasil disalin!`);
       } catch (err) {
-        showToast("Gagal menyalin nomor.", "error");
+        showToast("Gagal menyalin nomor rekening.", "error");
       }
       document.body.removeChild(textArea);
     }
@@ -3948,28 +3944,48 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const activeUsername = localStorage.getItem('dompet_pintar_current_user');
-        if (activeUsername && supabaseClient) {
-          const { data } = await supabaseClient
-            .from('user_finance')
-            .select('*')
-            .eq('username', activeUsername)
-            .maybeSingle();
+        if (activeUsername) {
+          let loadedData = null;
 
-          if (data && data.data) {
-            const fData = data.data;
-            currentUser = fData.user;
-            transactions = Array.isArray(fData.transactions) ? fData.transactions : [];
-            wallets = Array.isArray(fData.wallets) ? fData.wallets : [];
-            budgets = Array.isArray(fData.budgets) ? fData.budgets : [];
-            goals = Array.isArray(fData.goals) ? fData.goals : [];
-            recurringBills = Array.isArray(fData.recurringBills) ? fData.recurringBills : [];
-            challenges = Array.isArray(fData.challenges) ? fData.challenges : [];
-            notifications = Array.isArray(fData.notifications) ? fData.notifications : [];
+          // 1. Cek cache lokal terlebih dahulu
+          const localRaw = localStorage.getItem(`dompet_pintar_${activeUsername}`);
+          if (localRaw) {
+            try { loadedData = JSON.parse(localRaw); } catch(e){}
+          }
 
-            if (currentUser) {
-              enterApp(currentUser);
-              return;
+          // 2. Ambil data terbaru dari Supabase
+          if (supabaseClient) {
+            try {
+              const { data } = await supabaseClient
+                .from('user_finance')
+                .select('*')
+                .eq('username', activeUsername)
+                .order('updated_at', { ascending: false })
+                .limit(1);
+
+              if (data && data.length > 0 && data[0].data) {
+                loadedData = data[0].data;
+                try {
+                  localStorage.setItem(`dompet_pintar_${activeUsername}`, JSON.stringify(loadedData));
+                } catch(e){}
+              }
+            } catch (err) {
+              console.warn("Supabase fetch notice:", err);
             }
+          }
+
+          if (loadedData && loadedData.user) {
+            currentUser = loadedData.user;
+            transactions = Array.isArray(loadedData.transactions) ? loadedData.transactions : [];
+            wallets = Array.isArray(loadedData.wallets) ? loadedData.wallets : [];
+            budgets = Array.isArray(loadedData.budgets) ? loadedData.budgets : [];
+            goals = Array.isArray(loadedData.goals) ? loadedData.goals : [];
+            recurringBills = Array.isArray(loadedData.recurringBills) ? loadedData.recurringBills : [];
+            challenges = Array.isArray(loadedData.challenges) ? loadedData.challenges : [];
+            notifications = Array.isArray(loadedData.notifications) ? loadedData.notifications : [];
+
+            enterApp(currentUser);
+            return;
           }
         }
         showScreen('screenOnboarding');
