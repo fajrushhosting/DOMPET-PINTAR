@@ -322,12 +322,6 @@
           <button onclick="toggleHideNominal()" class="w-9 h-9 rounded-full bg-white/80 shadow-sm border border-white flex items-center justify-center text-slate-600 hover:text-brand-500 transition-all" title="Sembunyikan Saldo">
             <i id="hideNominalIcon" class="fa-solid fa-eye text-sm"></i>
           </button>
-
-          <!-- Notification Bell -->
-          <button onclick="showNotificationModal()" class="w-9 h-9 rounded-full bg-white/80 shadow-sm border border-white flex items-center justify-center text-slate-600 hover:text-brand-500 relative">
-            <i class="fa-solid fa-bell text-sm"></i>
-            <span id="notifBadge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
         </div>
       </header>
 
@@ -728,23 +722,6 @@
               <button onclick="toggleLanguage()" class="text-xs bg-slate-100 font-bold px-3 py-1.5 rounded-xl text-slate-700 hover:bg-slate-200">
                 Ganti
               </button>
-            </div>
-
-            <!-- Smart Daily Notification Toggle (17.00 WIB) -->
-            <div class="flex items-center justify-between p-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-sm">
-                  <i class="fa-solid fa-bell"></i>
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-slate-700" data-i18n="setting_notif">Notifikasi Pengingat Transaksi</p>
-                  <p class="text-[10px] text-slate-400">Pengingat harian jam 17.00 WIB</p>
-                </div>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggleDailyNotif" onchange="toggleDailyReminder(this.checked)" class="sr-only peer">
-                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
-              </label>
             </div>
 
             <!-- KELOLA DOMPAY -->
@@ -1228,25 +1205,7 @@
       </div>
     </div>
 
-    <!-- 10. MODAL NOTIFIKASI -->
-    <div id="modalNotifications" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
-        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-          <h3 class="font-bold text-slate-800 text-lg">Pemberitahuan Cerdas</h3>
-          <button onclick="closeModal('modalNotifications')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <div id="notificationList" class="space-y-2.5 max-h-80 overflow-y-auto no-scrollbar"></div>
-
-        <button onclick="markAllNotificationsAsRead()" class="w-full py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200">
-          Tandai Semua Sudah Dibaca
-        </button>
-      </div>
-    </div>
-
-    <!-- 11. MODAL EKSPOR DATA -->
+    <!-- 10. MODAL EKSPOR DATA -->
     <div id="modalExport" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1288,7 +1247,7 @@
       </div>
     </div>
 
-    <!-- 12. MODAL CONFIRMATION DIALOG -->
+    <!-- 11. MODAL CONFIRMATION DIALOG -->
     <div id="modalConfirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center space-y-4 fade-in">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center text-lg">
@@ -1303,7 +1262,7 @@
       </div>
     </div>
 
-    <!-- 13. MODAL HYBRID APP INSTALL GUIDE -->
+    <!-- 12. MODAL HYBRID APP INSTALL GUIDE -->
     <div id="modalHybridInstallGuide" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1353,7 +1312,7 @@
       </div>
     </div>
 
-    <!-- 14. MODAL 2FA SETUP (GOOGLE AUTHENTICATOR) -->
+    <!-- 13. MODAL 2FA SETUP (GOOGLE AUTHENTICATOR) -->
     <div id="modal2FASetup" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1421,7 +1380,7 @@
       </div>
     </div>
 
-    <!-- 15. MODAL 2FA VERIFICATION SAAT LOGIN -->
+    <!-- 14. MODAL 2FA VERIFICATION SAAT LOGIN -->
     <div id="modal2FALogin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl space-y-4 text-center fade-in">
         <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 mx-auto flex items-center justify-center text-xl shadow-sm">
@@ -1447,7 +1406,7 @@
       </div>
     </div>
 
-    <!-- 16. MODAL GANTI KATA SANDI -->
+    <!-- 15. MODAL GANTI KATA SANDI -->
     <div id="modalChangePassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1486,7 +1445,7 @@
       </div>
     </div>
 
-    <!-- 17. MODAL LUPA KATA SANDI -->
+    <!-- 16. MODAL LUPA KATA SANDI -->
     <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1533,6 +1492,24 @@
   </div>
 
   <script>
+    /* =========================================================================
+       NAVIGASI SCREEN (PERBAIKAN BUG TOMBOL MULAI)
+       ========================================================================= */
+    function showScreen(screenId) {
+      const screens = ['screenOnboarding', 'screenAuth', 'mainApp'];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === screenId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     /* =========================================================================
        SISTEM APP HYBRID (ANTI DOWNLOAD BERULANG & CEK INSTALASI)
        ========================================================================= */
@@ -1712,7 +1689,6 @@
         set_budget: "Set Budget",
         monthly_budget_status: "Batas Pengeluaran Bulanan",
         setting_lang: "Bahasa / Language",
-        setting_notif: "Notifikasi Pengingat Transaksi",
         btn_logout: "Keluar Akun"
       },
       en: {
@@ -1759,7 +1735,6 @@
         set_budget: "Set Budget",
         monthly_budget_status: "Monthly Spending Limits",
         setting_lang: "Language / Bahasa",
-        setting_notif: "Daily Reminder Notification",
         btn_logout: "Log Out"
       }
     };
@@ -1896,9 +1871,7 @@
     let goals = [];
     let recurringBills = [];
     let challenges = [];
-    let notifications = [];
     let lastChallengeResetDate = null;
-    let dailyReminderTimer = null;
 
     /* Generator 1.000 Spending Challenges */
     function generate1000Challenges() {
@@ -2222,9 +2195,6 @@
       budgets = [];
       goals = [];
       recurringBills = [];
-      notifications = [
-        { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah akun DomPay.', time: 'Baru saja', read: false }
-      ];
       lastChallengeResetDate = null;
       checkAndResetDailyChallenges();
     }
@@ -2245,7 +2215,6 @@
         goals,
         recurringBills,
         challenges,
-        notifications,
         lastChallengeResetDate
       };
 
@@ -2291,7 +2260,6 @@
           goals = Array.isArray(parsed.goals) ? parsed.goals : [];
           recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
           challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
-          notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
           lastChallengeResetDate = parsed.lastChallengeResetDate || null;
 
           challenges.forEach(c => {
@@ -2390,7 +2358,6 @@
           level: 1,
           xp: 0,
           streak: 1,
-          notificationEnabled: false,
           isAppInstalled: false,
           joinedDate: getTodayISO()
         };
@@ -2405,7 +2372,6 @@
           goals,
           recurringBills,
           challenges,
-          notifications,
           lastChallengeResetDate
         };
 
@@ -2505,7 +2471,6 @@
         goals = Array.isArray(parsed.goals) ? parsed.goals : [];
         recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
         challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
-        notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
         lastChallengeResetDate = parsed.lastChallengeResetDate || null;
 
         sessionStorage.setItem('dompet_pintar_current_user', username);
@@ -2632,10 +2597,6 @@
 
     function handleLogout() {
       currentUser = null;
-      if (dailyReminderTimer) {
-        clearTimeout(dailyReminderTimer);
-        dailyReminderTimer = null;
-      }
       sessionStorage.removeItem('dompet_pintar_current_user');
       showScreen('screenOnboarding');
       showToast("Anda telah keluar akun.");
@@ -2660,11 +2621,6 @@
             goals = [];
             recurringBills = [];
             challenges = [];
-            notifications = [];
-            if (dailyReminderTimer) {
-              clearTimeout(dailyReminderTimer);
-              dailyReminderTimer = null;
-            }
             sessionStorage.removeItem('dompet_pintar_current_user');
           }
 
@@ -2682,27 +2638,11 @@
       document.getElementById('settingsUsername').innerText = '@' + user.username;
       document.getElementById('streakCount').innerText = user.streak || 1;
 
-      // Sinkronkan status sakelar notifikasi & install button
-      const toggleEl = document.getElementById('toggleDailyNotif');
-      const isNotifActive = user.notificationEnabled === true;
-      if (toggleEl) {
-        toggleEl.checked = isNotifActive;
-      }
-
       updateLevelUI(user);
       update2FAStatusUI();
       updateInstallButtonUI();
       checkAndResetDailyChallenges();
       scheduleMidnightChallengeReset();
-      
-      if (isNotifActive) {
-        scheduleDailyTransactionReminder();
-      } else {
-        if (dailyReminderTimer) {
-          clearTimeout(dailyReminderTimer);
-          dailyReminderTimer = null;
-        }
-      }
       
       renderAll();
     }
@@ -3733,37 +3673,6 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
           printWindow.print();
         } catch (e) {}
       }, 300);
-    }
-
-    function showNotificationModal() {
-      const list = document.getElementById('notificationList');
-      if (!list) return;
-      if (!notifications.length) {
-        list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada pemberitahuan baru.</p>`;
-      } else {
-        list.innerHTML = notifications.map(n => `
-          <div class="p-3 rounded-2xl ${n.read ? 'bg-slate-50' : 'bg-brand-50/70 border border-brand-100'} flex items-start gap-3">
-            <div class="w-8 h-8 rounded-full ${n.read ? 'bg-slate-200 text-slate-500' : 'bg-brand-400 text-white'} flex items-center justify-center text-xs shrink-0">
-              <i class="fa-solid fa-bell"></i>
-            </div>
-            <div>
-              <p class="font-bold text-xs text-slate-800">${n.title}</p>
-              <p class="text-[11px] text-slate-600">${n.text}</p>
-              <span class="text-[9px] text-slate-400">${n.time}</span>
-            </div>
-          </div>
-        `).join('');
-      }
-      openModal('modalNotifications');
-    }
-
-    function markAllNotificationsAsRead() {
-      notifications.forEach(n => n.read = true);
-      const b = document.getElementById('notifBadge');
-      if (b) b.classList.add('hidden');
-      saveToSupabase();
-      closeModal('modalNotifications');
-      showToast("Semua pemberitahuan ditandai sudah dibaca.");
     }
 
     let miniExpenseChartInst = null;
