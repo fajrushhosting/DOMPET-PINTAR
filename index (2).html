@@ -1,0 +1,3775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dompet Pintar - Aplikasi Pengelola Keuangan Modern</title>
+  
+  <!-- PWA & Hybrid App Meta Tags -->
+  <meta name="theme-color" content="#38bdf8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Dompet Pintar" />
+  <meta name="application-name" content="Dompet Pintar" />
+  <meta name="msapplication-TileColor" content="#0ea5e9" />
+
+  <!-- Professional Dynamic Favicon SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%230284c7'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3Cpath d='M26 23H37V29H26C24.9 29 24 28.1 24 27V25C24 23.9 24.9 23 26 23Z' fill='%230284c7'/%3E%3Ccircle cx='31' cy='26' r='1.8' fill='%2338bdf8'/%3E%3Cpath d='M36 8L37 11L40 12L37 13L36 16L35 13L32 12L35 11L36 8Z' fill='%23fde047'/%3E%3C/svg%3E" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            },
+            accent: {
+              orange: '#fb923c',
+              green: '#22c55e',
+              cyan: '#06b6d4',
+            }
+          },
+          borderRadius: {
+            '3xl': '1.75rem',
+            '4xl': '2.25rem',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .fade-in {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .bg-sky-gradient {
+      background: linear-gradient(180deg, #cbefff 0%, #e6f6ff 45%, #f4fbff 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex justify-center selection:bg-brand-200">
+
+  <!-- Main Mobile Container -->
+  <div id="appContainer" class="w-full max-w-md md:max-w-lg min-h-screen bg-sky-gradient flex flex-col relative shadow-2xl transition-all duration-300">
+    
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform transition-all duration-300 opacity-0 pointer-events-none max-w-xs w-full px-4">
+      <div id="toastContent" class="bg-slate-900 text-white text-xs sm:text-sm font-medium px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-brand-400 text-base"></i>
+        <span id="toastMessage">Pesan pemberitahuan</span>
+      </div>
+    </div>
+
+    <!-- 1. HALAMAN ONBOARDING -->
+    <section id="screenOnboarding" class="flex-1 flex flex-col justify-between p-6 fade-in">
+      <div class="flex justify-between items-center pt-2">
+        <div class="flex items-center gap-2.5">
+          <!-- Professional Vector Fintech Logo -->
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-sky-400 p-0.5 shadow-md shadow-brand-500/20 flex items-center justify-center shrink-0">
+            <svg class="w-full h-full p-1" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 20C8 17.79 9.79 16 12 16H36C38.21 16 40 17.79 40 20V32C40 34.21 38.21 36 36 36H12C9.79 36 8 34.21 8 32V20Z" fill="#ffffff" fill-opacity="0.95"/>
+              <circle cx="28" cy="16" r="6" fill="#22c55e"/>
+              <text x="25" y="19" fill="#ffffff" font-size="8" font-weight="900" font-family="'Plus Jakarta Sans', sans-serif">Rp</text>
+              <path d="M26 22H39V29H26C24.34 29 23 27.66 23 26C23 24.34 24.34 22 26 22Z" fill="#0284c7"/>
+              <circle cx="32" cy="25.5" r="2.2" fill="#7dd3fc"/>
+              <path d="M37 6L38 9L41 10L38 11L37 14L36 11L33 10L36 9L37 6Z" fill="#fde047"/>
+            </svg>
+          </div>
+          <div>
+            <span class="font-extrabold text-slate-800 text-sm tracking-tight block leading-tight">Dompet Pintar</span>
+            <span class="text-[9px] font-bold text-brand-600 tracking-wider uppercase">Smart Financial Hub</span>
+          </div>
+        </div>
+        <button onclick="toggleLanguage()" class="text-xs bg-white/70 backdrop-blur px-3 py-1.5 rounded-full text-slate-700 font-semibold shadow-sm border border-white flex items-center gap-1.5 hover:bg-white transition-all">
+          <i class="fa-solid fa-globe text-brand-500"></i>
+          <span id="langLabelOnboard">ID</span>
+        </button>
+      </div>
+
+      <div class="my-auto flex flex-col items-center text-center py-6">
+        <div class="relative w-64 h-64 mb-6 flex items-center justify-center">
+          <div class="absolute w-56 h-56 bg-sky-200/60 rounded-full blur-2xl"></div>
+          
+          <svg viewBox="0 0 240 240" class="w-60 h-60 drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="25" y="65" width="55" height="32" rx="6" fill="#38bdf8" transform="rotate(-15 25 65)"/>
+            <text x="35" y="85" fill="white" font-size="12" font-weight="bold" transform="rotate(-15 25 65)">Rp</text>
+            <rect x="150" y="45" width="55" height="32" rx="6" fill="#0ea5e9" transform="rotate(10 150 45)"/>
+            <text x="160" y="65" fill="white" font-size="12" font-weight="bold" transform="rotate(10 150 45)">Rp</text>
+
+            <circle cx="45" cy="40" r="14" fill="#bae6fd" opacity="0.8"/>
+            <text x="38" y="44" fill="#0284c7" font-size="10" font-weight="bold">Rp</text>
+            <circle cx="195" cy="75" r="16" fill="#bae6fd" opacity="0.8"/>
+            <text x="187" y="79" fill="#0284c7" font-size="11" font-weight="bold">Rp</text>
+
+            <rect x="35" y="95" width="52" height="75" rx="8" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
+            <rect x="42" y="103" width="38" height="18" rx="4" fill="#38bdf8"/>
+            <text x="46" y="116" fill="white" font-size="9" font-weight="bold">2973</text>
+            <circle cx="48" cy="132" r="3" fill="#7dd3fc"/><circle cx="61" cy="132" r="3" fill="#7dd3fc"/><circle cx="74" cy="132" r="3" fill="#7dd3fc"/>
+            <circle cx="48" cy="145" r="3" fill="#7dd3fc"/><circle cx="61" cy="145" r="3" fill="#7dd3fc"/><circle cx="74" cy="145" r="3" fill="#7dd3fc"/>
+
+            <rect x="95" y="85" width="85" height="115" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="2.5"/>
+            <rect x="118" y="77" width="40" height="15" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+            <circle cx="138" cy="84" r="3" fill="#94a3b8"/>
+            <rect x="105" y="102" width="65" height="12" rx="2" fill="#bae6fd"/>
+            <line x1="105" y1="124" x2="170" y2="124" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="105" y1="136" x2="170" y2="136" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="105" y1="148" x2="170" y2="148" stroke="#cbd5e1" stroke-width="1.5"/>
+
+            <path d="M40 185 Q65 155 85 160 Q80 185 45 200 Z" fill="#fed7aa"/>
+            <path d="M195 190 Q170 160 160 165 Q168 185 190 205 Z" fill="#fed7aa"/>
+            <line x1="155" y1="155" x2="168" y2="170" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+            <rect x="140" y="195" width="50" height="40" rx="4" fill="#38bdf8"/>
+            <rect x="40" y="195" width="45" height="40" rx="4" fill="#38bdf8"/>
+          </svg>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-3 tracking-tight" data-i18n="onboard_title">Keuanganku</h1>
+        <p class="text-slate-600 text-sm sm:text-base max-w-xs leading-relaxed" data-i18n="onboard_desc">
+          Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.
+        </p>
+      </div>
+
+      <div class="space-y-3 pb-4">
+        <button onclick="showScreen('screenAuth')" class="w-full py-4 bg-brand-400 hover:bg-brand-500 active:scale-[0.98] transition-all text-white font-bold rounded-full shadow-lg shadow-brand-400/30 text-base" data-i18n="onboard_btn">
+          Mulai
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. HALAMAN AUTENTIKASI -->
+    <section id="screenAuth" class="hidden flex-1 flex flex-col justify-between p-6 fade-in">
+      <div>
+        <div class="flex items-center justify-between pt-2 mb-6">
+          <button onclick="showScreen('screenOnboarding')" class="w-10 h-10 rounded-full bg-white/80 shadow-sm flex items-center justify-center text-slate-700 hover:bg-white transition-all">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <!-- Auth Logo Header -->
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-brand-600 to-sky-400 p-0.5 shadow-sm flex items-center justify-center">
+              <svg class="w-full h-full p-0.5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 20C8 17.79 9.79 16 12 16H36C38.21 16 40 17.79 40 20V32C40 34.21 38.21 36 36 36H12C9.79 36 8 34.21 8 32V20Z" fill="#ffffff"/>
+                <circle cx="28" cy="16" r="6" fill="#22c55e"/>
+                <path d="M26 22H39V29H26C24.34 29 23 27.66 23 26C23 24.34 24.34 22 26 22Z" fill="#0284c7"/>
+              </svg>
+            </div>
+            <span class="font-extrabold text-slate-800 text-sm tracking-tight">Dompet Pintar</span>
+          </div>
+          <div class="w-10"></div>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="flex bg-white/80 p-1 rounded-2xl shadow-sm mb-6 border border-brand-100">
+          <button id="tabBtnLogin" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-400 text-white shadow-sm transition-all" data-i18n="auth_login_tab">
+            Masuk
+          </button>
+          <button id="tabBtnRegister" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all" data-i18n="auth_register_tab">
+            Daftar
+          </button>
+        </div>
+
+        <!-- FORM LOGIN -->
+        <div id="formLogin" class="bg-white rounded-3xl p-6 shadow-sm border border-brand-50 space-y-4">
+          <h2 class="text-xl font-bold text-slate-800" data-i18n="login_heading">Selamat Datang Kembali</h2>
+          <p class="text-xs text-slate-500" data-i18n="login_sub">Masuk menggunakan username dan kata sandi Anda</p>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input type="text" id="loginUsername" placeholder="Masukkan username..." class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm transition-all" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input type="password" id="loginPassword" placeholder="Masukkan sandi..." class="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm transition-all" />
+              <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember Me Checkbox -->
+          <div class="flex items-center text-xs pt-1">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="loginRememberMe" class="rounded text-brand-500 focus:ring-brand-300" checked>
+              <span class="text-slate-600 font-medium" data-i18n="remember_me">Remember Me</span>
+            </label>
+          </div>
+
+          <button onclick="handleLogin()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2" data-i18n="btn_login">
+            Masuk ke Dompet Pintar
+          </button>
+        </div>
+
+        <!-- FORM REGISTER -->
+        <div id="formRegister" class="hidden bg-white rounded-3xl p-6 shadow-sm border border-brand-50 space-y-3.5">
+          <h2 class="text-xl font-bold text-slate-800" data-i18n="reg_heading">Buat Akun Baru</h2>
+          <p class="text-xs text-slate-500" data-i18n="reg_sub">Kelola uangmu lebih teratur mulai hari ini</p>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_fullname">Nama Lengkap</label>
+            <input type="text" id="regFullName" placeholder="Contoh: Muhammad Alwi" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username Unik</label>
+            <input type="text" id="regUsername" placeholder="Contoh: alwi" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir</label>
+            <input type="date" id="regBirthDate" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
+            <div class="relative">
+              <input type="password" id="regPassword" placeholder="Minimal 6 karakter..." class="w-full px-4 pr-10 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 outline-none text-sm" />
+              <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button onclick="handleRegister()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2" data-i18n="btn_register">
+            Daftar Sekarang
+          </button>
+        </div>
+      </div>
+      <div class="py-4 text-center">
+        <p class="text-xs text-slate-500">Dompet Pintar &copy; 2026. Aman, Cerdas & Terenkripsi.</p>
+      </div>
+    </section>
+
+    <!-- 3. MAIN APP INTERFACE (DASHBOARD) -->
+    <div id="mainApp" class="hidden flex-1 flex flex-col justify-between overflow-x-hidden">
+      
+      <!-- Top Bar Header -->
+      <header class="p-6 pb-2 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden shadow-sm bg-brand-200 flex items-center justify-center">
+            <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80" alt="Avatar" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/38bdf8/ffffff?text=User'" />
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-slate-500" data-i18n="greeting">Hi,</span>
+              <span id="headerUserName" class="text-base font-bold text-slate-800">-</span>
+            </div>
+            <!-- Level & Streak Badge -->
+            <div class="flex items-center gap-1.5">
+              <span id="userLevelBadge" class="text-[10px] bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded-full">Level 1: Pemula</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-fire text-amber-500"></i> <span id="streakCount">1</span>d
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Multi-Currency Selector -->
+          <select id="currencySelector" onchange="changeCurrency(this.value)" class="text-xs bg-white/80 font-bold text-slate-700 py-1.5 px-2.5 rounded-full border border-white shadow-sm outline-none cursor-pointer">
+            <option value="IDR">IDR (Rp)</option>
+            <option value="USD">USD ($)</option>
+            <option value="SGD">SGD (S$)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="JPY">JPY (¥)</option>
+          </select>
+
+          <!-- Toggle Hide Nominal -->
+          <button onclick="toggleHideNominal()" class="w-9 h-9 rounded-full bg-white/80 shadow-sm border border-white flex items-center justify-center text-slate-600 hover:text-brand-500 transition-all" title="Sembunyikan Saldo">
+            <i id="hideNominalIcon" class="fa-solid fa-eye text-sm"></i>
+          </button>
+
+          <!-- Notification Bell -->
+          <button onclick="showNotificationModal()" class="w-9 h-9 rounded-full bg-white/80 shadow-sm border border-white flex items-center justify-center text-slate-600 hover:text-brand-500 relative">
+            <i class="fa-solid fa-bell text-sm"></i>
+            <span id="notifBadge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW CONTAINER -->
+      <main class="flex-1 pb-24 overflow-y-auto no-scrollbar">
+
+        <!-- TAB 1: DASHBOARD UTAMA -->
+        <section id="tabDashboard" class="p-6 pt-2 space-y-5 fade-in">
+          
+          <!-- Balance Widget (Uangku) -->
+          <div class="text-center py-4">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" data-i18n="my_money">Uangku</p>
+            <h2 id="totalBalanceDisplay" class="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight transition-all">
+              Rp 0
+            </h2>
+            <p id="netCashflowText" class="text-xs text-emerald-600 font-semibold mt-1">
+              <i class="fa-solid fa-arrow-trend-up"></i> +0% bulan ini
+            </p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="grid grid-cols-4 gap-2 bg-white/70 backdrop-blur p-3 rounded-3xl shadow-sm border border-white">
+            <button onclick="openTransactionModal('expense')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-rose-50 transition-all">
+              <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-sm shadow-sm">
+                <i class="fa-solid fa-arrow-up"></i>
+              </div>
+              <span class="text-[11px] font-bold text-slate-700" data-i18n="btn_expense">Keluar</span>
+            </button>
+            <button onclick="openTransactionModal('income')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-emerald-50 transition-all">
+              <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm shadow-sm">
+                <i class="fa-solid fa-arrow-down"></i>
+              </div>
+              <span class="text-[11px] font-bold text-slate-700" data-i18n="btn_income">Masuk</span>
+            </button>
+            <button onclick="openTransferModal()" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-brand-50 transition-all">
+              <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm shadow-sm">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </div>
+              <span class="text-[11px] font-bold text-slate-700" data-i18n="btn_transfer">Transfer</span>
+            </button>
+            <button onclick="openExportModal()" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-purple-50 transition-all">
+              <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm shadow-sm">
+                <i class="fa-solid fa-file-export"></i>
+              </div>
+              <span class="text-[11px] font-bold text-slate-700" data-i18n="btn_export">Ekspor</span>
+            </button>
+          </div>
+
+          <!-- Card Keuanganku -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm space-y-4 border border-slate-100">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-slate-800 text-base" data-i18n="section_my_finance">Keuanganku</h3>
+              <span id="currentPeriodLabel" class="text-xs text-slate-400 font-medium">Bulan Ini</span>
+            </div>
+
+            <!-- Card Pengeluaranku -->
+            <div onclick="openExpenseDetailView()" class="p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] group">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <p class="text-xs font-bold text-slate-700" data-i18n="lbl_expense">Pengeluaranku</p>
+                </div>
+                <p class="text-[10px] text-slate-400 mb-1" id="expensePeriodText">Bulan Ini</p>
+                <p id="dashExpenseTotal" class="text-base font-extrabold text-slate-800">Rp 0</p>
+              </div>
+
+              <div class="relative w-14 h-14 flex items-center justify-center">
+                <canvas id="miniExpenseChart" width="56" height="56"></canvas>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-300 group-hover:text-brand-400 absolute transition-all"></i>
+              </div>
+            </div>
+
+            <!-- Card Pemasukanku -->
+            <div onclick="openIncomeDetailView()" class="p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] group">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <p class="text-xs font-bold text-slate-700" data-i18n="lbl_income">Pemasukanku</p>
+                </div>
+                <p class="text-[10px] text-slate-400 mb-1" id="incomePeriodText">Bulan Ini</p>
+                <p id="dashIncomeTotal" class="text-base font-extrabold text-emerald-600">Rp 0</p>
+              </div>
+
+              <div class="relative w-14 h-14 flex items-center justify-center">
+                <canvas id="miniIncomeChart" width="56" height="56"></canvas>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-300 group-hover:text-emerald-400 absolute transition-all"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider Akun Bank Indonesia -->
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center px-1">
+              <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_wallets">Akun & Dompet Bank</h3>
+              <div class="flex items-center gap-2">
+                <button onclick="openManageWalletsModal()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1">
+                  <i class="fa-solid fa-list-check"></i> <span>Kelola</span>
+                </button>
+                <button onclick="openAddWalletModal()" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-plus"></i> <span data-i18n="add_wallet">Tambah Bank</span>
+                </button>
+              </div>
+            </div>
+            
+            <div id="walletCardsContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Section: Statistik Ringkas -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_stats">Statistik Aliran Kas</h3>
+              <span class="text-[11px] text-slate-400">Pemasukan vs Pengeluaran</span>
+            </div>
+            <div class="h-44 w-full">
+              <canvas id="mainCashflowChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Transaksi Terkini Section -->
+          <div class="space-y-3">
+            <div class="flex justify-between items-center px-1">
+              <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_recent_trans">Transaksi Terakhir</h3>
+              <button onclick="switchMainTab('transactions')" class="text-xs font-bold text-brand-600 hover:underline" data-i18n="see_all">Lihat Semua</button>
+            </div>
+            <div id="recentTransactionList" class="space-y-2">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- TAB 2: DETAIL PENGELUARANKU -->
+        <section id="viewExpenseDetail" class="hidden p-6 pt-2 space-y-5 fade-in">
+          <div class="flex items-center justify-between">
+            <button onclick="closeExpenseDetailView()" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="text-center">
+              <h2 class="font-extrabold text-slate-800 text-lg" data-i18n="title_expense_breakdown">Pengeluaranku</h2>
+              <p class="text-xs text-slate-500 font-medium" id="breakdownDateRange">Bulan Berjalan</p>
+            </div>
+            <button onclick="switchMainTab('transactions')" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center">
+            <div class="relative w-56 h-56 flex items-center justify-center my-2">
+              <canvas id="largeExpenseDonutChart"></canvas>
+              <div class="absolute text-center pointer-events-none">
+                <span class="text-[11px] text-slate-400 font-medium" data-i18n="lbl_total_spending">Pengeluaran</span>
+                <p id="donutCenterAmount" class="font-extrabold text-slate-800 text-sm">Rp 0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl px-5 py-4 shadow-sm border border-slate-100 flex items-center justify-between">
+            <span class="font-bold text-slate-600 text-sm" data-i18n="lbl_total">Total</span>
+            <span id="detailTotalExpenseText" class="font-extrabold text-slate-800 text-base">Rp 0</span>
+          </div>
+
+          <div class="space-y-2.5">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1" data-i18n="lbl_category_breakdown">Rincian Kategori</h4>
+            <div id="expenseCategoryBreakdownList" class="space-y-2">
+              <!-- Item injected from JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: DAFTAR SEMUA TRANSAKSI (CRUD) -->
+        <section id="tabTransactions" class="hidden p-6 pt-2 space-y-4 fade-in">
+          <div class="flex justify-between items-center">
+            <h2 class="font-extrabold text-slate-800 text-xl" data-i18n="nav_transactions">Daftar Transaksi</h2>
+            <button onclick="openTransactionModal('expense')" class="bg-brand-400 hover:bg-brand-500 text-white text-xs font-bold px-3.5 py-2 rounded-full shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_trans">Catat</span>
+            </button>
+          </div>
+
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="searchTransInput" oninput="filterTransactions()" placeholder="Cari transaksi / catatan..." class="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs outline-none focus:border-brand-400" />
+            </div>
+            <select id="filterTypeSelect" onchange="filterTransactions()" class="bg-white border border-slate-200 text-xs rounded-2xl px-3 py-2.5 font-semibold text-slate-700 outline-none">
+              <option value="all">Semua</option>
+              <option value="expense">Pengeluaran</option>
+              <option value="income">Pemasukan</option>
+              <option value="transfer">Transfer</option>
+            </select>
+          </div>
+
+          <div id="fullTransactionList" class="space-y-2.5">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- TAB 4: BUDGET, DREAM PLANNER, & RECURRING -->
+        <section id="tabBudgets" class="hidden p-6 pt-2 space-y-5 fade-in">
+          <div class="flex justify-between items-center">
+            <h2 class="font-extrabold text-slate-800 text-xl" data-i18n="nav_budget">Anggaran & Rencana</h2>
+            <button onclick="openAddBudgetModal()" class="bg-brand-400 text-white text-xs font-bold px-3.5 py-2 rounded-full shadow-sm">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="set_budget">Set Budget</span>
+            </button>
+          </div>
+
+          <div class="flex bg-white/80 p-1 rounded-2xl shadow-sm border border-brand-100 text-xs font-bold">
+            <button onclick="switchBudgetSubtab('budget')" id="subtabBudgetBtn" class="flex-1 py-2 rounded-xl bg-brand-400 text-white shadow-sm">Anggaran</button>
+            <button onclick="switchBudgetSubtab('goals')" id="subtabGoalsBtn" class="flex-1 py-2 rounded-xl text-slate-600">Dream Planner</button>
+            <button onclick="switchBudgetSubtab('recurring')" id="subtabRecurringBtn" class="flex-1 py-2 rounded-xl text-slate-600">Berulang</button>
+          </div>
+
+          <!-- SUBTAB: ANGGARAN -->
+          <div id="subtabBudgetContent" class="space-y-3">
+            <div class="flex justify-between items-center px-1">
+              <span class="text-xs font-bold text-slate-500" data-i18n="monthly_budget_status">Batas Pengeluaran Bulanan</span>
+              <span id="overallBudgetPercent" class="text-xs font-extrabold text-brand-600">0% Terpakai</span>
+            </div>
+            <div id="budgetItemsList" class="space-y-3">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- SUBTAB: DREAM PLANNER -->
+          <div id="subtabGoalsContent" class="hidden space-y-3">
+            <div class="flex justify-between items-center px-1">
+              <div>
+                <h4 class="text-xs font-bold text-slate-700">Target Impianmu</h4>
+                <p class="text-[11px] text-slate-400">Pantau progres tabungan dan estimasi waktu</p>
+              </div>
+              <button onclick="openAddGoalModal()" class="text-xs font-bold text-brand-600 hover:underline">
+                <i class="fa-solid fa-plus"></i> Target Baru
+              </button>
+            </div>
+            <div id="goalsListContainer" class="space-y-3">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- SUBTAB: RECURRING -->
+          <div id="subtabRecurringContent" class="hidden space-y-3">
+            <div class="flex justify-between items-center px-1">
+              <div>
+                <h4 class="text-xs font-bold text-slate-700">Langganan & Tagihan Rutin</h4>
+                <p class="text-[11px] text-slate-400">Otomatisasi tagihan berkala</p>
+              </div>
+              <button onclick="openAddRecurringModal()" class="text-xs font-bold text-brand-600 hover:underline">
+                <i class="fa-solid fa-plus"></i> Tambah Rutin
+              </button>
+            </div>
+            <div id="recurringListContainer" class="space-y-2.5">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- TAB 5: LAPORAN & AI INSIGHTS -->
+        <section id="tabAnalytics" class="hidden p-6 pt-2 space-y-5 fade-in">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="font-extrabold text-slate-800 text-xl" data-i18n="nav_insights">Laporan & AI</h2>
+              <p class="text-xs text-slate-500">Analisis cerdas pola pengeluaranmu</p>
+            </div>
+            <button onclick="generatePrintableReport()" class="bg-white text-slate-700 border border-slate-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm hover:bg-slate-50">
+              <i class="fa-solid fa-print"></i> Cetak Laporan
+            </button>
+          </div>
+
+          <!-- AI INSIGHTS CARD -->
+          <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-sky-900 text-white rounded-3xl p-5 shadow-xl relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-brand-400/20 rounded-full blur-xl pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-brand-300">
+                  <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-sm">AI Financial Assistant</h3>
+                  <p class="text-[10px] text-brand-200">Didukung Google Gemini 2.5 Flash</p>
+                </div>
+              </div>
+              <button onclick="fetchGeminiFinancialAdvice()" id="btnAskAI" class="bg-brand-400 hover:bg-brand-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all active:scale-95 flex items-center gap-1">
+                <i class="fa-solid fa-rotate text-xs"></i> <span>Analisis AI</span>
+              </button>
+            </div>
+
+            <div id="aiInsightBox" class="bg-white/10 backdrop-blur rounded-2xl p-4 text-xs leading-relaxed text-slate-100 min-h-[90px] border border-white/10 flex items-center justify-center text-center">
+              <span>Klik tombol <b>"Analisis AI"</b> untuk mendapatkan deteksi pengeluaran bocor halus, tips hemat, dan saran pola keuangan kamu.</span>
+            </div>
+          </div>
+
+          <!-- Savings Rate Tracker -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-slate-800 text-sm">Savings Rate Tracker</h4>
+              <span id="savingsRateBadge" class="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">0%</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Persentase uang yang berhasil kamu simpan bulan ini.</p>
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+              <div id="savingsRateBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Gamifikasi Spending Challenge -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+            <div class="flex justify-between items-center">
+              <div>
+                <h4 class="font-bold text-slate-800 text-sm">🎮 Spending Challenge</h4>
+                <p class="text-[11px] text-slate-400">Tantang diri sendiri buat hemat & raih poin</p>
+              </div>
+              <button onclick="openNewChallengeModal()" class="text-xs font-bold text-brand-600 hover:underline">+ Tantangan</button>
+            </div>
+
+            <div id="spendingChallengeList" class="space-y-2.5">
+              <!-- Challenges -->
+            </div>
+          </div>
+
+          <!-- Cuan Tracker & Milestones -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+            <div class="flex justify-between items-center">
+              <h4 class="font-bold text-slate-800 text-sm">🏆 Cuan Tracker & Level</h4>
+              <span class="text-xs text-brand-600 font-bold" id="cuanXpDisplay">0 / 100 XP</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div id="cuanProgressBar" class="bg-brand-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
+              <div class="p-2.5 bg-slate-50 rounded-2xl border border-slate-100">
+                <i class="fa-solid fa-seedling text-emerald-500 text-base mb-1"></i>
+                <p class="font-bold text-slate-700">Lvl 1</p>
+                <p class="text-[10px] text-slate-400">Pemula Hemat</p>
+              </div>
+              <div class="p-2.5 bg-slate-50 rounded-2xl border border-slate-100">
+                <i class="fa-solid fa-shield-halved text-brand-500 text-base mb-1"></i>
+                <p class="font-bold text-slate-700">Lvl 2</p>
+                <p class="text-[10px] text-slate-400">Perencana</p>
+              </div>
+              <div class="p-2.5 bg-slate-50 rounded-2xl border border-slate-100">
+                <i class="fa-solid fa-crown text-amber-500 text-base mb-1"></i>
+                <p class="font-bold text-slate-700">Lvl 3</p>
+                <p class="text-[10px] text-slate-400">Sultan Bijak</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- TAB 6: PENGATURAN & AKUN -->
+        <section id="tabSettings" class="hidden p-6 pt-2 space-y-4 fade-in">
+          <h2 class="font-extrabold text-slate-800 text-xl mb-2" data-i18n="nav_settings">Pengaturan</h2>
+
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-brand-100 overflow-hidden flex items-center justify-center">
+              <img id="settingsAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80" alt="Avatar" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/38bdf8/ffffff?text=User'">
+            </div>
+            <div>
+              <h3 id="settingsFullName" class="font-bold text-slate-800 text-base">-</h3>
+              <p id="settingsUsername" class="text-xs text-slate-400">@-</p>
+              <span class="inline-block mt-1 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Akun Aktif</span>
+            </div>
+          </div>
+
+          <!-- Hybrid App Download / PWA Banner (Updated Professional Hybrid Engine) -->
+          <div class="bg-gradient-to-r from-sky-400 via-brand-500 to-brand-600 text-white rounded-3xl p-4 shadow-lg shadow-brand-500/20 flex items-center justify-between relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-lg pointer-events-none"></div>
+            <div class="space-y-1 z-10">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] bg-white/20 text-white font-extrabold px-2 py-0.5 rounded-full">PWA HYBRID</span>
+                <p class="font-bold text-sm">Download App Hybrid</p>
+              </div>
+              <p class="text-[11px] text-sky-100">Pasang di layar utama ponsel untuk akses cepat tanpa browser</p>
+            </div>
+            <button onclick="installHybridApp()" id="btnHybridInstall" class="z-10 bg-white text-brand-600 text-xs font-extrabold px-4 py-2.5 rounded-2xl shadow hover:bg-sky-50 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+              <i class="fa-solid fa-download text-xs"></i>
+              <span id="btnHybridLabel">Pasang</span>
+            </button>
+          </div>
+
+          <!-- Settings Option List -->
+          <div class="bg-white rounded-3xl p-2 shadow-sm border border-slate-100 divide-y divide-slate-100">
+            <!-- Language Switcher -->
+            <div class="flex items-center justify-between p-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-language"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700" data-i18n="setting_lang">Bahasa / Language</p>
+                  <p class="text-[10px] text-slate-400" id="currentLangDesc">Bahasa Indonesia</p>
+                </div>
+              </div>
+              <button onclick="toggleLanguage()" class="text-xs bg-slate-100 font-bold px-3 py-1.5 rounded-xl text-slate-700 hover:bg-slate-200">
+                Ganti
+              </button>
+            </div>
+
+            <!-- Smart Daily Notification Toggle -->
+            <div class="flex items-center justify-between p-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700" data-i18n="setting_notif">Notifikasi Pengingat Transaksi</p>
+                  <p class="text-[10px] text-slate-400">Pengingat harian jam 20:00</p>
+                </div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggleDailyNotif" onchange="toggleDailyReminder(this.checked)" checked class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
+              </label>
+            </div>
+
+            <!-- Manage Bank Accounts -->
+            <div onclick="openManageWalletsModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Kelola Bank & E-Wallet</p>
+                  <p class="text-[10px] text-slate-400">BCA, BRI, Mandiri, Seabank, dll.</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+            </div>
+
+            <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
+            <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Autentikasi 2 Faktor (2FA)</p>
+                  <p class="text-[10px] text-slate-400" id="twoFactorStatusDesc">Google Authenticator (Nonaktif)</p>
+                </div>
+              </div>
+              <span id="twoFactorBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Nonaktif</span>
+            </div>
+
+            <!-- Backup & Export JSON -->
+            <div onclick="exportFullJSONBackup()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Cadangkan Data (JSON)</p>
+                  <p class="text-[10px] text-slate-400">Unduh salinan data lokal</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-download text-xs text-slate-400"></i>
+            </div>
+
+            <!-- Logout -->
+            <div onclick="handleLogout()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-rose-50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-rose-600" data-i18n="btn_logout">Keluar Akun</p>
+                  <p class="text-[10px] text-slate-400">Ganti akun atau akhiri sesi</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete Account (GDPR) -->
+            <div onclick="confirmDeleteAccount()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-rose-100/50 transition-all rounded-2xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-trash"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-500">Hapus Akun & Data Permanen</p>
+                  <p class="text-[10px] text-slate-400">Kepatuhan GDPR privasi data</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="text-center pt-2 pb-6">
+            <p class="text-[11px] font-bold text-slate-400">Dompet Pintar v2.6.0 Pro</p>
+            <p class="text-[10px] text-slate-400">Terhubung ke Database Cloud Supabase</p>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- BOTTOM NAVIGATION DOCK -->
+      <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-lg bg-white/95 backdrop-blur-md border-t border-slate-100 py-2.5 px-6 flex justify-between items-center z-30 shadow-lg">
+        <button onclick="switchMainTab('dashboard')" id="navBtnDashboard" class="flex flex-col items-center gap-1 text-brand-500 font-bold transition-all">
+          <i class="fa-solid fa-house text-lg"></i>
+          <span class="text-[10px]" data-i18n="nav_home">Beranda</span>
+        </button>
+
+        <button onclick="switchMainTab('transactions')" id="navBtnTransactions" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
+          <i class="fa-solid fa-receipt text-lg"></i>
+          <span class="text-[10px]" data-i18n="nav_transactions">Transaksi</span>
+        </button>
+
+        <!-- Center Floating Button -->
+        <button onclick="openTransactionModal('expense')" class="w-12 h-12 -mt-5 bg-brand-400 hover:bg-brand-500 active:scale-95 text-white rounded-full flex items-center justify-center shadow-lg shadow-brand-400/40 text-lg transition-all border-4 border-white">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+
+        <button onclick="switchMainTab('budgets')" id="navBtnBudgets" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
+          <i class="fa-solid fa-bullseye text-lg"></i>
+          <span class="text-[10px]" data-i18n="nav_budget">Rencana</span>
+        </button>
+
+        <button onclick="switchMainTab('analytics')" id="navBtnAnalytics" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
+          <i class="fa-solid fa-chart-pie text-lg"></i>
+          <span class="text-[10px]" data-i18n="nav_insights">Laporan</span>
+        </button>
+
+        <button onclick="switchMainTab('settings')" id="navBtnSettings" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
+          <i class="fa-solid fa-gear text-lg"></i>
+          <span class="text-[10px]" data-i18n="nav_settings">Profil</span>
+        </button>
+      </nav>
+
+    </div>
+
+    <!-- 1. MODAL TRANSAKSI -->
+    <div id="modalTransaction" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 id="modalTransTitle" class="font-bold text-slate-800 text-lg">Catat Transaksi</h3>
+          <button onclick="closeModal('modalTransaction')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="transEditId" value="" />
+
+        <div class="flex bg-slate-100 p-1 rounded-2xl text-xs font-bold">
+          <button type="button" onclick="setTransactionFormType('expense')" id="btnFormTypeExpense" class="flex-1 py-2 rounded-xl bg-rose-500 text-white shadow-sm transition-all">Pengeluaran</button>
+          <button type="button" onclick="setTransactionFormType('income')" id="btnFormTypeIncome" class="flex-1 py-2 rounded-xl text-slate-600 transition-all">Pemasukan</button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nominal (Jumlah Uang)</label>
+          <div class="relative">
+            <span id="transCurrencyPrefix" class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-slate-500 text-base">Rp</span>
+            <input type="number" id="transAmount" placeholder="0" class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 text-lg font-bold text-slate-800 focus:border-brand-400 outline-none" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Kategori Transaksi</label>
+          <select id="transCategory" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none focus:border-brand-400"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Akun / Rekening Bank</label>
+          <select id="transWallet" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none focus:border-brand-400"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Tanggal</label>
+          <input type="date" id="transDate" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Catatan / Deskripsi</label>
+          <input type="text" id="transNote" placeholder="Contoh: Makan siang, bayar kos..." class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-medium text-slate-700 outline-none" />
+        </div>
+
+        <div class="pt-2">
+          <button onclick="saveTransaction()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md text-sm transition-all">
+            Simpan Transaksi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MODAL TRANSFER -->
+    <div id="modalTransfer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Transfer Antar Akun</h3>
+          <button onclick="closeModal('modalTransfer')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nominal Transfer</label>
+          <input type="number" id="transferAmount" placeholder="0" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-lg font-bold text-slate-800 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Dari Rekening (Asal)</label>
+          <select id="transferFromWallet" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+        </div>
+
+        <div class="flex justify-center -my-2">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-arrow-down"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Ke Rekening (Tujuan)</label>
+          <select id="transferToWallet" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Catatan Tambahan</label>
+          <input type="text" id="transferNote" placeholder="Misal: Top up Seabank dari BCA" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs text-slate-700 outline-none" />
+        </div>
+
+        <button onclick="executeTransfer()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow text-sm">
+          Kirim Transfer
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. MODAL TAMBAH BANK BARU -->
+    <div id="modalAddWallet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Tambah Akun / Bank</h3>
+          <button onclick="closeModal('modalAddWallet')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Bank / Dompet Indonesia</label>
+          <select id="newWalletPreset" onchange="handleWalletPresetChange(this.value)" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none">
+            <option value="BCA">BCA (Bank Central Asia)</option>
+            <option value="BRI">BRI (Bank Rakyat Indonesia)</option>
+            <option value="MANDIRI">Bank Mandiri</option>
+            <option value="SEABANK">SeaBank Indonesia</option>
+            <option value="BNI">BNI (Bank Negara Indonesia)</option>
+            <option value="BTN">BTN (Bank Tabungan Negara)</option>
+            <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+            <option value="JAGO">Bank Jago</option>
+            <option value="DANA">DANA E-Wallet</option>
+            <option value="GOPAY">GoPay</option>
+            <option value="OVO">OVO</option>
+            <option value="SHOPEEPAY">ShopeePay</option>
+            <option value="TUNAI">Kas / Uang Tunai</option>
+            <option value="CUSTOM">Bank Lainnya / Kustom</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Akun / Rekening</label>
+          <input type="text" id="newWalletName" value="BCA Rekening Baru" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nomor Rekening (Opsional)</label>
+          <input type="text" id="newWalletNumber" placeholder="Contoh: 1234567890" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Saldo Awal</label>
+          <input type="number" id="newWalletBalance" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none" />
+        </div>
+
+        <button onclick="saveNewWallet()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow text-sm">
+          Simpan Akun Bank
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. MODAL KELOLA SEMUA BANK -->
+    <div id="modalManageWallets" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">Kelola Akun & Bank</h3>
+            <p class="text-[11px] text-slate-400">Atur rekening bank dan e-wallet Anda</p>
+          </div>
+          <button onclick="closeModal('modalManageWallets')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="manageWalletsList" class="space-y-2.5 max-h-72 overflow-y-auto no-scrollbar"></div>
+
+        <button onclick="closeModal('modalManageWallets'); openAddWalletModal();" class="w-full py-3 bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all">
+          <i class="fa-solid fa-plus"></i> Tambah Bank Baru
+        </button>
+      </div>
+    </div>
+
+    <!-- 5. MODAL UBAH / EDIT BANK -->
+    <div id="modalEditWallet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Ubah Akun Bank</h3>
+          <button onclick="closeModal('modalEditWallet')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="editWalletId" />
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Bank / Dompet</label>
+          <select id="editWalletPreset" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none">
+            <option value="BCA">BCA (Bank Central Asia)</option>
+            <option value="BRI">BRI (Bank Rakyat Indonesia)</option>
+            <option value="MANDIRI">Bank Mandiri</option>
+            <option value="SEABANK">SeaBank Indonesia</option>
+            <option value="BNI">BNI (Bank Negara Indonesia)</option>
+            <option value="BTN">BTN (Bank Tabungan Negara)</option>
+            <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+            <option value="JAGO">Bank Jago</option>
+            <option value="DANA">DANA E-Wallet</option>
+            <option value="GOPAY">GoPay</option>
+            <option value="OVO">OVO</option>
+            <option value="SHOPEEPAY">ShopeePay</option>
+            <option value="TUNAI">Kas / Uang Tunai</option>
+            <option value="CUSTOM">Bank Lainnya / Kustom</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Akun / Rekening</label>
+          <input type="text" id="editWalletName" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nomor Rekening</label>
+          <input type="text" id="editWalletNumber" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Saldo Akun (IDR)</label>
+          <input type="number" id="editWalletBalance" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none" />
+        </div>
+
+        <button onclick="saveEditWallet()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow text-sm">
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+
+    <!-- 6. MODAL ANGGARAN (BUDGET) -->
+    <div id="modalAddBudget" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Batas Anggaran Bulanan</h3>
+          <button onclick="closeModal('modalAddBudget')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kategori</label>
+          <select id="budgetCategory" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Batas Maksimal Pengeluaran (Bulan Ini)</label>
+          <input type="number" id="budgetLimit" placeholder="Contoh: 1500000" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-base font-bold text-slate-800 outline-none" />
+        </div>
+
+        <button onclick="saveBudget()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow text-sm">
+          Tetapkan Anggaran
+        </button>
+      </div>
+    </div>
+
+    <!-- 7. MODAL DREAM PLANNER (GOALS) -->
+    <div id="modalAddGoal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Buat Target Impian</h3>
+          <button onclick="closeModal('modalAddGoal')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Impian</label>
+          <input type="text" id="goalTitle" placeholder="Misal: Beli Laptop, Liburan" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Target Nominal Uang</label>
+          <input type="number" id="goalTargetAmount" placeholder="Contoh: 15000000" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Terkumpul Saat Ini</label>
+          <input type="number" id="goalCurrentAmount" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Target Selesai</label>
+          <input type="date" id="goalDeadline" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <button onclick="saveGoal()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow text-sm">
+          Simpan Target
+        </button>
+      </div>
+    </div>
+
+    <!-- 8. MODAL NABUNG KE GOAL -->
+    <div id="modalAddSavingsToGoal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 id="addSavingsModalTitle" class="font-bold text-slate-800 text-lg">Isi Tabungan</h3>
+          <button onclick="closeModal('modalAddSavingsToGoal')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <input type="hidden" id="selectedGoalId" />
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Jumlah Yang Mau Ditabung</label>
+          <input type="number" id="savingsAmountInput" placeholder="0" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-lg font-bold text-slate-800 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Ambil Dari Dompet / Bank</label>
+          <select id="savingsWalletSource" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+        </div>
+
+        <button onclick="executeAddSavings()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow text-sm">
+          Konfirmasi Menabung
+        </button>
+      </div>
+    </div>
+
+    <!-- 9. MODAL RECURRING -->
+    <div id="modalAddRecurring" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Tambah Tagihan Rutin</h3>
+          <button onclick="closeModal('modalAddRecurring')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Tagihan</label>
+          <input type="text" id="recName" placeholder="Contoh: Netflix, WiFi, Kosan" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Tipe & Nominal</label>
+          <div class="grid grid-cols-3 gap-2">
+            <select id="recType" class="col-span-1 px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none">
+              <option value="expense">Pengeluaran</option>
+              <option value="income">Pemasukan</option>
+            </select>
+            <input type="number" id="recAmount" placeholder="0" class="col-span-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Frekuensi</label>
+          <select id="recInterval" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none">
+            <option value="monthly">Setiap Bulan</option>
+            <option value="weekly">Setiap Minggu</option>
+            <option value="daily">Setiap Hari</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Kategori & Dompet</label>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="recCategory" class="px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+            <select id="recWallet" class="px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 outline-none"></select>
+          </div>
+        </div>
+
+        <button onclick="saveRecurring()" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow text-sm">
+          Simpan Rutin
+        </button>
+      </div>
+    </div>
+
+    <!-- 10. MODAL NOTIFIKASI -->
+    <div id="modalNotifications" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Pemberitahuan Cerdas</h3>
+          <button onclick="closeModal('modalNotifications')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="notificationList" class="space-y-2.5 max-h-80 overflow-y-auto no-scrollbar"></div>
+
+        <button onclick="markAllNotificationsAsRead()" class="w-full py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200">
+          Tandai Semua Sudah Dibaca
+        </button>
+      </div>
+    </div>
+
+    <!-- 11. MODAL EKSPOR DATA -->
+    <div id="modalExport" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg">Ekspor & Laporan</h3>
+          <button onclick="closeModal('modalExport')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500">Unduh riwayat transaksi atau cetak laporan keuangan bulanan lengkap.</p>
+
+        <div class="space-y-2.5">
+          <button onclick="exportToCSV()" class="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-base">
+                <i class="fa-solid fa-file-csv"></i>
+              </div>
+              <div>
+                <p class="font-bold text-xs text-slate-800">Ekspor File CSV / Excel</p>
+                <p class="text-[10px] text-slate-400">Kompatibel Google Sheets & MS Excel</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-download text-xs text-slate-400"></i>
+          </button>
+
+          <button onclick="generatePrintableReport()" class="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-base">
+                <i class="fa-solid fa-print"></i>
+              </div>
+              <div>
+                <p class="font-bold text-xs text-slate-800">Cetak Laporan Keuangan (PDF)</p>
+                <p class="text-[10px] text-slate-400">Format rapi siap dicetak</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. MODAL CONFIRMATION DIALOG -->
+    <div id="modalConfirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center space-y-4 fade-in">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center text-lg">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h4 id="confirmTitle" class="font-bold text-slate-800 text-base">Konfirmasi Tindakan</h4>
+        <p id="confirmMessage" class="text-xs text-slate-500">Apakah Anda yakin ingin melanjutkan?</p>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeModal('modalConfirm')" class="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200">Batal</button>
+          <button id="confirmAcceptBtn" class="flex-1 py-2.5 bg-rose-500 text-white font-bold rounded-xl text-xs hover:bg-rose-600 shadow">Ya, Lanjut</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. MODAL HYBRID APP INSTALL GUIDE (INTERACTIVE STEP-BY-STEP) -->
+    <div id="modalHybridInstallGuide" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-mobile-screen"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">Panduan Pasang App Hybrid</h3>
+              <p class="text-[10px] text-slate-400">Akses instan di layar utama ponsel Anda</p>
+            </div>
+          </div>
+          <button onclick="closeModal('modalHybridInstallGuide')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="hybridGuideContent" class="space-y-3 py-1">
+          <!-- Step 1 -->
+          <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Buka Menu Browser</p>
+              <p class="text-[11px] text-slate-500">Ketuk ikon titik tiga <i class="fa-solid fa-ellipsis-vertical text-slate-700"></i> di Chrome/Android atau tombol Bagikan (Share) <i class="fa-solid fa-arrow-up-from-bracket text-slate-700"></i> di Safari iOS.</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Pilih "Tambahkan ke Layar Utama"</p>
+              <p class="text-[11px] text-slate-500">Cari opsi <b>"Tambahkan ke Layar Utama"</b> atau <b>"Add to Home screen"</b> pada daftar menu.</p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Konfirmasi Pemasangan</p>
+              <p class="text-[11px] text-slate-500">Ketuk <b>"Tambah"</b> atau <b>"Instal"</b>. Ikon Dompet Pintar akan langsung muncul di menu ponsel seperti aplikasi native!</p>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="closeModal('modalHybridInstallGuide')" class="w-full py-3 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl text-xs transition-all shadow">
+          Saya Mengerti
+        </button>
+      </div>
+    </div>
+
+    <!-- 14. MODAL 2FA SETUP (GOOGLE AUTHENTICATOR) -->
+    <div id="modal2FASetup" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar fade-in">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">Google Authenticator (2FA)</h3>
+              <p class="text-[10px] text-slate-400">Keamanan akun lapis ganda</p>
+            </div>
+          </div>
+          <button onclick="closeModal('modal2FASetup')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Tampilan Jika 2FA Belum Aktif -->
+        <div id="twoFactorSetupView" class="space-y-4">
+          <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl text-xs text-indigo-900 leading-relaxed">
+            <p class="font-bold mb-1"><i class="fa-solid fa-circle-info text-indigo-500"></i> Cara Aktivasi:</p>
+            <ol class="list-decimal list-inside space-y-1 text-[11px] text-indigo-800">
+              <li>Buka aplikasi <b>Google Authenticator</b> di HP Anda.</li>
+              <li>Pindai QR Code di bawah atau salin kunci manual.</li>
+              <li>Masukkan 6 digit kode yang muncul di aplikasi untuk verifikasi.</li>
+            </ol>
+          </div>
+
+          <!-- QR Code Container -->
+          <div class="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <img id="twoFactorQrImg" src="" alt="2FA QR Code" class="w-44 h-44 rounded-xl shadow-sm bg-white p-2 border border-slate-200" />
+            <div class="mt-2.5 flex items-center gap-2">
+              <span class="text-[11px] text-slate-500 font-mono font-bold" id="twoFactorSecretText">------</span>
+              <button onclick="copy2FASecret()" class="text-indigo-600 bg-white border border-slate-200 hover:bg-indigo-50 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i> Salin Kunci
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kode 6-Digit Google Authenticator</label>
+            <input type="text" id="twoFactorVerifyInput" maxlength="6" inputmode="numeric" placeholder="Contoh: 123456" class="w-full text-center tracking-[0.3em] px-4 py-3 rounded-2xl border border-slate-200 text-lg font-black text-slate-800 focus:border-indigo-400 outline-none" />
+          </div>
+
+          <button onclick="confirmEnable2FA()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md text-sm transition-all">
+            Aktifkan 2FA Sekarang
+          </button>
+        </div>
+
+        <!-- Tampilan Jika 2FA Sudah Aktif -->
+        <div id="twoFactorActiveView" class="hidden space-y-4 py-2 text-center">
+          <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto shadow-sm">
+            <i class="fa-solid fa-shield-check"></i>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-slate-800">2FA Sedang Aktif</h4>
+            <p class="text-xs text-slate-500 mt-1">Akun Anda terlindungi dengan verifikasi Google Authenticator saat login.</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2">
+            <label class="block text-xs font-bold text-slate-700">Masukkan 6 Digit untuk Nonaktifkan:</label>
+            <input type="text" id="twoFactorDisableInput" maxlength="6" inputmode="numeric" placeholder="123456" class="w-full text-center tracking-[0.25em] px-4 py-2.5 rounded-xl border border-slate-200 text-base font-bold text-slate-800 outline-none" />
+            <button onclick="confirmDisable2FA()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs transition-all">
+              Nonaktifkan 2FA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. MODAL 2FA VERIFICATION SAAT LOGIN -->
+    <div id="modal2FALogin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl space-y-4 text-center fade-in">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 mx-auto flex items-center justify-center text-xl shadow-sm">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-800 text-base">Verifikasi 2FA</h4>
+          <p class="text-xs text-slate-500 mt-1">Buka aplikasi <b>Google Authenticator</b> dan masukkan 6 digit kode login akun Anda.</p>
+        </div>
+
+        <div>
+          <input type="text" id="twoFactorLoginInput" maxlength="6" inputmode="numeric" placeholder="000000" class="w-full text-center tracking-[0.3em] px-4 py-3 rounded-2xl border border-slate-200 text-xl font-black text-slate-800 focus:border-indigo-400 outline-none" autofocus />
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="cancel2FALogin()" class="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200">
+            Batal
+          </button>
+          <button onclick="verify2FALogin()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow">
+            Verifikasi
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* Supabase Cloud Connection */
+    const SUPABASE_URL = "https://cdtshlzomxcbvhdwkpoi.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_TqdbLroelO8ioPnwdm309g_23NU3FCi";
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase initialization fallback:", e);
+    }
+
+    /* Gemini AI API configuration */
+    const GEMINI_API_KEY = "AQ.Ab8RN6JqZRY9-qDQ1YIHw0eyfGPhuJy6Ig1FmGUF8jumZBhC8w";
+    const apiKey = GEMINI_API_KEY;
+
+    /* =========================================================================
+       SISTEM APP HYBRID (PWA ENGINE & NATIVE INSTALL PROMPT)
+       ========================================================================= */
+    let deferredHybridPrompt = null;
+
+    // 1. Tangkap event beforeinstallprompt native dari browser (Chrome, Edge, Samsung Internet, Android)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredHybridPrompt = e;
+      const btn = document.getElementById('btnHybridInstall');
+      const label = document.getElementById('btnHybridLabel');
+      if (btn && label) {
+        label.innerText = "Pasang Sekarang";
+        btn.classList.add('animate-pulse');
+      }
+    });
+
+    // 2. Deteksi apakah sudah terpasang dan berjalan dalam standalone mode
+    window.addEventListener('DOMContentLoaded', () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        const label = document.getElementById('btnHybridLabel');
+        if (label) label.innerText = "Terpasang";
+      }
+
+      // Generate dynamic Web App Manifest
+      setupDynamicWebManifest();
+
+      // Register lightweight inline Service Worker for PWA compliance
+      registerHybridServiceWorker();
+    });
+
+    function setupDynamicWebManifest() {
+      try {
+        const manifestObj = {
+          name: "Dompet Pintar - Aplikasi Pengelola Keuangan Modern",
+          short_name: "Dompet Pintar",
+          start_url: window.location.href,
+          display: "standalone",
+          background_color: "#cbefff",
+          theme_color: "#38bdf8",
+          description: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.",
+          icons: [
+            {
+              src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%230284c7'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3Cpath d='M26 23H37V29H26C24.9 29 24 28.1 24 27V25C24 23.9 24.9 23 26 23Z' fill='%230284c7'/%3E%3Ccircle cx='31' cy='26' r='1.8' fill='%2338bdf8'/%3E%3Cpath d='M36 8L37 11L40 12L37 13L36 16L35 13L32 12L35 11L36 8Z' fill='%23fde047'/%3E%3C/svg%3E",
+              sizes: "192x192 512x512",
+              type: "image/svg+xml",
+              purpose: "any maskable"
+            }
+          ]
+        };
+
+        const stringManifest = JSON.stringify(manifestObj);
+        const blob = new Blob([stringManifest], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(blob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+      } catch (err) {
+        console.warn("Manifest dynamic setup notice:", err);
+      }
+    }
+
+    function registerHybridServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        try {
+          const swCode = `
+            const CACHE_NAME = 'dompet-pintar-cache-v1';
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => self.clients.claim());
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+            });
+          `;
+          const blob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        } catch (e) {}
+      }
+    }
+
+    // 3. Eksekusi Pemasangan Hybrid App
+    function installHybridApp() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        showToast("Aplikasi Dompet Pintar sudah terpasang dan aktif di layar utama!", "success");
+        return;
+      }
+
+      if (deferredHybridPrompt) {
+        deferredHybridPrompt.prompt();
+        deferredHybridPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast("Aplikasi Hybrid Dompet Pintar berhasil dipasang!", "success");
+            const label = document.getElementById('btnHybridLabel');
+            if (label) label.innerText = "Terpasang";
+          }
+          deferredHybridPrompt = null;
+        });
+      } else {
+        // Tampilkan Panduan Visual untuk iOS Safari atau browser manual
+        openModal('modalHybridInstallGuide');
+      }
+    }
+
+    /* Localization dictionary */
+    let currentLanguage = 'id';
+
+    const translations = {
+      id: {
+        onboard_title: "Keuanganku",
+        onboard_desc: "Pantau keuanganmu dengan cermat mulai dari pengeluaran dan pemasukan bulanan hingga harian.",
+        onboard_btn: "Mulai",
+        auth_login_tab: "Masuk",
+        auth_register_tab: "Daftar",
+        login_heading: "Selamat Datang Kembali",
+        login_sub: "Masuk menggunakan username dan kata sandi Anda",
+        field_username: "Username",
+        field_password: "Kata Sandi",
+        field_fullname: "Nama Lengkap",
+        field_birthdate: "Tanggal Lahir",
+        remember_me: "Remember Me",
+        btn_login: "Masuk ke Dompet Pintar",
+        reg_heading: "Buat Akun Baru",
+        reg_sub: "Kelola uangmu lebih teratur mulai hari ini",
+        btn_register: "Daftar Sekarang",
+        greeting: "Hi,",
+        my_money: "Uangku",
+        btn_expense: "Keluar",
+        btn_income: "Masuk",
+        btn_transfer: "Transfer",
+        btn_export: "Ekspor",
+        section_my_finance: "Keuanganku",
+        lbl_expense: "Pengeluaranku",
+        lbl_income: "Pemasukanku",
+        section_wallets: "Akun & Dompet Bank",
+        add_wallet: "Tambah Bank",
+        section_stats: "Statistik Aliran Kas",
+        section_recent_trans: "Transaksi Terakhir",
+        see_all: "Lihat Semua",
+        title_expense_breakdown: "Pengeluaranku",
+        lbl_total_spending: "Pengeluaran",
+        lbl_total: "Total",
+        lbl_category_breakdown: "Rincian Kategori",
+        nav_home: "Beranda",
+        nav_transactions: "Transaksi",
+        nav_budget: "Rencana",
+        nav_insights: "Laporan",
+        nav_settings: "Profil",
+        add_trans: "Catat",
+        set_budget: "Set Budget",
+        monthly_budget_status: "Batas Pengeluaran Bulanan",
+        setting_lang: "Bahasa / Language",
+        setting_notif: "Notifikasi Pengingat Transaksi",
+        btn_logout: "Keluar Akun"
+      },
+      en: {
+        onboard_title: "My Finance",
+        onboard_desc: "Track your finances carefully starting from monthly to daily income and expenses.",
+        onboard_btn: "Get Started",
+        auth_login_tab: "Login",
+        auth_register_tab: "Register",
+        login_heading: "Welcome Back",
+        login_sub: "Login using your username and password",
+        field_username: "Username",
+        field_password: "Password",
+        field_fullname: "Full Name",
+        field_birthdate: "Birth Date",
+        remember_me: "Remember Me",
+        btn_login: "Sign In to Dompet Pintar",
+        reg_heading: "Create an Account",
+        reg_sub: "Organize your money better starting today",
+        btn_register: "Register Now",
+        greeting: "Hi,",
+        my_money: "My Money",
+        btn_expense: "Expense",
+        btn_income: "Income",
+        btn_transfer: "Transfer",
+        btn_export: "Export",
+        section_my_finance: "My Finance",
+        lbl_expense: "My Expenses",
+        lbl_income: "My Incomes",
+        section_wallets: "Bank Accounts & Wallets",
+        add_wallet: "Add Bank",
+        section_stats: "Cashflow Stats",
+        section_recent_trans: "Recent Transactions",
+        see_all: "See All",
+        title_expense_breakdown: "My Expenses",
+        lbl_total_spending: "Spending",
+        lbl_total: "Total",
+        lbl_category_breakdown: "Category Breakdown",
+        nav_home: "Home",
+        nav_transactions: "Transactions",
+        nav_budget: "Plans",
+        nav_insights: "Reports",
+        nav_settings: "Profile",
+        add_trans: "Add",
+        set_budget: "Set Budget",
+        monthly_budget_status: "Monthly Spending Limits",
+        setting_lang: "Language / Bahasa",
+        setting_notif: "Daily Reminder Notification",
+        btn_logout: "Log Out"
+      }
+    };
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'id' ? 'en' : 'id';
+      applyLanguage();
+      showToast(currentLanguage === 'id' ? "Bahasa diubah ke Indonesia" : "Language changed to English");
+    }
+
+    function applyLanguage() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLanguage] && translations[currentLanguage][key]) {
+          el.innerText = translations[currentLanguage][key];
+        }
+      });
+      const lbl = document.getElementById('langLabelOnboard');
+      if (lbl) lbl.innerText = currentLanguage.toUpperCase();
+      const desc = document.getElementById('currentLangDesc');
+      if (desc) desc.innerText = currentLanguage === 'id' ? 'Bahasa Indonesia' : 'English (US)';
+    }
+
+    let selectedCurrency = 'IDR';
+    const currencyRates = {
+      IDR: { symbol: 'Rp', rate: 1, decimals: 0 },
+      USD: { symbol: '$', rate: 0.000064, decimals: 2 },
+      SGD: { symbol: 'S$', rate: 0.000086, decimals: 2 },
+      EUR: { symbol: '€', rate: 0.000059, decimals: 2 },
+      JPY: { symbol: '¥', rate: 0.0098, decimals: 0 }
+    };
+
+    let isHideNominal = false;
+
+    function formatCurrency(amountIDR) {
+      if (isHideNominal) return '••••••••';
+      const conf = currencyRates[selectedCurrency] || currencyRates.IDR;
+      const converted = (amountIDR || 0) * conf.rate;
+      if (selectedCurrency === 'IDR') {
+        return 'Rp ' + Math.round(converted).toLocaleString('id-ID');
+      }
+      return conf.symbol + ' ' + converted.toLocaleString('en-US', { minimumFractionDigits: conf.decimals, maximumFractionDigits: conf.decimals });
+    }
+
+    function changeCurrency(curr) {
+      selectedCurrency = curr;
+      const prefixEl = document.getElementById('transCurrencyPrefix');
+      if (prefixEl) prefixEl.innerText = currencyRates[curr].symbol;
+      renderAll();
+      showToast(`Mata uang diubah ke ${curr}`);
+    }
+
+    function toggleHideNominal() {
+      isHideNominal = !isHideNominal;
+      const icon = document.getElementById('hideNominalIcon');
+      if (icon) {
+        if (isHideNominal) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+          showToast("Nominal disembunyikan");
+        } else {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+          showToast("Nominal ditampilkan");
+        }
+      }
+      renderAll();
+    }
+
+    const defaultExpenseCategories = [
+      { id: 'topup', name: 'Top up wallet', color: '#06b6d4', icon: 'fa-wallet' },
+      { id: 'tax', name: 'Biaya dan pajak', color: '#fb923c', icon: 'fa-file-invoice-dollar' },
+      { id: 'other', name: 'Belum terkategori', color: '#94a3b8', icon: 'fa-ellipsis' },
+      { id: 'food', name: 'Makanan & Minuman', color: '#f59e0b', icon: 'fa-utensils' },
+      { id: 'transport', name: 'Transportasi', color: '#38bdf8', icon: 'fa-car' },
+      { id: 'shopping', name: 'Belanja', color: '#ec4899', icon: 'fa-bag-shopping' },
+      { id: 'bills', name: 'Tagihan & Utilitas', color: '#6366f1', icon: 'fa-bolt' },
+      { id: 'entertainment', name: 'Hiburan', color: '#a855f7', icon: 'fa-film' },
+      { id: 'health', name: 'Kesehatan', color: '#ef4444', icon: 'fa-heart-pulse' }
+    ];
+
+    const defaultIncomeCategories = [
+      { id: 'salary', name: 'Gaji Bulanan', color: '#22c55e', icon: 'fa-money-bill-wave' },
+      { id: 'business', name: 'Usaha & Bisnis', color: '#10b981', icon: 'fa-store' },
+      { id: 'freelance', name: 'Freelance & Side Job', color: '#14b8a6', icon: 'fa-laptop-code' },
+      { id: 'investment', name: 'Investasi & Bunga', color: '#06b6d4', icon: 'fa-chart-line' },
+      { id: 'gift', name: 'Bonus & Hadiah', color: '#eab308', icon: 'fa-gift' },
+      { id: 'inc_other', name: 'Pemasukan Lainnya', color: '#64748b', icon: 'fa-plus' }
+    ];
+
+    const bankColorMap = {
+      BCA: { bg: 'bg-blue-600', text: 'text-white', badge: 'BCA' },
+      BRI: { bg: 'bg-blue-800', text: 'text-white', badge: 'BRI' },
+      MANDIRI: { bg: 'bg-amber-500', text: 'text-white', badge: 'MANDIRI' },
+      SEABANK: { bg: 'bg-orange-500', text: 'text-white', badge: 'SEABANK' },
+      BNI: { bg: 'bg-teal-600', text: 'text-white', badge: 'BNI' },
+      BTN: { bg: 'bg-yellow-500', text: 'text-slate-900', badge: 'BTN' },
+      BSI: { bg: 'bg-emerald-700', text: 'text-white', badge: 'BSI' },
+      JAGO: { bg: 'bg-yellow-400', text: 'text-slate-900', badge: 'JAGO' },
+      DANA: { bg: 'bg-sky-500', text: 'text-white', badge: 'DANA' },
+      GOPAY: { bg: 'bg-emerald-500', text: 'text-white', badge: 'GOPAY' },
+      OVO: { bg: 'bg-purple-600', text: 'text-white', badge: 'OVO' },
+      SHOPEEPAY: { bg: 'bg-orange-600', text: 'text-white', badge: 'SHOPEEPAY' },
+      TUNAI: { bg: 'bg-slate-700', text: 'text-white', badge: 'TUNAI' },
+      CUSTOM: { bg: 'bg-slate-800', text: 'text-white', badge: 'BANK' }
+    };
+
+    let currentUser = null;
+    let transactions = [];
+    let wallets = [];
+    let budgets = [];
+    let goals = [];
+    let recurringBills = [];
+    let challenges = [];
+    let notifications = [];
+
+    /* =========================================================================
+       SISTEM AUTENTIKASI 2 FAKTOR (TOTP - GOOGLE AUTHENTICATOR)
+       ========================================================================= */
+    let temp2FASecret = '';
+    let pending2FAUser = null;
+
+    function base32Decode(base32) {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let clean = (base32 || '').toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
+      let bits = '';
+      for (let i = 0; i < clean.length; i++) {
+        const val = alphabet.indexOf(clean.charAt(i));
+        if (val === -1) continue;
+        bits += val.toString(2).padStart(5, '0');
+      }
+      const bytes = new Uint8Array(Math.floor(bits.length / 8));
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+      }
+      return bytes;
+    }
+
+    function generateBase32Secret(length = 16) {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let secret = '';
+      const randomValues = new Uint8Array(length);
+      window.crypto.getRandomValues(randomValues);
+      for (let i = 0; i < length; i++) {
+        secret += alphabet[randomValues[i] % 32];
+      }
+      return secret;
+    }
+
+    async function verifyTOTPCode(secret, token) {
+      if (!secret || !token) return false;
+      const cleanToken = token.toString().trim().replace(/\s/g, '');
+      if (cleanToken.length !== 6) return false;
+
+      try {
+        const keyBytes = base32Decode(secret);
+        const cryptoKey = await window.crypto.subtle.importKey(
+          'raw',
+          keyBytes,
+          { name: 'HMAC', hash: 'SHA-1' },
+          false,
+          ['sign']
+        );
+
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        const currentStep = Math.floor(currentEpoch / 30);
+
+        // Toleransi window drift [-1, 0, +1] (rentang waktu 30 detik)
+        for (let stepOffset = -1; stepOffset <= 1; stepOffset++) {
+          const step = currentStep + stepOffset;
+          const counterBytes = new Uint8Array(8);
+          let temp = step;
+          for (let i = 7; i >= 0; i--) {
+            counterBytes[i] = temp & 0xff;
+            temp = Math.floor(temp / 256);
+          }
+
+          const signature = await window.crypto.subtle.sign('HMAC', cryptoKey, counterBytes);
+          const hash = new Uint8Array(signature);
+          const offset = hash[hash.length - 1] & 0x0f;
+          const binary =
+            ((hash[offset] & 0x7f) << 24) |
+            ((hash[offset + 1] & 0xff) << 16) |
+            ((hash[offset + 2] & 0xff) << 8) |
+            (hash[offset + 3] & 0xff);
+
+          const otp = (binary % 1000000).toString().padStart(6, '0');
+          if (otp === cleanToken) {
+            return true;
+          }
+        }
+      } catch (err) {
+        console.error("TOTP verification error:", err);
+      }
+      return false;
+    }
+
+    function open2FAModal() {
+      if (!currentUser) return;
+      const setupView = document.getElementById('twoFactorSetupView');
+      const activeView = document.getElementById('twoFactorActiveView');
+
+      if (currentUser.twoFactorEnabled) {
+        setupView.classList.add('hidden');
+        activeView.classList.remove('hidden');
+        document.getElementById('twoFactorDisableInput').value = '';
+      } else {
+        activeView.classList.add('hidden');
+        setupView.classList.remove('hidden');
+
+        temp2FASecret = generateBase32Secret(16);
+        document.getElementById('twoFactorSecretText').innerText = temp2FASecret;
+        document.getElementById('twoFactorVerifyInput').value = '';
+
+        // Generate otpauth URL dan QR Code
+        const appTitle = encodeURIComponent("Dompet Pintar");
+        const accountLabel = encodeURIComponent(currentUser.username || 'user');
+        const otpauthUrl = `otpauth://totp/${appTitle}:${accountLabel}?secret=${temp2FASecret}&issuer=${appTitle}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
+        document.getElementById('twoFactorQrImg').src = qrUrl;
+      }
+
+      openModal('modal2FASetup');
+    }
+
+    function copy2FASecret() {
+      if (!temp2FASecret) return;
+      copyAccountNumber(temp2FASecret, null);
+    }
+
+    async function confirmEnable2FA() {
+      const code = document.getElementById('twoFactorVerifyInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode verifikasi!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(temp2FASecret, code);
+      if (!isValid) {
+        showToast("Kode verifikasi salah atau kedaluwarsa. Coba lagi.", "error");
+        return;
+      }
+
+      currentUser.twoFactorEnabled = true;
+      currentUser.twoFactorSecret = temp2FASecret;
+
+      // Perbarui rekaman otentikasi
+      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+      saveToLocal();
+      update2FAStatusUI();
+      closeModal('modal2FASetup');
+      showToast("🎉 Autentikasi 2 Faktor (Google Authenticator) berhasil diaktifkan!");
+    }
+
+    async function confirmDisable2FA() {
+      const code = document.getElementById('twoFactorDisableInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode verifikasi!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(currentUser.twoFactorSecret, code);
+      if (!isValid) {
+        showToast("Kode verifikasi salah!", "error");
+        return;
+      }
+
+      currentUser.twoFactorEnabled = false;
+      currentUser.twoFactorSecret = null;
+
+      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+      saveToLocal();
+      update2FAStatusUI();
+      closeModal('modal2FASetup');
+      showToast("Autentikasi 2 Faktor telah dinonaktifkan.");
+    }
+
+    function update2FAStatusUI() {
+      const desc = document.getElementById('twoFactorStatusDesc');
+      const badge = document.getElementById('twoFactorBadge');
+      if (!desc || !badge) return;
+
+      if (currentUser && currentUser.twoFactorEnabled) {
+        desc.innerText = "Google Authenticator (Aktif & Terlindungi)";
+        badge.innerText = "Aktif";
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+      } else {
+        desc.innerText = "Google Authenticator (Nonaktif)";
+        badge.innerText = "Nonaktif";
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600";
+      }
+    }
+
+    function cancel2FALogin() {
+      pending2FAUser = null;
+      closeModal('modal2FALogin');
+      showToast("Login 2FA dibatalkan.");
+    }
+
+    async function verify2FALogin() {
+      if (!pending2FAUser) return;
+      const code = document.getElementById('twoFactorLoginInput').value;
+      if (!code || code.length !== 6) {
+        showToast("Masukkan 6 digit kode Google Authenticator!", "error");
+        return;
+      }
+
+      const isValid = await verifyTOTPCode(pending2FAUser.twoFactorSecret, code);
+      if (!isValid) {
+        showToast("Kode 2FA tidak valid atau sudah kedaluwarsa!", "error");
+        return;
+      }
+
+      const verifiedUser = pending2FAUser;
+      pending2FAUser = null;
+      closeModal('modal2FALogin');
+
+      if (!loadFromLocal(verifiedUser.username)) {
+        initializeUserData(verifiedUser);
+      }
+
+      if (document.getElementById('loginRememberMe')?.checked) {
+        localStorage.setItem('dompet_pintar_current_user', verifiedUser.username);
+      } else {
+        localStorage.removeItem('dompet_pintar_current_user');
+      }
+
+      showToast(`Verifikasi 2FA berhasil! Halo ${verifiedUser.fullname}.`);
+      enterApp(verifiedUser);
+    }
+
+    function initializeUserData(user) {
+      currentUser = user;
+      wallets = [
+        { id: 'w_' + Date.now() + '_1', name: 'Rekening BCA', bankCode: 'BCA', accountNumber: '-', initialBalance: 0, balance: 0 },
+        { id: 'w_' + Date.now() + '_2', name: 'Uang Tunai / Kas', bankCode: 'TUNAI', accountNumber: '-', initialBalance: 0, balance: 0 }
+      ];
+      transactions = [];
+      budgets = [];
+      goals = [];
+      recurringBills = [];
+      challenges = [
+        { id: 'c1', title: 'Hemat Makan Siang Max 30rb', daysTotal: 7, daysCurrent: 0, xp: 50, completed: false, lastCheckIn: null },
+        { id: 'c2', title: 'Weekend Bebas Belanja Online', daysTotal: 3, daysCurrent: 0, xp: 40, completed: false, lastCheckIn: null }
+      ];
+      notifications = [
+        { id: 'n1', title: 'Selamat Datang!', text: 'Mulai kelola keuanganmu dengan mencatat transaksi atau menambah bank.', time: 'Baru saja', read: false }
+      ];
+      saveToLocal();
+    }
+
+    function getTodayISO() {
+      const d = new Date();
+      return d.toISOString().split('T')[0];
+    }
+
+    function saveToLocal() {
+      if (!currentUser) return;
+      const data = {
+        user: currentUser,
+        transactions,
+        wallets,
+        budgets,
+        goals,
+        recurringBills,
+        challenges,
+        notifications
+      };
+      localStorage.setItem(`dompet_pintar_${currentUser.username}`, JSON.stringify(data));
+      syncToSupabase(data);
+    }
+
+    function loadFromLocal(username) {
+      if (!username) return false;
+      const raw = localStorage.getItem(`dompet_pintar_${username}`);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return false;
+          currentUser = parsed.user || null;
+          transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
+          wallets = Array.isArray(parsed.wallets) ? parsed.wallets : [];
+          budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
+          goals = Array.isArray(parsed.goals) ? parsed.goals : [];
+          recurringBills = Array.isArray(parsed.recurringBills) ? parsed.recurringBills : [];
+          challenges = Array.isArray(parsed.challenges) ? parsed.challenges : [];
+          notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+
+          challenges.forEach(c => {
+            if (c.daysCurrent === undefined || c.daysCurrent === null) c.daysCurrent = 0;
+            if (c.daysCurrent < c.daysTotal) {
+              c.completed = false;
+            }
+          });
+
+          return true;
+        } catch (e) {
+          console.error("Failed to load local data:", e);
+        }
+      }
+      return false;
+    }
+
+    async function syncToSupabase(data) {
+      if (!supabaseClient || !data || !data.user) return;
+      try {
+        await supabaseClient.from('user_finance').upsert({
+          username: data.user.username,
+          data: data,
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {}
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function switchAuthTab(tab) {
+      const tabs = ['login', 'register'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn${capitalize(t)}`);
+        const form = document.getElementById(`form${capitalize(t)}`);
+        if (btn && form) {
+          if (t === tab) {
+            btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-400 text-white shadow-sm transition-all';
+            form.classList.remove('hidden');
+          } else {
+            btn.className = 'flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 transition-all';
+            form.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    async function handleRegister() {
+      const fullname = document.getElementById('regFullName').value.trim();
+      const username = document.getElementById('regUsername').value.trim().toLowerCase();
+      const birthdate = document.getElementById('regBirthDate').value;
+      const password = document.getElementById('regPassword').value;
+
+      if (!fullname || !username || !birthdate || !password) {
+        showToast("Mohon lengkapi semua data pendaftaran!", "error");
+        return;
+      }
+      if (password.length < 6) {
+        showToast("Kata sandi minimal 6 karakter!", "error");
+        return;
+      }
+
+      // 1. Periksa ketersediaan username di Cloud Database Supabase
+      let isTakenInCloud = false;
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_finance')
+            .select('username')
+            .eq('username', username)
+            .maybeSingle();
+          if (data && data.username) {
+            isTakenInCloud = true;
+          }
+        } catch (e) {
+          console.warn("Supabase check notice:", e);
+        }
+      }
+
+      // Jika di cloud TIDAK ADA (misal akun telah dihapus permanen), bersihkan sisa cache lokal
+      if (!isTakenInCloud) {
+        localStorage.removeItem(`dompet_pintar_auth_${username}`);
+        localStorage.removeItem(`dompet_pintar_${username}`);
+      }
+
+      const existingUser = localStorage.getItem(`dompet_pintar_auth_${username}`);
+      if (isTakenInCloud || existingUser) {
+        showToast("Username sudah digunakan, silakan pilih yang lain atau masuk.", "error");
+        return;
+      }
+
+      // Pastikan data lama dari akun terdahulu yang sudah dihapus dibersihkan tuntas
+      localStorage.removeItem(`dompet_pintar_${username}`);
+
+      const userData = {
+        username,
+        fullname,
+        birthdate,
+        password,
+        level: 1,
+        xp: 0,
+        streak: 1,
+        joinedDate: getTodayISO()
+      };
+
+      localStorage.setItem(`dompet_pintar_auth_${username}`, JSON.stringify(userData));
+      initializeUserData(userData);
+
+      document.getElementById('regFullName').value = '';
+      document.getElementById('regUsername').value = '';
+      document.getElementById('regBirthDate').value = '';
+      document.getElementById('regPassword').value = '';
+
+      switchAuthTab('login');
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginPassword').focus();
+
+      showToast("Akun berhasil dibuat! Silakan masuk menggunakan kata sandi Anda.");
+    }
+
+    function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!username || !password) {
+        showToast("Masukkan username dan password!", "error");
+        return;
+      }
+
+      const userRecordRaw = localStorage.getItem(`dompet_pintar_auth_${username}`);
+      if (!userRecordRaw) {
+        showToast("Username tidak terdaftar! Silakan daftar akun baru.", "error");
+        return;
+      }
+
+      let userRecord = null;
+      try {
+        userRecord = JSON.parse(userRecordRaw);
+      } catch (e) {
+        showToast("Data otentikasi bermasalah, silakan daftar ulang.", "error");
+        return;
+      }
+
+      if (userRecord.password !== password) {
+        showToast("Kata sandi salah!", "error");
+        return;
+      }
+
+      // Cek jika akun mengaktifkan 2FA Google Authenticator
+      if (userRecord.twoFactorEnabled && userRecord.twoFactorSecret) {
+        pending2FAUser = userRecord;
+        document.getElementById('twoFactorLoginInput').value = '';
+        openModal('modal2FALogin');
+        setTimeout(() => {
+          document.getElementById('twoFactorLoginInput')?.focus();
+        }, 300);
+        return;
+      }
+
+      if (!loadFromLocal(username)) {
+        initializeUserData(userRecord);
+      }
+
+      if (document.getElementById('loginRememberMe')?.checked) {
+        localStorage.setItem('dompet_pintar_current_user', username);
+      } else {
+        localStorage.removeItem('dompet_pintar_current_user');
+      }
+
+      showToast(`Berhasil masuk! Halo ${userRecord.fullname}.`);
+      enterApp(userRecord);
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('dompet_pintar_current_user');
+      showScreen('screenOnboarding');
+      showToast("Anda telah keluar akun.");
+    }
+
+    function confirmDeleteAccount() {
+      openConfirmModal(
+        "Hapus Akun Permanen",
+        "Semua data transaksi, dompet, dan target akan dihapus total sesuai aturan privasi GDPR. Username Anda akan tersedia kembali.",
+        async () => {
+          if (currentUser) {
+            const targetUsername = (currentUser.username || '').toLowerCase();
+
+            // 1. Hapus kredensial autentikasi agar username langsung tersedia untuk registrasi ulang
+            localStorage.removeItem(`dompet_pintar_auth_${targetUsername}`);
+            
+            // 2. Hapus seluruh data finansial lokal akun ini
+            localStorage.removeItem(`dompet_pintar_${targetUsername}`);
+            localStorage.removeItem('dompet_pintar_current_user');
+
+            // 3. Hapus data akun dari cloud database Supabase jika tersinkronisasi
+            if (supabaseClient && targetUsername) {
+              try {
+                await supabaseClient.from('user_finance').delete().eq('username', targetUsername);
+              } catch (err) {
+                console.warn("Supabase record delete notice:", err);
+              }
+            }
+
+            // 4. Bersihkan state data aktif di memori aplikasi
+            currentUser = null;
+            transactions = [];
+            wallets = [];
+            budgets = [];
+            goals = [];
+            recurringBills = [];
+            challenges = [];
+            notifications = [];
+          }
+
+          // Kembali ke halaman onboarding awal
+          showScreen('screenOnboarding');
+          showToast("Akun berhasil dihapus permanen. Username kini dapat didaftarkan kembali.");
+        }
+      );
+    }
+
+    function enterApp(user) {
+      showScreen('mainApp');
+
+      document.getElementById('headerUserName').innerText = user.fullname.split(' ')[0] || user.username;
+      document.getElementById('settingsFullName').innerText = user.fullname;
+      document.getElementById('settingsUsername').innerText = '@' + user.username;
+      document.getElementById('streakCount').innerText = user.streak || 1;
+
+      updateLevelUI(user);
+      update2FAStatusUI();
+      renderAll();
+    }
+
+    function updateLevelUI(user) {
+      const lvl = user.level || 1;
+      const xp = user.xp || 0;
+      const badge = document.getElementById('userLevelBadge');
+      const xpText = document.getElementById('cuanXpDisplay');
+      const bar = document.getElementById('cuanProgressBar');
+
+      let title = "Level 1: Pemula";
+      if (lvl === 2) title = "Level 2: Perencana";
+      if (lvl >= 3) title = "Level 3: Sultan Cuan";
+
+      if (badge) badge.innerText = title;
+      if (xpText) xpText.innerText = `${xp} / 100 XP`;
+      if (bar) bar.style.width = `${Math.min(100, xp)}%`;
+    }
+
+    function showScreen(screenId) {
+      const screens = ['screenOnboarding', 'screenAuth', 'mainApp'];
+      screens.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+          if (s === screenId) el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchMainTab(tab) {
+      const tabs = ['dashboard', 'transactions', 'budgets', 'analytics', 'settings'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`navBtn${capitalize(t)}`);
+        const section = document.getElementById(`tab${capitalize(t)}`);
+        if (section) {
+          if (t === tab) {
+            section.classList.remove('hidden');
+            if (btn) {
+              btn.classList.add('text-brand-500');
+              btn.classList.remove('text-slate-400');
+            }
+          } else {
+            section.classList.add('hidden');
+            if (btn) {
+              btn.classList.remove('text-brand-500');
+              btn.classList.add('text-slate-400');
+            }
+          }
+        }
+      });
+      const detailExp = document.getElementById('viewExpenseDetail');
+      if (detailExp) detailExp.classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openExpenseDetailView() {
+      document.getElementById('tabDashboard').classList.add('hidden');
+      document.getElementById('viewExpenseDetail').classList.remove('hidden');
+      renderExpenseDetailDonut();
+    }
+
+    function closeExpenseDetailView() {
+      document.getElementById('viewExpenseDetail').classList.add('hidden');
+      document.getElementById('tabDashboard').classList.remove('hidden');
+    }
+
+    function openIncomeDetailView() {
+      switchMainTab('transactions');
+      const filterEl = document.getElementById('filterTypeSelect');
+      if (filterEl) filterEl.value = 'income';
+      filterTransactions();
+    }
+
+    function switchBudgetSubtab(sub) {
+      const subs = ['budget', 'goals', 'recurring'];
+      subs.forEach(s => {
+        const btn = document.getElementById(`subtab${capitalize(s)}Btn`);
+        const cont = document.getElementById(`subtab${capitalize(s)}Content`);
+        if (s === sub) {
+          if (btn) btn.className = 'flex-1 py-2 rounded-xl bg-brand-400 text-white shadow-sm transition-all';
+          if (cont) cont.classList.remove('hidden');
+        } else {
+          if (btn) btn.className = 'flex-1 py-2 rounded-xl text-slate-600 transition-all';
+          if (cont) cont.classList.add('hidden');
+        }
+      });
+    }
+
+    let currentFormType = 'expense';
+
+    function openTransactionModal(type = 'expense', editId = null) {
+      currentFormType = type;
+      setTransactionFormType(type);
+      populateWalletDropdown('transWallet');
+      document.getElementById('transDate').value = getTodayISO();
+      document.getElementById('transEditId').value = editId || '';
+
+      if (editId) {
+        const t = transactions.find(x => x.id === editId);
+        if (t) {
+          document.getElementById('modalTransTitle').innerText = 'Ubah Transaksi';
+          document.getElementById('transAmount').value = t.amount;
+          document.getElementById('transCategory').value = t.category;
+          document.getElementById('transWallet').value = t.walletId;
+          document.getElementById('transDate').value = t.date;
+          document.getElementById('transNote').value = t.note || '';
+          setTransactionFormType(t.type);
+        }
+      } else {
+        document.getElementById('modalTransTitle').innerText = 'Catat Transaksi';
+        document.getElementById('transAmount').value = '';
+        document.getElementById('transNote').value = '';
+      }
+
+      openModal('modalTransaction');
+    }
+
+    function setTransactionFormType(type) {
+      currentFormType = type;
+      const btnExp = document.getElementById('btnFormTypeExpense');
+      const btnInc = document.getElementById('btnFormTypeIncome');
+      const catSelect = document.getElementById('transCategory');
+
+      if (type === 'expense') {
+        btnExp.className = 'flex-1 py-2 rounded-xl bg-rose-500 text-white shadow-sm transition-all';
+        btnInc.className = 'flex-1 py-2 rounded-xl text-slate-600 transition-all';
+        catSelect.innerHTML = defaultExpenseCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      } else {
+        btnInc.className = 'flex-1 py-2 rounded-xl bg-emerald-500 text-white shadow-sm transition-all';
+        btnExp.className = 'flex-1 py-2 rounded-xl text-slate-600 transition-all';
+        catSelect.innerHTML = defaultIncomeCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      }
+    }
+
+    function saveTransaction() {
+      const amount = parseFloat(document.getElementById('transAmount').value);
+      const category = document.getElementById('transCategory').value;
+      const walletId = document.getElementById('transWallet').value;
+      const date = document.getElementById('transDate').value;
+      const note = document.getElementById('transNote').value.trim();
+      const editId = document.getElementById('transEditId').value;
+
+      if (!amount || amount <= 0) {
+        showToast("Nominal harus lebih dari 0!", "error");
+        return;
+      }
+      if (!walletId) {
+        showToast("Pilih akun bank/dompet!", "error");
+        return;
+      }
+
+      if (editId) {
+        const idx = transactions.findIndex(t => t.id === editId);
+        if (idx !== -1) {
+          transactions[idx] = { id: editId, type: currentFormType, amount, category, walletId, date, note };
+          showToast("Transaksi berhasil diperbarui!");
+        }
+      } else {
+        transactions.unshift({ id: 't_' + Date.now(), type: currentFormType, amount, category, walletId, date, note });
+        addXp(10);
+        showToast("Transaksi berhasil dicatat!");
+      }
+
+      recalculateWalletBalances();
+      saveToLocal();
+      renderAll();
+      closeModal('modalTransaction');
+    }
+
+    function deleteTransaction(id) {
+      openConfirmModal("Hapus Transaksi", "Yakin ingin menghapus catatan transaksi ini?", () => {
+        transactions = transactions.filter(t => t.id !== id);
+        recalculateWalletBalances();
+        saveToLocal();
+        renderAll();
+        showToast("Transaksi telah dihapus.");
+      });
+    }
+
+    function recalculateWalletBalances() {
+      wallets.forEach(w => {
+        w.balance = (typeof w.initialBalance === 'number') ? w.initialBalance : 0;
+      });
+
+      transactions.forEach(t => {
+        const w = wallets.find(x => x.id === t.walletId);
+        if (w) {
+          if (t.type === 'income') w.balance += t.amount;
+          else if (t.type === 'expense') w.balance -= t.amount;
+        }
+      });
+    }
+
+    function openTransferModal() {
+      populateWalletDropdown('transferFromWallet');
+      populateWalletDropdown('transferToWallet');
+      document.getElementById('transferAmount').value = '';
+      document.getElementById('transferNote').value = '';
+      openModal('modalTransfer');
+    }
+
+    function executeTransfer() {
+      const amount = parseFloat(document.getElementById('transferAmount').value);
+      const fromId = document.getElementById('transferFromWallet').value;
+      const toId = document.getElementById('transferToWallet').value;
+      const note = document.getElementById('transferNote').value.trim();
+
+      if (!amount || amount <= 0) {
+        showToast("Nominal transfer tidak valid!", "error");
+        return;
+      }
+      if (fromId === toId) {
+        showToast("Rekening asal dan tujuan tidak boleh sama!", "error");
+        return;
+      }
+
+      const fromW = wallets.find(w => w.id === fromId);
+      const toW = wallets.find(w => w.id === toId);
+
+      transactions.unshift({
+        id: 't_' + Date.now(),
+        type: 'expense',
+        amount,
+        category: 'Top up wallet',
+        walletId: fromId,
+        date: getTodayISO(),
+        note: `Transfer ke ${toW?.name || 'Bank'}: ${note}`
+      });
+
+      transactions.unshift({
+        id: 't_' + (Date.now() + 1),
+        type: 'income',
+        amount,
+        category: 'Top up wallet',
+        walletId: toId,
+        date: getTodayISO(),
+        note: `Transfer dari ${fromW?.name || 'Bank'}: ${note}`
+      });
+
+      recalculateWalletBalances();
+      saveToLocal();
+      renderAll();
+      closeModal('modalTransfer');
+      showToast(`Transfer ${formatCurrency(amount)} berhasil dikirim!`);
+    }
+
+    function openManageWalletsModal() {
+      renderManageWalletsList();
+      openModal('modalManageWallets');
+    }
+
+    function renderManageWalletsList() {
+      const container = document.getElementById('manageWalletsList');
+      if (!container) return;
+
+      if (!wallets.length) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada akun bank atau e-wallet.</p>`;
+        return;
+      }
+
+      container.innerHTML = wallets.map(w => {
+        const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+        return `
+          <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl flex items-center justify-between transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl ${style.bg} ${style.text} flex items-center justify-center font-extrabold text-[11px] shrink-0 shadow-sm">
+                ${style.badge}
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-800 truncate">${w.name}</p>
+                <p class="text-[10px] text-slate-400 truncate">No: ${w.accountNumber || '-'} • Saldo: <b class="text-slate-700">${formatCurrency(w.balance)}</b></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${accNum ? `
+              <button onclick="copyAccountNumber('${accNum}', event)" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening">
+                <i class="fa-regular fa-copy"></i>
+              </button>` : ''}
+              <button onclick="openEditWalletModal('${w.id}')" class="w-8 h-8 rounded-xl bg-white text-brand-600 hover:bg-brand-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Ubah Bank">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="deleteWallet('${w.id}')" class="w-8 h-8 rounded-xl bg-white text-rose-500 hover:bg-rose-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Hapus Bank">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openEditWalletModal(walletId) {
+      const w = wallets.find(x => x.id === walletId);
+      if (!w) return;
+
+      document.getElementById('editWalletId').value = w.id;
+      document.getElementById('editWalletPreset').value = w.bankCode || 'CUSTOM';
+      document.getElementById('editWalletName').value = w.name;
+      document.getElementById('editWalletNumber').value = w.accountNumber || '';
+      document.getElementById('editWalletBalance').value = w.balance;
+
+      openModal('modalEditWallet');
+    }
+
+    function saveEditWallet() {
+      const id = document.getElementById('editWalletId').value;
+      const bankCode = document.getElementById('editWalletPreset').value;
+      const name = document.getElementById('editWalletName').value.trim();
+      const accountNumber = document.getElementById('editWalletNumber').value.trim() || '-';
+      const balance = parseFloat(document.getElementById('editWalletBalance').value) || 0;
+
+      if (!name) {
+        showToast("Nama akun tidak boleh kosong!", "error");
+        return;
+      }
+
+      const w = wallets.find(x => x.id === id);
+      if (w) {
+        w.bankCode = bankCode;
+        w.name = name;
+        w.accountNumber = accountNumber;
+        w.initialBalance = balance;
+        w.balance = balance;
+
+        saveToLocal();
+        renderAll();
+        renderManageWalletsList();
+        closeModal('modalEditWallet');
+        showToast(`Akun "${name}" berhasil diperbarui!`);
+      }
+    }
+
+    function deleteWallet(walletId) {
+      if (wallets.length <= 1) {
+        showToast("Minimal harus memiliki 1 akun bank/dompet!", "error");
+        return;
+      }
+
+      const w = wallets.find(x => x.id === walletId);
+      openConfirmModal("Hapus Akun Bank", `Yakin ingin menghapus ${w?.name || 'akun ini'}?`, () => {
+        wallets = wallets.filter(x => x.id !== walletId);
+        transactions = transactions.filter(t => t.walletId !== walletId);
+        recalculateWalletBalances();
+        saveToLocal();
+        renderAll();
+        renderManageWalletsList();
+        showToast("Akun bank berhasil dihapus.");
+      });
+    }
+
+    function openAddWalletModal() {
+      document.getElementById('newWalletName').value = 'BCA Rekening Baru';
+      document.getElementById('newWalletNumber').value = '';
+      document.getElementById('newWalletBalance').value = '';
+      openModal('modalAddWallet');
+    }
+
+    function handleWalletPresetChange(val) {
+      const nameInput = document.getElementById('newWalletName');
+      if (val === 'CUSTOM') {
+        nameInput.value = '';
+        nameInput.placeholder = 'Ketik nama bank/dompet...';
+      } else {
+        nameInput.value = `${val} Rekening Baru`;
+      }
+    }
+
+    function saveNewWallet() {
+      const preset = document.getElementById('newWalletPreset').value;
+      const name = document.getElementById('newWalletName').value.trim();
+      const number = (document.getElementById('newWalletNumber')?.value || '').trim() || '-';
+      const balance = parseFloat(document.getElementById('newWalletBalance').value) || 0;
+
+      if (!name) {
+        showToast("Nama akun harus diisi!", "error");
+        return;
+      }
+
+      const newW = {
+        id: 'w_' + Date.now(),
+        name,
+        bankCode: preset,
+        accountNumber: number,
+        initialBalance: balance,
+        balance: balance
+      };
+
+      wallets.push(newW);
+      saveToLocal();
+      renderAll();
+      renderManageWalletsList();
+      closeModal('modalAddWallet');
+      showToast(`Akun ${name} berhasil ditambahkan!`);
+    }
+
+    function populateWalletDropdown(selectId) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML = wallets.map(w => {
+        const bankName = bankColorMap[w.bankCode]?.badge || w.bankCode || 'Bank';
+        // Menampilkan nama bank secara eksplisit dan jelas di awal pilihan
+        const displayName = `${bankName} - ${w.name}`;
+        return `<option value="${w.id}">${displayName} (${formatCurrency(w.balance)})</option>`;
+      }).join('');
+    }
+
+    function openAddBudgetModal() {
+      const sel = document.getElementById('budgetCategory');
+      if (sel) sel.innerHTML = defaultExpenseCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      document.getElementById('budgetLimit').value = '';
+      openModal('modalAddBudget');
+    }
+
+    function saveBudget() {
+      const category = document.getElementById('budgetCategory').value;
+      const limit = parseFloat(document.getElementById('budgetLimit').value);
+
+      if (!limit || limit <= 0) {
+        showToast("Batas limit anggaran harus lebih dari 0!", "error");
+        return;
+      }
+
+      const existIdx = budgets.findIndex(b => b.category === category);
+      if (existIdx !== -1) {
+        budgets[existIdx].limit = limit;
+      } else {
+        budgets.push({ category, limit });
+      }
+
+      saveToLocal();
+      renderBudgets();
+      closeModal('modalAddBudget');
+      showToast(`Anggaran untuk ${category} disimpan!`);
+    }
+
+    function renderBudgets() {
+      const container = document.getElementById('budgetItemsList');
+      if (!container) return;
+      if (!budgets.length) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-3xl">Belum ada anggaran yang disetel. Klik tombol Set Budget di atas.</div>`;
+        return;
+      }
+
+      let totalLimit = 0;
+      let totalSpent = 0;
+
+      container.innerHTML = budgets.map(b => {
+        const spent = transactions
+          .filter(t => t.type === 'expense' && t.category === b.category)
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        totalLimit += b.limit;
+        totalSpent += spent;
+
+        const percent = Math.min(100, Math.round((spent / b.limit) * 100));
+        let colorClass = 'bg-emerald-500';
+        let badgeColor = 'text-emerald-600 bg-emerald-50';
+        if (percent > 70) { colorClass = 'bg-amber-500'; badgeColor = 'text-amber-600 bg-amber-50'; }
+        if (percent >= 90) { colorClass = 'bg-rose-500'; badgeColor = 'text-rose-600 bg-rose-50'; }
+
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="font-bold text-xs text-slate-800">${b.category}</p>
+                <p class="text-[11px] text-slate-400">${formatCurrency(spent)} dari ${formatCurrency(b.limit)}</p>
+              </div>
+              <span class="text-xs font-extrabold px-2.5 py-1 rounded-full ${badgeColor}">${percent}%</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div class="${colorClass} h-full rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const overallPercent = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
+      const overallEl = document.getElementById('overallBudgetPercent');
+      if (overallEl) overallEl.innerText = `${overallPercent}% Terpakai`;
+    }
+
+    function openAddGoalModal() {
+      document.getElementById('goalTitle').value = '';
+      document.getElementById('goalTargetAmount').value = '';
+      document.getElementById('goalCurrentAmount').value = '';
+      document.getElementById('goalDeadline').value = '2026-12-31';
+      openModal('modalAddGoal');
+    }
+
+    function saveGoal() {
+      const title = document.getElementById('goalTitle').value.trim();
+      const target = parseFloat(document.getElementById('goalTargetAmount').value);
+      const current = parseFloat(document.getElementById('goalCurrentAmount').value) || 0;
+      const deadline = document.getElementById('goalDeadline').value;
+
+      if (!title || !target || target <= 0) {
+        showToast("Isi nama dan target nominal!", "error");
+        return;
+      }
+
+      goals.push({ id: 'g_' + Date.now(), title, target, current, deadline });
+      saveToLocal();
+      renderGoals();
+      closeModal('modalAddGoal');
+      showToast(`Target impian "${title}" dibuat!`);
+    }
+
+    function openAddSavingsToGoalModal(goalId) {
+      const g = goals.find(x => x.id === goalId);
+      if (!g) return;
+      document.getElementById('selectedGoalId').value = goalId;
+      document.getElementById('addSavingsModalTitle').innerText = `Nabung untuk "${g.title}"`;
+      document.getElementById('savingsAmountInput').value = '';
+      populateWalletDropdown('savingsWalletSource');
+      openModal('modalAddSavingsToGoal');
+    }
+
+    function executeAddSavings() {
+      const goalId = document.getElementById('selectedGoalId').value;
+      const amount = parseFloat(document.getElementById('savingsAmountInput').value);
+      const walletId = document.getElementById('savingsWalletSource').value;
+
+      if (!amount || amount <= 0) {
+        showToast("Nominal tidak valid!", "error");
+        return;
+      }
+
+      const g = goals.find(x => x.id === goalId);
+      if (!g) return;
+
+      g.current += amount;
+
+      transactions.unshift({
+        id: 't_' + Date.now(),
+        type: 'expense',
+        amount: amount,
+        category: 'Top up wallet',
+        walletId: walletId,
+        date: getTodayISO(),
+        note: `Nabung impian: ${g.title}`
+      });
+
+      recalculateWalletBalances();
+      addXp(20);
+
+      if (g.current >= g.target) {
+        if (window.confetti) {
+          window.confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+        }
+        showToast(`🎉 Luar biasa! Target "${g.title}" telah tercapai!`);
+      } else {
+        showToast(`Berhasil menambah tabungan ${formatCurrency(amount)}!`);
+      }
+
+      saveToLocal();
+      renderAll();
+      closeModal('modalAddSavingsToGoal');
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goalsListContainer');
+      if (!container) return;
+      if (!goals.length) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-3xl">Belum ada target impian. Klik Target Baru untuk mulai.</div>`;
+        return;
+      }
+
+      container.innerHTML = goals.map(g => {
+        const percent = Math.min(100, Math.round((g.current / g.target) * 100));
+        const remaining = Math.max(0, g.target - g.current);
+
+        return `
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold text-sm text-slate-800">${g.title}</h4>
+                <p class="text-[11px] text-slate-400">Target s.d. ${g.deadline || '-'}</p>
+              </div>
+              <span class="text-xs font-extrabold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full">${percent}%</span>
+            </div>
+
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+              <div class="bg-gradient-to-r from-brand-400 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+            </div>
+
+            <div class="flex justify-between items-center text-xs pt-1">
+              <div>
+                <span class="text-slate-400 text-[10px]">Terkumpul</span>
+                <p class="font-extrabold text-slate-800">${formatCurrency(g.current)}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 text-[10px]">Kurang</span>
+                <p class="font-bold text-rose-500">${formatCurrency(remaining)}</p>
+              </div>
+            </div>
+
+            <button onclick="openAddSavingsToGoalModal('${g.id}')" class="w-full py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-piggy-bank"></i> Nabung Sekarang
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAddRecurringModal() {
+      const catSel = document.getElementById('recCategory');
+      if (catSel) catSel.innerHTML = defaultExpenseCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      populateWalletDropdown('recWallet');
+      openModal('modalAddRecurring');
+    }
+
+    function saveRecurring() {
+      const name = document.getElementById('recName').value.trim();
+      const type = document.getElementById('recType').value;
+      const amount = parseFloat(document.getElementById('recAmount').value);
+      const interval = document.getElementById('recInterval').value;
+      const category = document.getElementById('recCategory').value;
+      const walletId = document.getElementById('recWallet').value;
+
+      if (!name || !amount || amount <= 0) {
+        showToast("Isi nama dan nominal tagihan!", "error");
+        return;
+      }
+
+      recurringBills.push({ id: 'r_' + Date.now(), name, type, amount, interval, category, walletId });
+      saveToLocal();
+      renderRecurring();
+      closeModal('modalAddRecurring');
+      showToast(`Transaksi rutin "${name}" disimpan!`);
+    }
+
+    function executeRecurringNow(recId) {
+      const r = recurringBills.find(x => x.id === recId);
+      if (!r) return;
+
+      transactions.unshift({
+        id: 't_' + Date.now(),
+        type: r.type,
+        amount: r.amount,
+        category: r.category,
+        walletId: r.walletId,
+        date: getTodayISO(),
+        note: `Tagihan Rutin: ${r.name}`
+      });
+
+      recalculateWalletBalances();
+      saveToLocal();
+      renderAll();
+      showToast(`Tagihan "${r.name}" berhasil dicatat sebagai transaksi hari ini!`);
+    }
+
+    function renderRecurring() {
+      const container = document.getElementById('recurringListContainer');
+      if (!container) return;
+      if (!recurringBills.length) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-3xl">Belum ada tagihan berulang.</div>`;
+        return;
+      }
+
+      container.innerHTML = recurringBills.map(r => `
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-bold text-xs text-slate-800">${r.name}</span>
+              <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold uppercase">${r.interval}</span>
+            </div>
+            <p class="text-xs font-extrabold ${r.type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}">${formatCurrency(r.amount)}</p>
+          </div>
+          <button onclick="executeRecurringNow('${r.id}')" class="px-3 py-1.5 bg-brand-400 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-sm">
+            Catat Tagihan
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function openNewChallengeModal() {
+      const challengeIdeas = [
+        { title: "Hemat Jajan Boba & Kopi 7 Hari", days: 7, xp: 50 },
+        { title: "Masak di Rumah Selama 5 Hari Berturut-turut", days: 5, xp: 40 },
+        { title: "Weekend Bebas Belanja Online (3 Hari)", days: 3, xp: 30 },
+        { title: "Bawa Bekal Makan Siang ke Kantor Seminggu", days: 7, xp: 50 }
+      ];
+      const selected = challengeIdeas[Math.floor(Math.random() * challengeIdeas.length)];
+      
+      challenges.push({
+        id: 'c_' + Date.now(),
+        title: selected.title,
+        daysTotal: selected.days,
+        daysCurrent: 0,
+        xp: selected.xp,
+        completed: false,
+        lastCheckIn: null
+      });
+
+      saveToLocal();
+      renderChallenges();
+      showToast(`Tantangan baru "${selected.title}" diaktifkan!`);
+    }
+
+    function checkInChallenge(id) {
+      const c = challenges.find(x => x.id === id);
+      if (!c || c.completed) return;
+
+      const today = getTodayISO();
+
+      if (c.lastCheckIn === today) {
+        showToast("Kamu sudah melakukan check-in hari ini! Lanjutkan besok ya.", "error");
+        return;
+      }
+
+      c.daysCurrent = (c.daysCurrent || 0) + 1;
+      c.lastCheckIn = today;
+
+      if (c.daysCurrent >= c.daysTotal) {
+        c.daysCurrent = c.daysTotal;
+        c.completed = true;
+        addXp(c.xp);
+        if (window.confetti) {
+          window.confetti({ particleCount: 100, spread: 60 });
+        }
+        showToast(`🎉 Selamat! Kamu menuntaskan "${c.title}" (+${c.xp} XP)!`);
+      } else {
+        addXp(10);
+        showToast(`Check-in berhasil! Hari ke-${c.daysCurrent} dari ${c.daysTotal}.`);
+      }
+
+      saveToLocal();
+      renderChallenges();
+    }
+
+    function addXp(pts) {
+      if (!currentUser) return;
+      currentUser.xp = (currentUser.xp || 0) + pts;
+      if (currentUser.xp >= 100) {
+        currentUser.level = (currentUser.level || 1) + 1;
+        currentUser.xp = currentUser.xp - 100;
+        showToast(`🌟 NAIK LEVEL! Sekarang kamu Level ${currentUser.level}!`);
+      }
+      updateLevelUI(currentUser);
+      localStorage.setItem(`dompet_pintar_auth_${currentUser.username}`, JSON.stringify(currentUser));
+    }
+
+    function renderChallenges() {
+      const container = document.getElementById('spendingChallengeList');
+      if (!container) return;
+      if (!challenges.length) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Belum ada tantangan aktif.</p>`;
+        return;
+      }
+
+      const today = getTodayISO();
+
+      container.innerHTML = challenges.map(c => {
+        const isDoneToday = c.lastCheckIn === today;
+        const currentDays = c.daysCurrent || 0;
+
+        return `
+          <div class="p-3.5 rounded-2xl ${c.completed ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'} border flex items-center justify-between">
+            <div>
+              <p class="font-bold text-xs text-slate-800 mb-0.5">${c.title}</p>
+              <p class="text-[10px] text-slate-400">Progres: ${currentDays}/${c.daysTotal} hari • +${c.xp} XP</p>
+            </div>
+            ${c.completed 
+              ? `<span class="text-xs font-bold text-emerald-600 flex items-center gap-1"><i class="fa-solid fa-check"></i> Selesai</span>`
+              : isDoneToday
+                ? `<span class="text-xs font-semibold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-xl flex items-center gap-1"><i class="fa-solid fa-circle-check text-xs"></i> Hari Ini Sudah</span>`
+                : `<button onclick="checkInChallenge('${c.id}')" class="px-3 py-1.5 bg-brand-400 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition-all">Check-in</button>`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function fetchGeminiFinancialAdvice() {
+      const box = document.getElementById('aiInsightBox');
+      const btn = document.getElementById('btnAskAI');
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Menganalisis...</span>`;
+      box.innerHTML = `<div class="flex items-center justify-center gap-2 text-brand-200"><i class="fa-solid fa-spinner fa-spin"></i> Membaca pola pengeluaran aktual kamu dengan AI...</div>`;
+
+      // 1. Validasi: Jika transaksi masih kosong, informasikan secara jelas
+      if (!transactions || transactions.length === 0) {
+        setTimeout(() => {
+          box.innerHTML = `
+            <div class="text-left space-y-1.5 text-xs">
+              <p class="font-bold text-white">📊 Data Transaksi Belum Tersedia</p>
+              <p class="text-slate-300">AI Assistant belum menemukan catatan pengeluaran maupun pemasukan pada akun Anda.</p>
+              <p class="text-brand-300">💡 <i>Silakan catat minimal satu transaksi pengeluaran atau pemasukan agar AI dapat menganalisis data keuangan Anda secara akurat.</i></p>
+            </div>
+          `;
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> <span>Analisis AI</span>`;
+          showToast("Catat transaksi terlebih dahulu untuk dianalisis AI.", "error");
+        }, 400);
+        return;
+      }
+
+      // 2. Kumpulkan metrik aktual dari transaksi nyata
+      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const netCashflow = totalIncome - totalExpense;
+      const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
+
+      const categoryMap = {};
+      transactions.filter(t => t.type === 'expense').forEach(t => {
+        categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+      });
+
+      const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
+      const topCategoryName = sortedCategories.length > 0 ? sortedCategories[0][0] : "Belum ada";
+      const topCategoryAmount = sortedCategories.length > 0 ? sortedCategories[0][1] : 0;
+      const topCategoryPct = totalExpense > 0 ? Math.round((topCategoryAmount / totalExpense) * 100) : 0;
+
+      const recentSamples = transactions.slice(0, 5).map(t => 
+        `- ${t.date}: [${t.type === 'expense' ? 'Keluar' : 'Masuk'}] ${t.category} sebesar ${formatCurrency(t.amount)} (${t.note || '-'})`
+      ).join('\n');
+
+      const promptText = `
+Data Keuangan Pengguna (${currentUser?.fullname || 'Pengguna'}):
+- Total Pemasukan: ${formatCurrency(totalIncome)}
+- Total Pengeluaran: ${formatCurrency(totalExpense)}
+- Saldo Arus Kas Bersih: ${formatCurrency(netCashflow)}
+- Savings Rate: ${savingsRate}%
+- Kategori Pengeluaran Terbesar: ${topCategoryName} (${formatCurrency(topCategoryAmount)} / ${topCategoryPct}% dari total)
+- Rincian Pengeluaran per Kategori: ${JSON.stringify(categoryMap)}
+- Sampel Transaksi Terkini:
+${recentSamples}
+
+Instruksi:
+Berikan audit keuangan yang 100% SESUAI data aktual di atas dalam 3 poin:
+1. 💡 Deteksi Bocor Halus: Bahas pengeluaran kategori ${topCategoryName}.
+2. 🎯 Tips Hemat Cerdas: Saran relevan untuk menghemat pengeluaran tersebut.
+3. 📈 Rasio Finansial & Apresiasi: Bahas tabungan (${savingsRate}%) dan arus kas ${netCashflow >= 0 ? 'surplus' : 'defisit'}.
+Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
+
+      const systemPrompt = "Anda adalah penasihat keuangan digital profesional di aplikasi Dompet Pintar. Analisis wajib 100% akurat terhadap data transaksi nyata pengguna.";
+
+      try {
+        const resultText = await callGeminiWithBackoff(promptText, systemPrompt);
+        box.innerHTML = `<div class="text-left space-y-1.5">${formatMarkdown(resultText)}</div>`;
+        showToast("Analisis AI selesai diperbarui sesuai transaksi Anda!");
+      } catch (err) {
+        // Fallback dinamis cerdas berbasis data nyata jika koneksi API terhambat
+        box.innerHTML = `
+          <div class="text-left space-y-1 text-xs">
+            <p>💡 <b>Deteksi Bocor Halus:</b> Pengeluaran terbesar Anda saat ini berada pada kategori <b>${topCategoryName}</b> sebesar <b>${formatCurrency(topCategoryAmount)}</b> (${topCategoryPct}% dari total pengeluaran).</p>
+            <p>🎯 <b>Tips Hemat:</b> ${topCategoryAmount > 0 ? `Tetapkan batas anggaran bulanan untuk kategori <b>${topCategoryName}</b> agar pengeluaran tetap terkontrol.` : 'Pertahankan kedisiplinan keuangan Anda!'}</p>
+            <p>📈 <b>Rasio Finansial:</b> Savings rate Anda berada di angka <b>${savingsRate}%</b> dengan arus kas <b>${netCashflow >= 0 ? 'surplus ' + formatCurrency(netCashflow) : 'defisit ' + formatCurrency(Math.abs(netCashflow))}</b>. ${netCashflow >= 0 ? 'Kondisi kas sehat, pertahankan!' : 'Perlu evaluasi pengeluaran mikro.'}</p>
+          </div>
+        `;
+        showToast("Menampilkan ringkasan audit finansial berbasis data riil Anda.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> <span>Analisis AI</span>`;
+      }
+    }
+
+    async function callGeminiWithBackoff(userQuery, systemPrompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      };
+
+      const delays = [1000, 2000, 4000];
+      for (let i = 0; i <= delays.length; i++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+          throw new Error("Empty candidate response");
+        } catch (e) {
+          if (i === delays.length) throw e;
+          await new Promise(res => setTimeout(res, delays[i]));
+        }
+      }
+    }
+
+    function formatMarkdown(txt) {
+      return txt
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\n\n/g, '<br/><br/>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function openExportModal() {
+      openModal('modalExport');
+    }
+
+    function exportToCSV() {
+      if (!transactions.length) {
+        showToast("Belum ada data transaksi untuk diekspor!", "error");
+        return;
+      }
+
+      let csv = "ID,Tanggal,Tipe,Kategori,Nominal (IDR),Akun Bank,Catatan\n";
+      transactions.forEach(t => {
+        const w = wallets.find(x => x.id === t.walletId)?.name || '-';
+        csv += `"${t.id}","${t.date}","${t.type}","${t.category}","${t.amount}","${w}","${(t.note || '').replace(/"/g, '""')}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `DompetPintar_Transaksi_${getTodayISO()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      closeModal('modalExport');
+      showToast("File CSV berhasil diunduh!");
+    }
+
+    function exportFullJSONBackup() {
+      if (!currentUser) return;
+      const data = {
+        user: currentUser,
+        transactions,
+        wallets,
+        budgets,
+        goals,
+        recurringBills,
+        exportDate: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DompetPintar_Backup_${currentUser.username}_${getTodayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("Cadangan data JSON berhasil diunduh!");
+    }
+
+    function generatePrintableReport() {
+      closeModal('modalExport');
+      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const netCash = totalIncome - totalExpense;
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showToast("Gagal membuka jendela cetak, periksa pop-up blocker browser Anda.", "error");
+        return;
+      }
+
+      const rowsHtml = transactions.map(t => {
+        const wName = wallets.find(w => w.id === t.walletId)?.name || '-';
+        return `
+          <tr>
+            <td>${t.date}</td>
+            <td>${t.type === 'expense' ? 'Pengeluaran' : 'Pemasukan'}</td>
+            <td>${t.category}</td>
+            <td>${wName}</td>
+            <td>${t.note || '-'}</td>
+            <td class="${t.type}">Rp ${t.amount.toLocaleString('id-ID')}</td>
+          </tr>
+        `;
+      }).join('');
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Laporan Keuangan - Dompet Pintar</title>
+          <style>
+            body { font-family: sans-serif; padding: 30px; color: #1e293b; }
+            h1 { color: #0284c7; margin-bottom: 4px; }
+            .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+            .summary { display: flex; gap: 20px; margin-bottom: 25px; }
+            .card { flex: 1; padding: 15px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
+            .card h3 { margin: 0 0 5px 0; font-size: 13px; color: #64748b; }
+            .card p { margin: 0; font-size: 20px; font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+            th, td { padding: 10px; border-bottom: 1px solid #cbd5e1; text-align: left; }
+            th { background: #f1f5f9; }
+            .expense { color: #ef4444; font-weight: bold; }
+            .income { color: #10b981; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>DOMPET PINTAR</h1>
+            <p>Laporan Keuangan Otomatis • Pengguna: <b>${currentUser?.fullname || '-'}</b> • Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>
+          </div>
+          <div class="summary">
+            <div class="card">
+              <h3>Total Pemasukan</h3>
+              <p class="income">Rp ${totalIncome.toLocaleString('id-ID')}</p>
+            </div>
+            <div class="card">
+              <h3>Total Pengeluaran</h3>
+              <p class="expense">Rp ${totalExpense.toLocaleString('id-ID')}</p>
+            </div>
+            <div class="card">
+              <h3>Saldo Bersih</h3>
+              <p>Rp ${netCash.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+          <h3>Riwayat Transaksi</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Tipe</th>
+                <th>Kategori</th>
+                <th>Akun Bank</th>
+                <th>Catatan</th>
+                <th>Nominal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml || '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat transaksi.</td></tr>'}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      setTimeout(() => {
+        try {
+          printWindow.focus();
+          printWindow.print();
+        } catch (e) {}
+      }, 300);
+    }
+
+    function toggleDailyReminder(isChecked) {
+      if (isChecked && "Notification" in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            showToast("Pengingat harian aktif! Notifikasi dikirimkan setiap jam 20:00.");
+          } else {
+            showToast("Izin notifikasi tidak aktif di browser Anda.", "error");
+          }
+        });
+      } else {
+        showToast("Pengingat transaksi dimatikan.");
+      }
+    }
+
+    function showNotificationModal() {
+      const list = document.getElementById('notificationList');
+      if (!list) return;
+      if (!notifications.length) {
+        list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada pemberitahuan baru.</p>`;
+      } else {
+        list.innerHTML = notifications.map(n => `
+          <div class="p-3 rounded-2xl ${n.read ? 'bg-slate-50' : 'bg-brand-50/70 border border-brand-100'} flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full ${n.read ? 'bg-slate-200 text-slate-500' : 'bg-brand-400 text-white'} flex items-center justify-center text-xs shrink-0">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div>
+              <p class="font-bold text-xs text-slate-800">${n.title}</p>
+              <p class="text-[11px] text-slate-600">${n.text}</p>
+              <span class="text-[9px] text-slate-400">${n.time}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      openModal('modalNotifications');
+    }
+
+    function markAllNotificationsAsRead() {
+      notifications.forEach(n => n.read = true);
+      const b = document.getElementById('notifBadge');
+      if (b) b.classList.add('hidden');
+      saveToLocal();
+      closeModal('modalNotifications');
+      showToast("Semua pemberitahuan ditandai sudah dibaca.");
+    }
+
+    let miniExpenseChartInst = null;
+    let miniIncomeChartInst = null;
+    let largeExpenseChartInst = null;
+    let mainCashflowChartInst = null;
+
+    function renderAll() {
+      renderWallets();
+      renderDashboardSummary();
+      renderRecentTransactions();
+      renderFullTransactionList();
+      renderBudgets();
+      renderGoals();
+      renderRecurring();
+      renderChallenges();
+      renderCharts();
+    }
+
+    function renderWallets() {
+      const container = document.getElementById('walletCardsContainer');
+      if (!container) return;
+      container.innerHTML = wallets.map(w => {
+        const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
+        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+        return `
+          <div class="min-w-[150px] p-4 rounded-3xl ${style.bg} ${style.text} shadow-md flex flex-col justify-between shrink-0 transition-transform active:scale-95">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/20 backdrop-blur">${style.badge}</span>
+              <i class="fa-solid fa-credit-card text-xs opacity-70"></i>
+            </div>
+            <div>
+              <p class="text-[10px] opacity-80 truncate">${w.name}</p>
+              <p class="text-xs font-black tracking-tight mt-0.5">${formatCurrency(w.balance)}</p>
+              ${accNum ? `
+              <button onclick="copyAccountNumber('${accNum}', event)" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening">
+                <span class="truncate max-w-[85px]">${accNum}</span>
+                <i class="fa-regular fa-copy text-[9px]"></i>
+              </button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Fungsi Salin Nomor Rekening Bank */
+    function copyAccountNumber(accNumber, event) {
+      if (event) event.stopPropagation();
+      if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined') {
+        showToast("Nomor rekening belum diatur pada akun ini.", "error");
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(accNumber).then(() => {
+          showToast(`Nomor rekening ${accNumber} berhasil disalin!`);
+        }).catch(() => {
+          fallbackCopyText(accNumber);
+        });
+      } else {
+        fallbackCopyText(accNumber);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Nomor rekening ${text} berhasil disalin!`);
+      } catch (err) {
+        showToast("Gagal menyalin nomor rekening.", "error");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function renderDashboardSummary() {
+      const totalBalance = wallets.reduce((s, w) => s + (w.balance || 0), 0);
+      const totalBalanceEl = document.getElementById('totalBalanceDisplay');
+      if (totalBalanceEl) totalBalanceEl.innerText = formatCurrency(totalBalance);
+
+      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+
+      const expEl = document.getElementById('dashExpenseTotal');
+      const incEl = document.getElementById('dashIncomeTotal');
+      const detailExpEl = document.getElementById('detailTotalExpenseText');
+      const donutCenterEl = document.getElementById('donutCenterAmount');
+
+      if (expEl) expEl.innerText = formatCurrency(totalExpense);
+      if (incEl) incEl.innerText = formatCurrency(totalIncome);
+      if (detailExpEl) detailExpEl.innerText = formatCurrency(totalExpense);
+      if (donutCenterEl) donutCenterEl.innerText = formatCurrency(totalExpense);
+
+      const savingsRate = totalIncome > 0 ? Math.max(0, Math.round(((totalIncome - totalExpense) / totalIncome) * 100)) : 0;
+      const rateBadge = document.getElementById('savingsRateBadge');
+      const rateBar = document.getElementById('savingsRateBar');
+      if (rateBadge) rateBadge.innerText = `${savingsRate}%`;
+      if (rateBar) rateBar.style.width = `${savingsRate}%`;
+    }
+
+    function renderRecentTransactions() {
+      const container = document.getElementById('recentTransactionList');
+      if (!container) return;
+      const recents = transactions.slice(0, 4);
+
+      if (!recents.length) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 bg-white rounded-2xl">Belum ada transaksi.</p>`;
+        return;
+      }
+
+      container.innerHTML = recents.map(t => {
+        const isExp = t.type === 'expense';
+        const walletName = wallets.find(w => w.id === t.walletId)?.name || 'Dompet';
+        return `
+          <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl ${isExp ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} flex items-center justify-center text-sm">
+                <i class="fa-solid ${isExp ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-800">${t.category}</p>
+                <p class="text-[10px] text-slate-400">${walletName} • ${t.date}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-extrabold ${isExp ? 'text-slate-800' : 'text-emerald-600'}">
+                ${isExp ? '-' : '+'} ${formatCurrency(t.amount)}
+              </p>
+              ${t.note ? `<p class="text-[10px] text-slate-400 truncate max-w-[120px]">${t.note}</p>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFullTransactionList() {
+      const container = document.getElementById('fullTransactionList');
+      if (!container) return;
+      const search = (document.getElementById('searchTransInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('filterTypeSelect')?.value || 'all';
+
+      let filtered = transactions.filter(t => {
+        if (filter !== 'all' && t.type !== filter) return false;
+        if (search) {
+          const matchCat = t.category.toLowerCase().includes(search);
+          const matchNote = (t.note || '').toLowerCase().includes(search);
+          return matchCat || matchNote;
+        }
+        return true;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 bg-white rounded-3xl">Tidak ada transaksi ditemukan.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const isExp = t.type === 'expense';
+        const walletName = wallets.find(w => w.id === t.walletId)?.name || 'Dompet';
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl ${isExp ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} flex items-center justify-center text-sm">
+                <i class="fa-solid ${isExp ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-800">${t.category}</p>
+                <p class="text-[10px] text-slate-400">${walletName} • ${t.date}</p>
+                ${t.note ? `<p class="text-[10px] text-slate-500 italic mt-0.5">${t.note}</p>` : ''}
+              </div>
+            </div>
+            <div class="text-right flex flex-col items-end gap-1">
+              <span class="text-xs font-extrabold ${isExp ? 'text-slate-800' : 'text-emerald-600'}">
+                ${isExp ? '-' : '+'} ${formatCurrency(t.amount)}
+              </span>
+              <div class="flex gap-2">
+                <button onclick="openTransactionModal('${t.type}', '${t.id}')" class="text-[10px] text-brand-600 hover:underline">Ubah</button>
+                <button onclick="deleteTransaction('${t.id}')" class="text-[10px] text-rose-500 hover:underline">Hapus</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterTransactions() {
+      renderFullTransactionList();
+    }
+
+    function renderCharts() {
+      const ctxMiniExp = document.getElementById('miniExpenseChart')?.getContext('2d');
+      if (ctxMiniExp) {
+        if (miniExpenseChartInst) miniExpenseChartInst.destroy();
+        miniExpenseChartInst = new Chart(ctxMiniExp, {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [40, 30, 30],
+              backgroundColor: ['#fb923c', '#38bdf8', '#bae6fd'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            cutout: '70%',
+            responsive: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+          }
+        });
+      }
+
+      const ctxMiniInc = document.getElementById('miniIncomeChart')?.getContext('2d');
+      if (ctxMiniInc) {
+        if (miniIncomeChartInst) miniIncomeChartInst.destroy();
+        miniIncomeChartInst = new Chart(ctxMiniInc, {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [70, 30],
+              backgroundColor: ['#22c55e', '#86efac'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            cutout: '70%',
+            responsive: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+          }
+        });
+      }
+
+      const ctxCashflow = document.getElementById('mainCashflowChart')?.getContext('2d');
+      if (ctxCashflow) {
+        if (mainCashflowChartInst) mainCashflowChartInst.destroy();
+        const totalExp = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        const totalInc = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+
+        mainCashflowChartInst = new Chart(ctxCashflow, {
+          type: 'bar',
+          data: {
+            labels: ['Pemasukan', 'Pengeluaran'],
+            datasets: [{
+              data: [totalInc, totalExp],
+              backgroundColor: ['#22c55e', '#fb923c'],
+              borderRadius: 12,
+              barThickness: 28
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { display: false, grid: { display: false } },
+              x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } }
+            }
+          }
+        });
+      }
+    }
+
+    function renderExpenseDetailDonut() {
+      const categoryMap = {};
+      let totalExpense = 0;
+
+      transactions.filter(t => t.type === 'expense').forEach(t => {
+        categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+        totalExpense += t.amount;
+      });
+
+      const categories = Object.keys(categoryMap);
+      const amounts = Object.values(categoryMap);
+      const palette = ['#06b6d4', '#fb923c', '#94a3b8', '#ec4899', '#6366f1', '#14b8a6', '#eab308'];
+
+      const ctxLarge = document.getElementById('largeExpenseDonutChart')?.getContext('2d');
+      if (ctxLarge) {
+        if (largeExpenseChartInst) largeExpenseChartInst.destroy();
+        largeExpenseChartInst = new Chart(ctxLarge, {
+          type: 'doughnut',
+          data: {
+            labels: categories,
+            datasets: [{
+              data: amounts.length ? amounts : [1],
+              backgroundColor: palette.slice(0, amounts.length || 1),
+              borderWidth: 4,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            cutout: '68%',
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    const val = ctx.raw;
+                    const pct = totalExpense > 0 ? Math.round((val / totalExpense) * 100) : 0;
+                    return ` ${ctx.label}: ${formatCurrency(val)} (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const listContainer = document.getElementById('expenseCategoryBreakdownList');
+      if (!listContainer) return;
+      if (!categories.length) {
+        listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 bg-white rounded-2xl">Belum ada rincian pengeluaran.</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = categories.map((cat, i) => {
+        const amt = categoryMap[cat];
+        const pct = totalExpense > 0 ? Math.round((amt / totalExpense) * 100) : 0;
+        const color = palette[i % palette.length];
+
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-black px-2.5 py-1 rounded-xl text-white" style="background-color: ${color}">
+                ${pct}%
+              </span>
+              <span class="font-bold text-xs text-slate-700">${cat}</span>
+            </div>
+            <span class="font-extrabold text-xs text-slate-800">${formatCurrency(amt)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+      if (!toast || !toastMessage || !toastIcon) return;
+
+      toastMessage.innerText = msg;
+      if (type === 'error') {
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-check text-brand-400 text-base';
+      }
+
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3200);
+    }
+
+    let confirmCallback = null;
+    function openConfirmModal(title, msg, onConfirm) {
+      document.getElementById('confirmTitle').innerText = title;
+      document.getElementById('confirmMessage').innerText = msg;
+      confirmCallback = onConfirm;
+      document.getElementById('confirmAcceptBtn').onclick = () => {
+        if (confirmCallback) confirmCallback();
+        closeModal('modalConfirm');
+      };
+      openModal('modalConfirm');
+    }
+
+    function capitalize(str) {
+      return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const activeUsername = localStorage.getItem('dompet_pintar_current_user');
+        if (activeUsername && loadFromLocal(activeUsername) && currentUser) {
+          enterApp(currentUser);
+        } else {
+          showScreen('screenOnboarding');
+        }
+      } catch (e) {
+        console.error("Initialization error:", e);
+        showScreen('screenOnboarding');
+      }
+    });
+  </script>
+</body>
+</html>
