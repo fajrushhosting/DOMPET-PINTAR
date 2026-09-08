@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Dompet Pintar - Semua Keuangan dalam Satu Kendali</title>
+  <title>Dompet Pintar - Aplikasi Pengelola Keuangan Modern</title>
   
   <!-- PWA & Hybrid App Meta Tags -->
   <meta name="theme-color" content="#38bdf8" />
@@ -417,7 +417,7 @@
             </div>
           </div>
 
-          <!-- Slider DomPay (Diperbarui dari Akun & Dompet Bank) -->
+          <!-- Slider DomPay (Khusus Bank & E-Wallet dengan fitur salin rekening) -->
           <div class="space-y-2.5">
             <div class="flex justify-between items-center px-1">
               <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_wallets">DomPay</h3>
@@ -741,15 +741,15 @@
               <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
             </div>
 
-            <!-- Manage Bank Accounts -->
+            <!-- Manage Bank Accounts (Kelola DomPay Kamu) -->
             <div onclick="openManageWalletsModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm">
                   <i class="fa-solid fa-building-columns"></i>
                 </div>
                 <div>
-                  <p class="text-xs font-bold text-slate-700">Kelola Bank & E-Wallet</p>
-                  <p class="text-[10px] text-slate-400">BCA, BRI, Mandiri, Seabank, dll.</p>
+                  <p class="text-xs font-bold text-slate-700">Kelola DomPay Kamu</p>
+                  <p class="text-[10px] text-slate-400">BCA, BRI, Mandiri, Seabank, DANA, GoPay, dll.</p>
                 </div>
               </div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
@@ -758,7 +758,7 @@
             <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
             <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
@@ -1000,7 +1000,7 @@
       </div>
     </div>
 
-    <!-- 4. MODAL KELOLA SEMUA BANK (Diperbarui ke: Kelola DomPay Kamu) -->
+    <!-- 4. MODAL KELOLA SEMUA BANK (Kelola DomPay Kamu) -->
     <div id="modalManageWallets" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -1946,7 +1946,15 @@
 
     function copy2FASecret() {
       if (!temp2FASecret) return;
-      copyAccountNumber(temp2FASecret, null);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(temp2FASecret).then(() => {
+          showToast("Kunci 2FA berhasil disalin!");
+        }).catch(() => {
+          fallbackCopyText(temp2FASecret, "Kunci 2FA");
+        });
+      } else {
+        fallbackCopyText(temp2FASecret, "Kunci 2FA");
+      }
     }
 
     async function confirmEnable2FA() {
@@ -2141,7 +2149,6 @@
 
       if (btn) btn.disabled = true;
 
-      // Cek ketersediaan username di Cloud Database Supabase
       if (supabaseClient) {
         try {
           const { data } = await supabaseClient
@@ -2204,7 +2211,6 @@
       let userRecord = null;
       let cloudFinanceData = null;
 
-      // Mengambil akun langsung dari Cloud Database Supabase
       if (supabaseClient) {
         try {
           const { data, error } = await supabaseClient
@@ -2237,7 +2243,6 @@
         return;
       }
 
-      // Memuat seluruh data transaksi & perencanaan dari Supabase
       currentUser = cloudFinanceData.user || userRecord;
       transactions = Array.isArray(cloudFinanceData.transactions) ? cloudFinanceData.transactions : [];
       wallets = Array.isArray(cloudFinanceData.wallets) ? cloudFinanceData.wallets : [];
@@ -2247,7 +2252,6 @@
       challenges = Array.isArray(cloudFinanceData.challenges) ? cloudFinanceData.challenges : [];
       notifications = Array.isArray(cloudFinanceData.notifications) ? cloudFinanceData.notifications : [];
 
-      // Cek 2FA jika aktif
       if (userRecord.twoFactorEnabled && userRecord.twoFactorSecret) {
         pending2FAUser = userRecord;
         document.getElementById('twoFactorLoginInput').value = '';
@@ -2268,9 +2272,7 @@
       enterApp(userRecord);
     }
 
-    /* -------------------------------------------------------------
-       FITUR LUPA PASSWORD (LOGIN) & GANTI PASSWORD (PROFIL)
-    ------------------------------------------------------------- */
+    /* LUPA PASSWORD (LOGIN) & GANTI PASSWORD (PROFIL) */
     function openForgotPasswordModal() {
       document.getElementById('forgotUsername').value = document.getElementById('loginUsername').value.trim();
       document.getElementById('forgotBirthDate').value = '';
@@ -2324,7 +2326,6 @@
           return;
         }
 
-        // Perbarui password
         account.password = newPassword;
         data.data.user = account;
 
@@ -2697,7 +2698,10 @@
 
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
-        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+        // Fitur salin rekening hanya untuk Bank dan E-Wallet (bukan Kas Tunai)
+        const isBankOrEWallet = w.bankCode !== 'TUNAI';
+        const accNum = isBankOrEWallet && w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+
         return `
           <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl flex items-center justify-between transition-all">
             <div class="flex items-center gap-3 min-w-0">
@@ -2706,12 +2710,12 @@
               </div>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-800 truncate">${w.name}</p>
-                <p class="text-[10px] text-slate-400 truncate">No: ${w.accountNumber || '-'} • Saldo: <b class="text-slate-700">${formatCurrency(w.balance)}</b></p>
+                <p class="text-[10px] text-slate-400 truncate">${isBankOrEWallet ? `No: ${w.accountNumber || '-'}` : 'Kas Tunai'} • Saldo: <b class="text-slate-700">${formatCurrency(w.balance)}</b></p>
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${accNum ? `
-              <button onclick="copyAccountNumber('${accNum}', event)" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening">
+              <button onclick="copyAccountNumber('${accNum}', event, '${w.bankCode}')" class="w-8 h-8 rounded-xl bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Salin Rekening / Akun">
                 <i class="fa-regular fa-copy"></i>
               </button>` : ''}
               <button onclick="openEditWalletModal('${w.id}')" class="w-8 h-8 rounded-xl bg-white text-brand-600 hover:bg-brand-50 border border-slate-200 flex items-center justify-center text-xs transition-all" title="Ubah Bank">
@@ -3129,9 +3133,7 @@
       `).join('');
     }
 
-    /* -------------------------------------------------------------
-       🎮 SPENDING CHALLENGE: AUTO-GENERATION & RESET SETIAP 22.00
-    ------------------------------------------------------------- */
+    /* 🎮 SPENDING CHALLENGE: AUTO-GENERATION & RESET SETIAP 22.00 */
     const challengePool = [
       { title: "Hemat Jajan Boba & Kopi", days: 1, xp: 35 },
       { title: "Masak Sendiri di Rumah Hari Ini", days: 1, xp: 40 },
@@ -3561,12 +3563,15 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       renderCharts();
     }
 
+    /* RENDER DOMPAY: Tombol Salin Khusus Bank & E-Wallet */
     function renderWallets() {
       const container = document.getElementById('walletCardsContainer');
       if (!container) return;
       container.innerHTML = wallets.map(w => {
         const style = bankColorMap[w.bankCode] || bankColorMap.CUSTOM;
-        const accNum = w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+        const isBankOrEWallet = w.bankCode !== 'TUNAI';
+        const accNum = isBankOrEWallet && w.accountNumber && w.accountNumber !== '-' ? w.accountNumber : '';
+
         return `
           <div class="min-w-[150px] p-4 rounded-3xl ${style.bg} ${style.text} shadow-md flex flex-col justify-between shrink-0 transition-transform active:scale-95">
             <div class="flex justify-between items-center mb-3">
@@ -3577,7 +3582,7 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
               <p class="text-[10px] opacity-80 truncate">${w.name}</p>
               <p class="text-xs font-black tracking-tight mt-0.5">${formatCurrency(w.balance)}</p>
               ${accNum ? `
-              <button onclick="copyAccountNumber('${accNum}', event)" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening">
+              <button onclick="copyAccountNumber('${accNum}', event, '${w.bankCode}')" class="mt-1.5 flex items-center gap-1 text-[9px] bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded-full w-fit backdrop-blur transition-all active:scale-95" title="Salin No. Rekening / E-Wallet">
                 <span class="truncate max-w-[85px]">${accNum}</span>
                 <i class="fa-regular fa-copy text-[9px]"></i>
               </button>` : ''}
@@ -3587,25 +3592,35 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       }).join('');
     }
 
-    function copyAccountNumber(accNumber, event) {
+    /* Fungsi Salin Nomor Rekening / E-Wallet Eksklusif */
+    function copyAccountNumber(accNumber, event, bankCode) {
       if (event) event.stopPropagation();
-      if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined') {
-        showToast("Nomor rekening belum diatur pada akun ini.", "error");
+
+      if (bankCode === 'TUNAI') {
+        showToast("Kas / Uang Tunai tidak memiliki nomor rekening.", "error");
         return;
       }
 
+      if (!accNumber || accNumber === '-' || accNumber === 'null' || accNumber === 'undefined') {
+        showToast("Nomor rekening/e-wallet belum diatur pada akun ini.", "error");
+        return;
+      }
+
+      const isEWallet = ['DANA', 'GOPAY', 'OVO', 'SHOPEEPAY'].includes(bankCode);
+      const label = isEWallet ? "Nomor e-wallet" : "Nomor rekening";
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(accNumber).then(() => {
-          showToast(`Nomor rekening ${accNumber} berhasil disalin!`);
+          showToast(`${label} ${accNumber} berhasil disalin!`);
         }).catch(() => {
-          fallbackCopyText(accNumber);
+          fallbackCopyText(accNumber, label);
         });
       } else {
-        fallbackCopyText(accNumber);
+        fallbackCopyText(accNumber, label);
       }
     }
 
-    function fallbackCopyText(text) {
+    function fallbackCopyText(text, label = "Nomor") {
       const textArea = document.createElement("textarea");
       textArea.value = text;
       textArea.style.position = "fixed";
@@ -3615,9 +3630,9 @@ Gunakan Bahasa Indonesia ramah, profesional, dan to-the-point.`;
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast(`Nomor rekening ${text} berhasil disalin!`);
+        showToast(`${label} ${text} berhasil disalin!`);
       } catch (err) {
-        showToast("Gagal menyalin nomor rekening.", "error");
+        showToast("Gagal menyalin nomor.", "error");
       }
       document.body.removeChild(textArea);
     }
