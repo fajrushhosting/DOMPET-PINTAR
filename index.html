@@ -97,21 +97,13 @@
     <!-- ======================================================== -->
     <section id="screenOnboarding" class="flex-1 flex flex-col justify-between p-6 fade-in">
       <div class="flex justify-between items-center pt-2">
-        <div class="flex items-center gap-2">
-          <!-- Logo Baru Dompet Pintar Modern & Keren -->
-          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-slate-900 via-brand-600 to-brand-400 p-1.5 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 ring-2 ring-white/60">
-            <svg viewBox="0 0 48 48" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="14" fill="url(#logoGradNew)" />
-              <path d="M12 18C12 14.6863 14.6863 12 18 12H30C33.3137 12 36 14.6863 36 18V30C36 33.3137 33.3137 36 30 36H18C14.6863 36 12 33.3137 12 30V18Z" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
-              <path d="M12 21H36M26 27H31" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
-              <circle cx="21" cy="27" r="2.5" fill="#facc15" />
-              <defs>
-                <linearGradient id="logoGradNew" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#0369a1" />
-                  <stop offset="0.5" stop-color="#0ea5e9" />
-                  <stop offset="1" stop-color="#38bdf8" />
-                </linearGradient>
-              </defs>
+        <div class="flex items-center gap-2.5">
+          <!-- Logo Asli Dompet Pintar Bersih & Minimalis -->
+          <div class="w-9 h-9 rounded-2xl bg-brand-400 text-white flex items-center justify-center shadow-md shadow-brand-400/30">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
             </svg>
           </div>
           <span class="font-extrabold text-slate-800 tracking-tight text-base">Dompet Pintar</span>
@@ -161,23 +153,11 @@
     <!-- ======================================================== -->
     <section id="screenAuth" class="hidden flex-1 flex flex-col justify-between p-6 fade-in">
       <div>
-        <div class="flex items-center justify-between pt-2 mb-6">
-          <button onclick="showScreen('screenOnboarding')" class="w-10 h-10 rounded-full bg-white/80 shadow-sm flex items-center justify-center text-slate-700">
+        <!-- Tombol Kembali Sederhana Tanpa Elemen Berlebih -->
+        <div class="pt-2 mb-6">
+          <button onclick="showScreen('screenOnboarding')" class="w-10 h-10 rounded-full bg-white/80 shadow-sm flex items-center justify-center text-slate-700 hover:bg-white transition-all">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
-          <div class="flex items-center gap-2">
-            <!-- Logo Baru Dompet Pintar Modern & Keren -->
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-900 via-brand-600 to-brand-400 p-1 flex items-center justify-center text-white shadow-md shadow-brand-500/20 ring-1 ring-white/60">
-              <svg viewBox="0 0 48 48" class="w-full h-full" fill="none">
-                <rect width="48" height="48" rx="14" fill="#0284c7" />
-                <path d="M12 18C12 14.6863 14.6863 12 18 12H30C33.3137 12 36 14.6863 36 18V30C36 33.3137 33.3137 36 30 36H18C14.6863 36 12 33.3137 12 30V18Z" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
-                <path d="M12 21H36M26 27H31" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
-                <circle cx="21" cy="27" r="2.5" fill="#facc15" />
-              </svg>
-            </div>
-            <span class="font-bold text-slate-700">Dompet Pintar</span>
-          </div>
-          <div class="w-10"></div>
         </div>
 
         <!-- Auth Tabs: Masuk / Daftar -->
@@ -186,75 +166,78 @@
           <button id="tabBtnRegister" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-700" data-i18n="auth_register_tab">Daftar</button>
         </div>
 
-        <!-- TAB CONTENT: MASUK (LOGIN) -->
-        <div id="authLoginContainer" class="space-y-4 fade-in">
-          <div>
-            <h2 class="text-xl font-black text-slate-800" data-i18n="login_heading">Selamat Datang Kembali</h2>
-            <p class="text-xs text-slate-400 mt-0.5" data-i18n="login_sub">Masuk menggunakan username dan kata sandi Anda</p>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username</label>
-            <input type="text" id="loginUsername" placeholder="Contoh: fajrush" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
-            <div class="relative">
-              <input type="password" id="loginPassword" placeholder="Masukkan kata sandi..." class="w-full px-4 pr-10 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
-              <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-eye"></i>
-              </button>
+        <!-- Wadah Kartu Form Putih Elegan -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/80 space-y-4">
+          <!-- TAB CONTENT: MASUK (LOGIN) -->
+          <div id="authLoginContainer" class="space-y-4 fade-in">
+            <div>
+              <h2 class="text-xl font-black text-slate-800" data-i18n="login_heading">Selamat Datang Kembali</h2>
+              <p class="text-xs text-slate-400 mt-0.5" data-i18n="login_sub">Masuk menggunakan username dan kata sandi Anda</p>
             </div>
-          </div>
 
-          <div class="flex items-center justify-between pt-1">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="loginRememberMe" class="rounded border-slate-300 text-brand-500 focus:ring-brand-400 w-4 h-4" checked />
-              <span class="text-xs text-slate-500 font-medium">Ingat Saya (Remember Me)</span>
-            </label>
-          </div>
-
-          <button onclick="handleLogin()" id="btnSubmitLogin" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2 flex items-center justify-center gap-2">
-            <span data-i18n="btn_login">Masuk ke Dompet Pintar</span>
-          </button>
-        </div>
-
-        <!-- TAB CONTENT: DAFTAR (REGISTER) -->
-        <div id="authRegisterContainer" class="hidden space-y-3.5 fade-in">
-          <div>
-            <h2 class="text-xl font-black text-slate-800" data-i18n="reg_heading">Buat Akun Baru</h2>
-            <p class="text-xs text-slate-400 mt-0.5" data-i18n="reg_sub">Kelola uangmu lebih teratur mulai hari ini</p>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_fullname">Nama Lengkap</label>
-            <input type="text" id="regFullName" placeholder="Nama Lengkap Anda..." class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username Unik</label>
-            <input type="text" id="regUsername" placeholder="Contoh: fajrush" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir</label>
-            <input type="date" id="regBirthDate" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm text-slate-700 bg-white" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
-            <div class="relative">
-              <input type="password" id="regPassword" placeholder="Minimal 6 karakter..." class="w-full px-4 pr-10 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
-              <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-eye"></i>
-              </button>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username</label>
+              <input type="text" id="loginUsername" placeholder="Contoh: fajrush" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
             </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
+              <div class="relative">
+                <input type="password" id="loginPassword" placeholder="Masukkan kata sandi..." class="w-full px-4 pr-10 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
+                <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="loginRememberMe" class="rounded border-slate-300 text-brand-500 focus:ring-brand-400 w-4 h-4" checked />
+                <span class="text-xs text-slate-500 font-medium">Ingat Saya (Remember Me)</span>
+              </label>
+            </div>
+
+            <button onclick="handleLogin()" id="btnSubmitLogin" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2 flex items-center justify-center gap-2">
+              <span data-i18n="btn_login">Masuk ke Dompet Pintar</span>
+            </button>
           </div>
 
-          <button onclick="handleRegister()" id="btnSubmitRegister" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2 flex items-center justify-center gap-2">
-            <span data-i18n="btn_register">Daftar Sekarang</span>
-          </button>
+          <!-- TAB CONTENT: DAFTAR (REGISTER) -->
+          <div id="authRegisterContainer" class="hidden space-y-3.5 fade-in">
+            <div>
+              <h2 class="text-xl font-black text-slate-800" data-i18n="reg_heading">Buat Akun Baru</h2>
+              <p class="text-xs text-slate-400 mt-0.5" data-i18n="reg_sub">Kelola uangmu lebih teratur mulai hari ini</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_fullname">Nama Lengkap</label>
+              <input type="text" id="regFullName" placeholder="Nama Lengkap Anda..." class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_username">Username Unik</label>
+              <input type="text" id="regUsername" placeholder="Contoh: fajrush" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_birthdate">Tanggal Lahir</label>
+              <input type="date" id="regBirthDate" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm text-slate-700 bg-white" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="field_password">Kata Sandi</label>
+              <div class="relative">
+                <input type="password" id="regPassword" placeholder="Minimal 6 karakter..." class="w-full px-4 pr-10 py-2.5 rounded-2xl border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none text-sm" />
+                <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button onclick="handleRegister()" id="btnSubmitRegister" class="w-full py-3.5 bg-brand-400 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-md shadow-brand-400/25 transition-all text-sm mt-2 flex items-center justify-center gap-2">
+              <span data-i18n="btn_register">Daftar Sekarang</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1106,13 +1089,11 @@
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar fade-in">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2.5">
-          <!-- Logo Baru Dompet Pintar Modern & Keren -->
-          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-slate-900 via-brand-600 to-brand-400 p-1.5 flex items-center justify-center text-white shadow-md">
-            <svg viewBox="0 0 48 48" class="w-full h-full" fill="none">
-              <rect width="48" height="48" rx="14" fill="#0284c7" />
-              <path d="M12 18C12 14.6863 14.6863 12 18 12H30C33.3137 12 36 14.6863 36 18V30C36 33.3137 33.3137 36 30 36H18C14.6863 36 12 33.3137 12 30V18Z" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
-              <path d="M12 21H36M26 27H31" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
-              <circle cx="21" cy="27" r="2.5" fill="#facc15" />
+          <div class="w-9 h-9 rounded-2xl bg-brand-400 text-white flex items-center justify-center shadow-md">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
             </svg>
           </div>
           <div>
@@ -3055,27 +3036,17 @@
 
     function setupDynamicManifest() {
       try {
-        // Logo resmi Dompet Pintar beresolusi tinggi (512x512) bernuansa modern & keren
+        // Logo asli Dompet Pintar berlatar warna brand cyan/sky-blue
         const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <defs>
-            <linearGradient id="dpGradNew" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#0369a1"/>
-              <stop offset="50%" stop-color="#0ea5e9"/>
-              <stop offset="100%" stop-color="#38bdf8"/>
-            </linearGradient>
-            <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fef08a"/>
-              <stop offset="100%" stop-color="#eab308"/>
-            </linearGradient>
-          </defs>
-          <rect width="512" height="512" rx="140" fill="url(#dpGradNew)"/>
-          <path d="M128 192C128 156.654 156.654 128 192 128H320C355.346 128 384 156.654 384 192V320C384 355.346 355.346 384 320 384H192C156.654 384 128 355.346 128 320V192Z" stroke="#e0f2fe" stroke-width="24" stroke-linecap="round"/>
-          <path d="M128 224H384M280 288H336" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
-          <circle cx="224" cy="288" r="28" fill="url(#goldGrad)"/>
+          <rect width="512" height="512" rx="128" fill="#38bdf8"/>
+          <g transform="scale(14) translate(6, 6)" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+          </g>
         </svg>`;
         const iconDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
 
-        // Pasang favicon dan apple touch icon agar seragam di semua perangkat
         document.getElementById('dynamicFavicon').setAttribute('href', iconDataUrl);
         document.getElementById('dynamicAppleIcon').setAttribute('href', iconDataUrl);
 
@@ -3085,7 +3056,7 @@
           start_url: window.location.href,
           display: "standalone",
           background_color: "#f0f9ff",
-          theme_color: "#0284c7",
+          theme_color: "#38bdf8",
           icons: [
             { src: iconDataUrl, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }
           ]
