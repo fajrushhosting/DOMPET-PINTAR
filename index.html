@@ -742,7 +742,7 @@
                 </div>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggleDailyNotif" onchange="toggleDailyReminder(this.checked)" checked class="sr-only peer">
+                <input type="checkbox" id="toggleDailyNotif" onchange="toggleDailyReminder(this.checked)" class="sr-only peer">
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
               </label>
             </div>
@@ -778,7 +778,7 @@
             <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
             <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
@@ -1534,7 +1534,123 @@
 
   <script>
     /* =========================================================================
-       FUNGSI NAVIGASI LAYAR UTAMA (TERSEDIA DI LEVEL GLOBAL SEJAK AWAL)
+       SISTEM NOTIFIKASI PENGINGAT TRANSAKSI (17.00 WIB) & KONTROL IZIN
+       ========================================================================= */
+    function getMillisecondsUntil1700WIB() {
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0, 0);
+
+      if (now.getTime() >= target.getTime()) {
+        target.setDate(target.getDate() + 1);
+      }
+      return target.getTime() - now.getTime();
+    }
+
+    function scheduleDailyTransactionReminder() {
+      if (dailyReminderTimer) {
+        clearTimeout(dailyReminderTimer);
+        dailyReminderTimer = null;
+      }
+
+      const isEnabled = currentUser?.notificationEnabled === true;
+      if (!isEnabled) return;
+
+      const msUntil1700 = getMillisecondsUntil1700WIB();
+
+      dailyReminderTimer = setTimeout(async () => {
+        await executeDailyTransactionReminder();
+        scheduleDailyTransactionReminder();
+      }, msUntil1700);
+    }
+
+    async function executeDailyTransactionReminder() {
+      const reminderItem = {
+        id: 'n_' + Date.now(),
+        title: 'Pengingat Transaksi (17.00 WIB)',
+        text: 'Sudah pukul 17.00 WIB! Jangan lupa catat seluruh transaksi pengeluaran dan pemasukanmu hari ini di Dompet Pintar.',
+        time: '17.00 WIB',
+        read: false
+      };
+      notifications.unshift(reminderItem);
+
+      const notifBadge = document.getElementById('notifBadge');
+      if (notifBadge) notifBadge.classList.remove('hidden');
+
+      await saveToSupabase();
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        try {
+          if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg && reg.showNotification) {
+              reg.showNotification("Dompet Pintar", {
+                body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu.",
+                icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%230284c7'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3C/svg%3E",
+                badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='20' fill='%2338bdf8'/%3E%3C/svg%3E",
+                tag: 'daily-reminder-1700'
+              });
+              return;
+            }
+          }
+          new Notification("Dompet Pintar", {
+            body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu."
+          });
+        } catch (err) {
+          console.warn("Gagal menampilkan notifikasi native:", err);
+        }
+      }
+
+      showToast("⏰ Pukul 17.00 WIB! Waktunya mencatat transaksi keuangan hari ini.");
+    }
+
+    async function toggleDailyReminder(isChecked) {
+      const toggleEl = document.getElementById('toggleDailyNotif');
+
+      if (isChecked) {
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            currentUser.notificationEnabled = true;
+            scheduleDailyTransactionReminder();
+            await saveToSupabase();
+            showToast("Pengingat harian aktif! Notifikasi dikirimkan setiap jam 17.00 WIB.");
+          } else if (Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+              currentUser.notificationEnabled = true;
+              scheduleDailyTransactionReminder();
+              await saveToSupabase();
+              showToast("Izin diberikan! Notifikasi aktif jam 17.00 WIB.");
+            } else {
+              if (toggleEl) toggleEl.checked = false;
+              currentUser.notificationEnabled = false;
+              await saveToSupabase();
+              showToast("Izin notifikasi ditolak oleh perangkat.", "error");
+            }
+          } else {
+            if (toggleEl) toggleEl.checked = false;
+            currentUser.notificationEnabled = false;
+            await saveToSupabase();
+            showToast("Izin notifikasi diblokir di browser. Harap izinkan lewat pengaturan perangkat/browser.", "error");
+          }
+        } else {
+          currentUser.notificationEnabled = true;
+          scheduleDailyTransactionReminder();
+          await saveToSupabase();
+          showToast("Pengingat in-app aktif jam 17.00 WIB.");
+        }
+      } else {
+        if (dailyReminderTimer) {
+          clearTimeout(dailyReminderTimer);
+          dailyReminderTimer = null;
+        }
+        currentUser.notificationEnabled = false;
+        await saveToSupabase();
+        showToast("Pengingat transaksi dimatikan.");
+      }
+    }
+
+    /* =========================================================================
+       FUNGSI SISTEM GLOBAL, INISIALISASI & NAVIGASI LAYAR
        ========================================================================= */
     function showScreen(screenId) {
       const screens = ['screenOnboarding', 'screenAuth', 'mainApp'];
@@ -2006,99 +2122,6 @@
       }, msToMidnight);
     }
 
-    /* Notifikasi Pengingat Transaksi (17.00 WIB) */
-    function getMillisecondsUntil1700WIB() {
-      const now = new Date();
-      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0, 0);
-
-      if (now.getTime() >= target.getTime()) {
-        target.setDate(target.getDate() + 1);
-      }
-      return target.getTime() - now.getTime();
-    }
-
-    function scheduleDailyTransactionReminder() {
-      if (dailyReminderTimer) {
-        clearTimeout(dailyReminderTimer);
-        dailyReminderTimer = null;
-      }
-
-      const isEnabled = document.getElementById('toggleDailyNotif')?.checked ?? true;
-      if (!isEnabled) return;
-
-      const msUntil1700 = getMillisecondsUntil1700WIB();
-
-      dailyReminderTimer = setTimeout(async () => {
-        await executeDailyTransactionReminder();
-        scheduleDailyTransactionReminder();
-      }, msUntil1700);
-    }
-
-    async function executeDailyTransactionReminder() {
-      const reminderItem = {
-        id: 'n_' + Date.now(),
-        title: 'Pengingat Transaksi (17.00 WIB)',
-        text: 'Sudah pukul 17.00 WIB! Jangan lupa catat seluruh transaksi pengeluaran dan pemasukanmu hari ini di Dompet Pintar.',
-        time: '17.00 WIB',
-        read: false
-      };
-      notifications.unshift(reminderItem);
-
-      const notifBadge = document.getElementById('notifBadge');
-      if (notifBadge) notifBadge.classList.remove('hidden');
-
-      await saveToSupabase();
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        try {
-          if ('serviceWorker' in navigator) {
-            const reg = await navigator.serviceWorker.ready;
-            if (reg && reg.showNotification) {
-              reg.showNotification("Dompet Pintar", {
-                body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu.",
-                icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%230284c7'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3Cpath d='M26 23H37V29H26C24.9 29 24 28.1 24 27V25C24 23.9 24.9 23 26 23Z' fill='%230284c7'/%3E%3Ccircle cx='31' cy='26' r='1.8' fill='%2338bdf8'/%3E%3Cpath d='M36 8L37 11L40 12L37 13L36 16L35 13L32 12L35 11L36 8Z' fill='%23fde047'/%3E%3C/svg%3E",
-                badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='20' fill='%2338bdf8'/%3E%3C/svg%3E",
-                tag: 'daily-reminder-1700'
-              });
-              return;
-            }
-          }
-          new Notification("Dompet Pintar", {
-            body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu."
-          });
-        } catch (err) {
-          console.warn("Gagal menampilkan notifikasi native:", err);
-        }
-      }
-
-      showToast("⏰ Pukul 17.00 WIB! Waktunya mencatat transaksi keuangan hari ini.");
-    }
-
-    function toggleDailyReminder(isChecked) {
-      if (isChecked) {
-        if ("Notification" in window) {
-          Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-              scheduleDailyTransactionReminder();
-              showToast("Pengingat harian aktif! Notifikasi dikirimkan setiap jam 17.00 WIB.");
-            } else {
-              scheduleDailyTransactionReminder();
-              showToast("Izin notifikasi browser belum aktif, pengingat in-app tetap dijadwalkan jam 17.00 WIB.");
-            }
-          });
-        } else {
-          scheduleDailyTransactionReminder();
-          showToast("Pengingat harian in-app aktif jam 17.00 WIB.");
-        }
-      } else {
-        if (dailyReminderTimer) {
-          clearTimeout(dailyReminderTimer);
-          dailyReminderTimer = null;
-        }
-        showToast("Pengingat transaksi dimatikan.");
-      }
-    }
-
     /* 2FA Helpers */
     let temp2FASecret = '';
     let pending2FAUser = null;
@@ -2304,7 +2327,6 @@
       enterApp(verifiedUser);
     }
 
-    /* PENGGUNA BARU: HANYA MEMILIKI UANG TUNAI / KAS */
     function initializeUserData(user) {
       currentUser = user;
       wallets = [
@@ -2326,7 +2348,6 @@
       return d.toISOString().split('T')[0];
     }
 
-    /* SISTEM PENYIMPANAN SUPABASE */
     async function saveToSupabase() {
       if (!currentUser || !supabaseClient) return;
       const payload = {
@@ -2482,6 +2503,7 @@
           level: 1,
           xp: 0,
           streak: 1,
+          notificationEnabled: false,
           joinedDate: getTodayISO()
         };
 
@@ -2772,11 +2794,27 @@
       document.getElementById('settingsUsername').innerText = '@' + user.username;
       document.getElementById('streakCount').innerText = user.streak || 1;
 
+      // Sinkronkan status sakelar notifikasi dengan data tersimpan di Supabase
+      const toggleEl = document.getElementById('toggleDailyNotif');
+      const isNotifActive = user.notificationEnabled === true;
+      if (toggleEl) {
+        toggleEl.checked = isNotifActive;
+      }
+
       updateLevelUI(user);
       update2FAStatusUI();
       checkAndResetDailyChallenges();
       scheduleMidnightChallengeReset();
-      scheduleDailyTransactionReminder();
+      
+      if (isNotifActive) {
+        scheduleDailyTransactionReminder();
+      } else {
+        if (dailyReminderTimer) {
+          clearTimeout(dailyReminderTimer);
+          dailyReminderTimer = null;
+        }
+      }
+      
       renderAll();
     }
 
