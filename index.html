@@ -778,7 +778,7 @@
             <!-- Autentikasi 2 Faktor (2FA Google Authenticator) -->
             <div onclick="open2FAModal()" class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50 transition-all rounded-2xl">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
@@ -1534,175 +1534,82 @@
 
   <script>
     /* =========================================================================
-       SISTEM NOTIFIKASI PENGINGAT TRANSAKSI (17.00 WIB) & KONTROL IZIN
+       SISTEM APP HYBRID (ANTI DOWNLOAD BERULANG & CEK INSTALASI)
        ========================================================================= */
-    function getMillisecondsUntil1700WIB() {
-      const now = new Date();
-      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0, 0);
-
-      if (now.getTime() >= target.getTime()) {
-        target.setDate(target.getDate() + 1);
-      }
-      return target.getTime() - now.getTime();
-    }
-
-    function scheduleDailyTransactionReminder() {
-      if (dailyReminderTimer) {
-        clearTimeout(dailyReminderTimer);
-        dailyReminderTimer = null;
-      }
-
-      const isEnabled = currentUser?.notificationEnabled === true;
-      if (!isEnabled) return;
-
-      const msUntil1700 = getMillisecondsUntil1700WIB();
-
-      dailyReminderTimer = setTimeout(async () => {
-        await executeDailyTransactionReminder();
-        scheduleDailyTransactionReminder();
-      }, msUntil1700);
-    }
-
-    async function executeDailyTransactionReminder() {
-      const reminderItem = {
-        id: 'n_' + Date.now(),
-        title: 'Pengingat Transaksi (17.00 WIB)',
-        text: 'Sudah pukul 17.00 WIB! Jangan lupa catat seluruh transaksi pengeluaran dan pemasukanmu hari ini di Dompet Pintar.',
-        time: '17.00 WIB',
-        read: false
-      };
-      notifications.unshift(reminderItem);
-
-      const notifBadge = document.getElementById('notifBadge');
-      if (notifBadge) notifBadge.classList.remove('hidden');
-
-      await saveToSupabase();
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        try {
-          if ('serviceWorker' in navigator) {
-            const reg = await navigator.serviceWorker.ready;
-            if (reg && reg.showNotification) {
-              reg.showNotification("Dompet Pintar", {
-                body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu.",
-                icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%230284c7'/%3E%3Cpath d='M10 22C10 19.8 11.8 18 14 18H34C36.2 18 38 19.8 38 22V32C38 34.2 36.2 36 34 36H14C11.8 36 10 34.2 10 32V22Z' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='18' r='5' fill='%2310b981'/%3E%3C/svg%3E",
-                badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='20' fill='%2338bdf8'/%3E%3C/svg%3E",
-                tag: 'daily-reminder-1700'
-              });
-              return;
-            }
-          }
-          new Notification("Dompet Pintar", {
-            body: "Sudah pukul 17.00 WIB! Waktunya mencatat transaksi keuangan harianmu."
-          });
-        } catch (err) {
-          console.warn("Gagal menampilkan notifikasi native:", err);
-        }
-      }
-
-      showToast("⏰ Pukul 17.00 WIB! Waktunya mencatat transaksi keuangan hari ini.");
-    }
-
-    async function toggleDailyReminder(isChecked) {
-      const toggleEl = document.getElementById('toggleDailyNotif');
-
-      if (isChecked) {
-        if ("Notification" in window) {
-          if (Notification.permission === "granted") {
-            currentUser.notificationEnabled = true;
-            scheduleDailyTransactionReminder();
-            await saveToSupabase();
-            showToast("Pengingat harian aktif! Notifikasi dikirimkan setiap jam 17.00 WIB.");
-          } else if (Notification.permission !== "denied") {
-            const permission = await Notification.requestPermission();
-            if (permission === "granted") {
-              currentUser.notificationEnabled = true;
-              scheduleDailyTransactionReminder();
-              await saveToSupabase();
-              showToast("Izin diberikan! Notifikasi aktif jam 17.00 WIB.");
-            } else {
-              if (toggleEl) toggleEl.checked = false;
-              currentUser.notificationEnabled = false;
-              await saveToSupabase();
-              showToast("Izin notifikasi ditolak oleh perangkat.", "error");
-            }
-          } else {
-            if (toggleEl) toggleEl.checked = false;
-            currentUser.notificationEnabled = false;
-            await saveToSupabase();
-            showToast("Izin notifikasi diblokir di browser. Harap izinkan lewat pengaturan perangkat/browser.", "error");
-          }
-        } else {
-          currentUser.notificationEnabled = true;
-          scheduleDailyTransactionReminder();
-          await saveToSupabase();
-          showToast("Pengingat in-app aktif jam 17.00 WIB.");
-        }
-      } else {
-        if (dailyReminderTimer) {
-          clearTimeout(dailyReminderTimer);
-          dailyReminderTimer = null;
-        }
-        currentUser.notificationEnabled = false;
-        await saveToSupabase();
-        showToast("Pengingat transaksi dimatikan.");
-      }
-    }
-
-    /* =========================================================================
-       FUNGSI SISTEM GLOBAL, INISIALISASI & NAVIGASI LAYAR
-       ========================================================================= */
-    function showScreen(screenId) {
-      const screens = ['screenOnboarding', 'screenAuth', 'mainApp'];
-      screens.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-          if (s === screenId) el.classList.remove('hidden');
-          else el.classList.add('hidden');
-        }
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    window.showScreen = showScreen;
-
-    /* Supabase Cloud Connection */
-    const SUPABASE_URL = "https://cdtshlzomxcbvhdwkpoi.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_TqdbLroelO8ioPnwdm309g_23NU3FCi";
-    
-    let supabaseClient = null;
-    try {
-      if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.warn("Supabase initialization fallback:", e);
-    }
-
-    /* Gemini AI API configuration */
-    const GEMINI_API_KEY = "AQ.Ab8RN6JqZRY9-qDQ1YIHw0eyfGPhuJy6Ig1FmGUF8jumZBhC8w";
-    const apiKey = GEMINI_API_KEY;
-
-    /* PWA & Hybrid Engine */
     let deferredHybridPrompt = null;
+
+    function isAppAlreadyInstalled() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const isMarked = currentUser?.isAppInstalled === true || sessionStorage.getItem('dompet_pintar_installed') === 'true';
+      return isStandalone || isMarked;
+    }
+
+    function updateInstallButtonUI() {
+      const btn = document.getElementById('btnHybridInstall');
+      const label = document.getElementById('btnHybridLabel');
+      if (!btn || !label) return;
+
+      if (isAppAlreadyInstalled()) {
+        label.innerText = "Terpasang";
+        btn.classList.remove('animate-pulse');
+        btn.classList.add('opacity-75');
+      } else {
+        label.innerText = "Pasang";
+      }
+    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredHybridPrompt = e;
-      const btn = document.getElementById('btnHybridInstall');
-      const label = document.getElementById('btnHybridLabel');
-      if (btn && label) {
-        label.innerText = "Pasang Sekarang";
-        btn.classList.add('animate-pulse');
+      if (!isAppAlreadyInstalled()) {
+        const btn = document.getElementById('btnHybridInstall');
+        const label = document.getElementById('btnHybridLabel');
+        if (btn && label) {
+          label.innerText = "Pasang Sekarang";
+          btn.classList.add('animate-pulse');
+        }
       }
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      if (isStandalone) {
-        const label = document.getElementById('btnHybridLabel');
-        if (label) label.innerText = "Terpasang";
+    window.addEventListener('appinstalled', async () => {
+      deferredHybridPrompt = null;
+      sessionStorage.setItem('dompet_pintar_installed', 'true');
+      if (currentUser) {
+        currentUser.isAppInstalled = true;
+        await saveToSupabase();
+      }
+      updateInstallButtonUI();
+      showToast("Aplikasi Hybrid Dompet Pintar berhasil dipasang!", "success");
+    });
+
+    async function installHybridApp() {
+      if (isAppAlreadyInstalled()) {
+        showToast("Aplikasi Dompet Pintar sudah terpasang di perangkat Anda!", "success");
+        updateInstallButtonUI();
+        return;
       }
 
+      if (deferredHybridPrompt) {
+        deferredHybridPrompt.prompt();
+        const choiceResult = await deferredHybridPrompt.userChoice;
+        if (choiceResult && choiceResult.outcome === 'accepted') {
+          sessionStorage.setItem('dompet_pintar_installed', 'true');
+          if (currentUser) {
+            currentUser.isAppInstalled = true;
+            await saveToSupabase();
+          }
+          updateInstallButtonUI();
+          showToast("Aplikasi Hybrid Dompet Pintar berhasil dipasang!", "success");
+        }
+        deferredHybridPrompt = null;
+      } else {
+        openModal('modalHybridInstallGuide');
+      }
+    }
+
+    /* PWA Manifest & SW Register */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateInstallButtonUI();
       setupDynamicWebManifest();
       registerHybridServiceWorker();
     });
@@ -1754,28 +1661,6 @@
           const swUrl = URL.createObjectURL(blob);
           navigator.serviceWorker.register(swUrl).catch(() => {});
         } catch (e) {}
-      }
-    }
-
-    function installHybridApp() {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      if (isStandalone) {
-        showToast("Aplikasi Dompet Pintar sudah terpasang dan aktif di layar utama!", "success");
-        return;
-      }
-
-      if (deferredHybridPrompt) {
-        deferredHybridPrompt.prompt();
-        deferredHybridPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            showToast("Aplikasi Hybrid Dompet Pintar berhasil dipasang!", "success");
-            const label = document.getElementById('btnHybridLabel');
-            if (label) label.innerText = "Terpasang";
-          }
-          deferredHybridPrompt = null;
-        });
-      } else {
-        openModal('modalHybridInstallGuide');
       }
     }
 
@@ -2327,6 +2212,7 @@
       enterApp(verifiedUser);
     }
 
+    /* PENGGUNA BARU: HANYA MEMILIKI UANG TUNAI / KAS */
     function initializeUserData(user) {
       currentUser = user;
       wallets = [
@@ -2348,6 +2234,7 @@
       return d.toISOString().split('T')[0];
     }
 
+    /* SISTEM PENYIMPANAN SUPABASE */
     async function saveToSupabase() {
       if (!currentUser || !supabaseClient) return;
       const payload = {
@@ -2504,6 +2391,7 @@
           xp: 0,
           streak: 1,
           notificationEnabled: false,
+          isAppInstalled: false,
           joinedDate: getTodayISO()
         };
 
@@ -2794,7 +2682,7 @@
       document.getElementById('settingsUsername').innerText = '@' + user.username;
       document.getElementById('streakCount').innerText = user.streak || 1;
 
-      // Sinkronkan status sakelar notifikasi dengan data tersimpan di Supabase
+      // Sinkronkan status sakelar notifikasi & install button
       const toggleEl = document.getElementById('toggleDailyNotif');
       const isNotifActive = user.notificationEnabled === true;
       if (toggleEl) {
@@ -2803,6 +2691,7 @@
 
       updateLevelUI(user);
       update2FAStatusUI();
+      updateInstallButtonUI();
       checkAndResetDailyChallenges();
       scheduleMidnightChallengeReset();
       
