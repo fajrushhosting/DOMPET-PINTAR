@@ -1833,6 +1833,9 @@
     }
 
     function handleLogout() {
+      if (currentUser) {
+        localStorage.removeItem(`dompet_pintar_data_${currentUser}`);
+      }
       currentUser = null;
       userProfile = null;
       wallets = [];
@@ -1876,7 +1879,8 @@
             .eq('username', targetUsername);
         }
 
-        // Bersihkan Sesi Lokal
+        // Bersihkan Sesi Lokal & Cache Akun
+        localStorage.removeItem(`dompet_pintar_data_${targetUsername}`);
         localStorage.removeItem('dompet_pintar_current_user');
         sessionStorage.removeItem('dompet_pintar_current_user');
         
