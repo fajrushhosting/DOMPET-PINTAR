@@ -2867,8 +2867,8 @@
       const ctxExpense = document.getElementById('miniExpenseChart');
       const ctxIncome = document.getElementById('miniIncomeChart');
 
-      const totalExp = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0) || 1;
-      const totalInc = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0) || 1;
+      const totalExp = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const totalInc = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
 
       if (ctxExpense) {
         if (miniExpenseChartInstance) miniExpenseChartInstance.destroy();
@@ -2876,8 +2876,8 @@
           type: 'doughnut',
           data: {
             datasets: [{
-              data: [totalExp, 1],
-              backgroundColor: ['#f43f5e', '#ffe4e6'],
+              data: totalExp > 0 ? [totalExp] : [1],
+              backgroundColor: totalExp > 0 ? ['#f43f5e'] : ['#f1f5f9'],
               borderWidth: 0,
               cutout: '72%'
             }]
@@ -2896,8 +2896,8 @@
           type: 'doughnut',
           data: {
             datasets: [{
-              data: [totalInc, 1],
-              backgroundColor: ['#10b981', '#d1fae5'],
+              data: totalInc > 0 ? [totalInc] : [1],
+              backgroundColor: totalInc > 0 ? ['#10b981'] : ['#f1f5f9'],
               borderWidth: 0,
               cutout: '72%'
             }]
@@ -3009,10 +3009,7 @@
     function updateUIState() {
       if (!userProfile) return;
 
-      const avatarChar = (userProfile.fullname || userProfile.username || 'U').charAt(0).toUpperCase();
-
-      document.getElementById('headerAvatar').innerText = avatarChar;
-      document.getElementById('profileAvatar').innerText = avatarChar;
+      // Header dan avatar profil menggunakan Logo Resmi Website secara konsisten
       document.getElementById('headerUserName').innerText = userProfile.fullname || userProfile.username;
       document.getElementById('profileFullName').innerText = userProfile.fullname || userProfile.username;
       document.getElementById('profileUsername').innerText = '@' + userProfile.username;
@@ -3026,6 +3023,11 @@
         status2FA.innerText = userProfile.twoFactorEnabled ? "Google Authenticator: Aktif" : "Google Authenticator: Nonaktif";
       }
 
+      const btnInstall = document.getElementById('btnInstallAppPrompt');
+      if (btnInstall && isAppAlreadyInstalled()) {
+        btnInstall.innerText = "Terpasang";
+      }
+
       renderDashboardSummary();
       renderWallets();
       renderRecentTransactions();
@@ -3037,6 +3039,13 @@
        18. HYBRID APP & SMART NOTIFIKASI
        ------------------------------------------------------------- */
     let deferredPrompt = null;
+
+    function isAppAlreadyInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             window.navigator.standalone === true ||
+             document.referrer.includes('android-app://') ||
+             localStorage.getItem('dompet_pintar_pwa_installed') === 'true';
+    }
 
     function setupDynamicManifest() {
       try {
@@ -3078,23 +3087,39 @@
       deferredPrompt = e;
       const btn = document.getElementById('btnInstallAppPrompt');
       if (btn) {
-        btn.innerText = "Pasang";
-        btn.onclick = () => {
-          if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-          }
-        };
+        btn.innerText = isAppAlreadyInstalled() ? "Terpasang" : "Pasang";
       }
     });
 
+    window.addEventListener('appinstalled', () => {
+      localStorage.setItem('dompet_pintar_pwa_installed', 'true');
+      const btn = document.getElementById('btnInstallAppPrompt');
+      if (btn) btn.innerText = "Terpasang";
+      showToast("Aplikasi Dompet Pintar berhasil dipasang!");
+    });
+
     function triggerNativeInstallPrompt() {
+      if (isAppAlreadyInstalled()) {
+        showToast("Aplikasi Dompet Pintar sudah terpasang di perangkat Anda!");
+        const btn = document.getElementById('btnInstallAppPrompt');
+        if (btn) btn.innerText = "Terpasang";
+        return;
+      }
+
       if (deferredPrompt) {
         closeModal('modalInstallApp');
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult && choiceResult.outcome === 'accepted') {
+            localStorage.setItem('dompet_pintar_pwa_installed', 'true');
+            showToast("Terima kasih telah memasang Dompet Pintar!");
+            const btn = document.getElementById('btnInstallAppPrompt');
+            if (btn) btn.innerText = "Terpasang";
+          }
+          deferredPrompt = null;
+        });
       } else {
-        showToast("Buka menu browser dan pilih 'Tambahkan ke Layar Utama'");
+        openModal('modalInstallApp');
       }
     }
 
