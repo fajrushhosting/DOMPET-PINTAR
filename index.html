@@ -417,10 +417,10 @@
             </div>
           </div>
 
-          <!-- Slider Akun Bank Indonesia -->
+          <!-- Slider DomPay (Diperbarui dari Akun & Dompet Bank) -->
           <div class="space-y-2.5">
             <div class="flex justify-between items-center px-1">
-              <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_wallets">Akun & Dompet Bank</h3>
+              <h3 class="font-bold text-slate-800 text-sm" data-i18n="section_wallets">DomPay</h3>
               <div class="flex items-center gap-2">
                 <button onclick="openManageWalletsModal()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1">
                   <i class="fa-solid fa-list-check"></i> <span>Kelola</span>
@@ -1000,12 +1000,12 @@
       </div>
     </div>
 
-    <!-- 4. MODAL KELOLA SEMUA BANK -->
+    <!-- 4. MODAL KELOLA SEMUA BANK (Diperbarui ke: Kelola DomPay Kamu) -->
     <div id="modalManageWallets" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-slate-100">
           <div>
-            <h3 class="font-bold text-slate-800 text-lg">Kelola Akun & Bank</h3>
+            <h3 class="font-bold text-slate-800 text-lg">Kelola DomPay Kamu</h3>
             <p class="text-[11px] text-slate-400">Atur rekening bank dan e-wallet Anda</p>
           </div>
           <button onclick="closeModal('modalManageWallets')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
@@ -1650,7 +1650,7 @@
         section_my_finance: "Keuanganku",
         lbl_expense: "Pengeluaranku",
         lbl_income: "Pemasukanku",
-        section_wallets: "Akun & Dompet Bank",
+        section_wallets: "DomPay",
         add_wallet: "Tambah Bank",
         section_stats: "Statistik Aliran Kas",
         section_recent_trans: "Transaksi Terakhir",
@@ -1696,7 +1696,7 @@
         section_my_finance: "My Finance",
         lbl_expense: "My Expenses",
         lbl_income: "My Incomes",
-        section_wallets: "Bank Accounts & Wallets",
+        section_wallets: "DomPay",
         add_wallet: "Add Bank",
         section_stats: "Cashflow Stats",
         section_recent_trans: "Recent Transactions",
@@ -3149,7 +3149,7 @@
       if (!currentUser) return;
 
       const now = new Date();
-      // Siklus tanggal berganti setiap pukul 22:00
+      // Siklus berganti setiap pukul 22:00
       const cycleDate = new Date(now);
       if (now.getHours() < 22) {
         cycleDate.setDate(cycleDate.getDate() - 1);
